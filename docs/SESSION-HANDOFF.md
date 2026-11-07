@@ -58,3 +58,8 @@
 - Run `42388205169`：版本检查成功；因 Windows checkout 的 CRLF 转换导致 `.gitignore` 哈希不匹配，在清单步骤失败，未运行 npm install/tests/build。
 - 已加入 `.gitattributes`：`* text=auto eol=lf`，让 Windows 工作区保留清单计算所需的 LF；`SOURCE-MANIFEST.sha256` 已新增 `.gitattributes` 项，共 18 个文件。第三次 Actions 将验证修复后的完整 Windows 链路。
 - 前两次失败属于工作流校验实现问题，并非应用测试结果。
+
+
+## NSIS 构建完成但 electron-builder 自动发布失败
+
+第三轮 Actions `42388312746` 已成功安装依赖、跑完 32 项测试、通过 11 项语法检查、完成 Electron app packaging 和 NSIS installer 构建；输出中确认生成 `GPT Session Rotator-0.1.12-Setup.exe` 和 blockmap。构建命令随后因 electron-builder 在 CI 环境自动启用隐式发布、缺少 `GH_TOKEN` 而返回失败，Artifact 上传和 Release job 因此跳过。已将 `package.json` 的 `dist:win` 显式设为 `--publish never`，由 `softprops/action-gh-release` job 唯一负责创建 tag/Release。第四轮 Actions 将验证这一修复。

@@ -43,3 +43,11 @@
 - Run `42388205169`：版本校验通过，但 Windows checkout 的 CRLF 转换导致 `.gitignore` SHA-256 不匹配。
 - 已修正 workflow 正则；添加 `.gitattributes` 固定 LF；更新清单为 18 个根目录相对文件。两次失败均发生在 npm install 前，未运行应用测试或 Windows 打包。
 - 第三次 Actions 的最终状态决定 Windows 打包和 Release 是否可确认完成。
+
+
+## 第三轮 Actions 结果与修正
+
+- Run `42388312746`：版本一致、18 项 SHA-256 清单、npm install、32 项自动测试、11 项语法检查均通过。
+- `npm run dist:win` 实际生成了 NSIS EXE 与 blockmap，但 electron-builder 因 CI 检测隐式启用上传，最后报错 `GitHub Personal Access Token is not set`。Workflow artifact 上传及 Release job 因构建 step 非零退出而跳过。
+- 已把 `package.json` 的 `dist:win` 脚本改为 `electron-builder --win nsis --x64 --publish never`。正式 Release 由后续 Action job 使用 `GITHUB_TOKEN` 完成，不需要个人 PAT。
+- 第四轮运行需确认 build step、installer artifact 与 GitHub Release 全部成功。

@@ -85,3 +85,12 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **Actions 失败记录：** `42388131374` 失败于版本正则；`42388205169` 失败于 Windows CRLF 哈希差异。两次都在 npm install 前停止，未执行应用测试或安装包构建。
 - **应用版本：** 不变，仍为 0.1.12；未修改运行时代码。
 - **下一步：** 观察本次 `[release]` 提交触发的第三次 Actions，成功后确认 `v0.1.12` Release 和 EXE 附件；失败则依据真实日志继续修复。
+
+
+## 2026-11-07 — 禁止 electron-builder 在 CI 中隐式发布
+
+- **根因：** 第三轮 Actions `42388312746` 已完成 NSIS 生成并输出 `GPT Session Rotator-0.1.12-Setup.exe` 与 blockmap，但 electron-builder 侦测到 CI 环境后隐式启动发布，因未提供个人 `GH_TOKEN` 而令构建 step 以 exit code 1 结束；正式发布本应由工作流后续 Release job 完成。
+- **修复：** 将 `package.json` 的 `dist:win` 脚本改为 `electron-builder --win nsis --x64 --publish never`，明确构建阶段只打包、不自行上传。`softprops/action-gh-release` job 仍负责创建 `v0.1.12` Release 并附带 EXE/blockmap，使用 Action 的 `GITHUB_TOKEN` 写权限，不要求用户配置 PAT。
+- **测试：** `npm test` 重新运行仍为 32 passed / 0 failed；18 项 root-relative manifest 在 LF 工作区全部通过；工作流在新一次 Windows Runner 上验证实际构建与 Release。
+- **应用版本：** 仍为 0.1.12。本次仅修订 build 命令，不改运行时代码。
+- **下一步：** 等待第四轮 Actions 确认 EXE 工件上传和 Release 页面创建成功；不得以第三轮输出的打包日志代替完整成功退出和工件可下载证据。

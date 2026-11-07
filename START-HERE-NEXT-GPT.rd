@@ -69,3 +69,8 @@
 - 第二轮 Actions `42388205169` 通过版本校验，但在 `.gitignore` 的 SHA-256 检查发现 Windows checkout 将 LF 转为 CRLF，尚未进入依赖安装。
 - 已添加 `.gitattributes`：`* text=auto eol=lf`，并把该文件纳入根目录相对源码清单。工作流现按 SHA 清单字段定长解析；新的第三轮运行将再次验证完整链路。
 - 不要把前两次工作流失败认作应用单元测试失败；两次均在安装依赖和运行测试之前终止。
+
+
+## Actions 自动发布与 electron-builder 修正
+
+第三轮 Actions `42388312746` 已通过版本校验、18 项清单、npm install、32 项测试和 11 项语法检查，并实际生成了 `GPT Session Rotator-0.1.12-Setup.exe` 与 `.blockmap`。随后 electron-builder 因检测到 CI 而隐式尝试发布，因未设置 `GH_TOKEN` 退出；这是构建脚本问题，不是 NSIS 编译失败。现将 `package.json` 的 `dist:win` 改为显式 `--publish never`，由独立 Release job 负责上传和发布，避免在仓库保存个人 PAT。
