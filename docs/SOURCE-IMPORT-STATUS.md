@@ -51,3 +51,13 @@
 - `npm run dist:win` 实际生成了 NSIS EXE 与 blockmap，但 electron-builder 因 CI 检测隐式启用上传，最后报错 `GitHub Personal Access Token is not set`。Workflow artifact 上传及 Release job 因构建 step 非零退出而跳过。
 - 已把 `package.json` 的 `dist:win` 脚本改为 `electron-builder --win nsis --x64 --publish never`。正式 Release 由后续 Action job 使用 `GITHUB_TOKEN` 完成，不需要个人 PAT。
 - 第四轮运行需确认 build step、installer artifact 与 GitHub Release 全部成功。
+
+
+## 最终发布已完成
+
+- 最终 Actions run `42388533990`：全部成功。
+- 最终检查：版本元数据通过；18 项 SHA-256 清单通过；npm 安装成功；32/32 测试通过；11/11 语法检查通过；Windows x64 NSIS 构建与工件上传成功。
+- Release `v0.1.12`：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.12
+- EXE：`GPT.Session.Rotator-0.1.12-Setup.exe`，102,026,111 bytes，SHA-256 `2be1d305aa44f9de4447aa2699ce4af57ff66ae631efb99526d6c015a3e67a69`。
+- `.blockmap`：`GPT.Session.Rotator-0.1.12-Setup.exe.blockmap`，106,117 bytes。
+- 代码签名：未配置，EXE 未签名。真实设备安装启动与 ChatGPT UI 端到端验证仍待用户机器完成。

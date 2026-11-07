@@ -74,3 +74,13 @@
 ## Actions 自动发布与 electron-builder 修正
 
 第三轮 Actions `42388312746` 已通过版本校验、18 项清单、npm install、32 项测试和 11 项语法检查，并实际生成了 `GPT Session Rotator-0.1.12-Setup.exe` 与 `.blockmap`。随后 electron-builder 因检测到 CI 而隐式尝试发布，因未设置 `GH_TOKEN` 退出；这是构建脚本问题，不是 NSIS 编译失败。现将 `package.json` 的 `dist:win` 改为显式 `--publish never`，由独立 Release job 负责上传和发布，避免在仓库保存个人 PAT。
+
+
+## 已发布 Release：v0.1.12（2026-11-07）
+
+- 最终 GitHub Actions run：`42388533990`，结论 `success`。Windows Test/Build 与 Publish Release 两个 job 均成功。
+- 正式 Release：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.12 。标签指向提交 `a7c9e020840cf6e47e0e75177fe30f4f1df1539b`。
+- Windows x64 NSIS：`GPT.Session.Rotator-0.1.12-Setup.exe`，102,026,111 bytes；SHA-256 `2be1d305aa44f9de4447aa2699ce4af57ff66ae631efb99526d6c015a3e67a69`。同页另有 `.blockmap` 附件。
+- 32 项测试、11 个 JavaScript/CJS 语法检查、18 项源码 SHA-256 清单、Windows 安装包构建和 Release 上传均由最终成功的 Actions run 验证。
+- 构建未配置代码签名证书，安装包为未签名版本；实际安装启动、SmartScreen 提示和登录态 ChatGPT 端到端行为仍需在用户 Windows 机器人工验证。
+- `dist:win` 已使用 `--publish never`，由独立 Release job 使用 `GITHUB_TOKEN` 创建 Release，不需要个人 PAT。

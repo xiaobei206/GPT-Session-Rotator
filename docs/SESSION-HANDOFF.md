@@ -63,3 +63,13 @@
 ## NSIS 构建完成但 electron-builder 自动发布失败
 
 第三轮 Actions `42388312746` 已成功安装依赖、跑完 32 项测试、通过 11 项语法检查、完成 Electron app packaging 和 NSIS installer 构建；输出中确认生成 `GPT Session Rotator-0.1.12-Setup.exe` 和 blockmap。构建命令随后因 electron-builder 在 CI 环境自动启用隐式发布、缺少 `GH_TOKEN` 而返回失败，Artifact 上传和 Release job 因此跳过。已将 `package.json` 的 `dist:win` 显式设为 `--publish never`，由 `softprops/action-gh-release` job 唯一负责创建 tag/Release。第四轮 Actions 将验证这一修复。
+
+
+## 最终发布结果 — 2026-11-07
+
+- GitHub Actions run `42388533990`：**success**。
+- `Test and build Windows installer`：成功。版本检查通过；18 项源码清单通过；`npm install` 成功；`npm test` 32 passed / 0 failed；11 个 JS/CJS 文件 `node --check` 通过；`npm run dist:win` 成功；工件上传成功。
+- `Publish GitHub Release`：成功。Release `v0.1.12` 已创建为正式版（非 Draft、非 Pre-release），地址：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.12 。标签指向 `a7c9e020840cf6e47e0e75177fe30f4f1df1539b`。
+- 安装包：`GPT.Session.Rotator-0.1.12-Setup.exe`，大小 102,026,111 bytes，SHA-256 `2be1d305aa44f9de4447aa2699ce4af57ff66ae631efb99526d6c015a3e67a69`；另有 `GPT.Session.Rotator-0.1.12-Setup.exe.blockmap`（106,117 bytes）。
+- 安装包未配置 Authenticode 代码签名；构建日志提示使用 Electron 默认图标。需要在实际 Windows PC 安装并启动确认；真实 ChatGPT 登录态 UI、代理、新旧回复隔离和滚动区警告仍需要人工端到端测试。
+- 0.1.12 应用行为版本未改变。本轮修改仅包括源码清单/换行、Windows 构建命令和 Actions 发布链路。

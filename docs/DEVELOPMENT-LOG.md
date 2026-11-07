@@ -94,3 +94,14 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **测试：** `npm test` 重新运行仍为 32 passed / 0 failed；18 项 root-relative manifest 在 LF 工作区全部通过；工作流在新一次 Windows Runner 上验证实际构建与 Release。
 - **应用版本：** 仍为 0.1.12。本次仅修订 build 命令，不改运行时代码。
 - **下一步：** 等待第四轮 Actions 确认 EXE 工件上传和 Release 页面创建成功；不得以第三轮输出的打包日志代替完整成功退出和工件可下载证据。
+
+
+## 2026-11-07 — GitHub Actions 正式发布 GPT Session Rotator v0.1.12
+
+- **结果：** GitHub Actions run `42388533990` 最终 `success`；Windows 构建 Job 和 GitHub Release Job 均成功。
+- **验证：** 版本元数据匹配；18 项 root-relative SHA-256 清单通过；Windows runner `npm install` 成功；`npm test` 32 passed / 0 failed；11 个 JS/CJS 文件 `node --check` 通过。
+- **构建：** `npm run dist:win` 成功生成 x64 NSIS：`GPT.Session.Rotator-0.1.12-Setup.exe`，102,026,111 bytes；SHA-256 `2be1d305aa44f9de4447aa2699ce4af57ff66ae631efb99526d6c015a3e67a69`。blockmap 106,117 bytes。
+- **发布：** Release `v0.1.12` 已创建，非草稿、非预发布，且 EXE 与 blockmap 均已上传：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.12 。标签指向发布提交 `a7c9e020840cf6e47e0e75177fe30f4f1df1539b`。
+- **修复链路：** 修正 SemVer 正则转义；使用 `.gitattributes` 固定 Windows 工作区 LF；`dist:win` 显式 `--publish never` 避免 electron-builder 误尝试上传，交由独立 Release job 发布。
+- **限制：** 构建未配置 Authenticode 签名，使用 Electron 默认图标；未实际在用户电脑安装启动，未做真实 ChatGPT 登录态端到端验证。构建成功不能替代这些人工检查。
+- **应用版本：** 0.1.12，运行时代码未更改。
