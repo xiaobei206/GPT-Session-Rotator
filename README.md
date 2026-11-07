@@ -1,6 +1,6 @@
 # GPT Session Rotator — Repository Entry Point
 
-<badge color="success">正式版 v0.1.12 已发布</badge>
+**正式版 v0.1.12 已发布。**
 
 **Windows x64 安装包：** [下载 GPT Session Rotator 0.1.12](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.1.12/GPT.Session.Rotator-0.1.12-Setup.exe)
 
