@@ -48,8 +48,8 @@ Keep UI changes minimal and update the displayed version on every formal app rel
 ### Assistant completion — `src/assistant-completion.cjs`
 
 - Default marker: `结束任务简报`.
-- Takes the pre-submit assistant-message baseline for each cycle.
-- Ignores old assistant messages and the user prompt.
+- Takes the pre-submit assistant-message baseline for each cycle, including stable IDs and IDs of nodes that were empty at baseline.
+- Allows an empty pre-submit assistant placeholder to become eligible if ChatGPT fills it after submission; populated pre-existing assistant messages and the user prompt remain excluded.
 - Scans assistant message nodes inside the main conversation area only.
 - Inspects response text in memory only; never logs or persists full message text.
 - Requires the marker in a new assistant reply and evidence that generation has stopped; stability confirmation prevents a partially generated answer from triggering.

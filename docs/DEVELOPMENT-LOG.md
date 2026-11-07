@@ -151,3 +151,12 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **测试：** 新增两项回归测试；当前执行环境不能解析 github.com，未能克隆仓库执行完整本地 `npm test`。本提交触发的 Windows Actions 将验证完整测试、语法检查与安装包构建；结果确认后补记准确数字。
 - **打包：** 未在本地执行 Windows NSIS；以本次 Actions 实际结果为准。
 - **实机限制：** 尚未接入用户运行中的 Electron/ChatGPT 页面，仍需真实登录态验证。助手回复正文没有记录到日志或持久化。
+
+
+## 2026-11-08 — 更新 v0.1.14 交接和测试说明（docs-only）
+
+- **原因：** v0.1.14 助手结束回显修复已进入 main，需要区分源码版本、已发布安装包版本和 Actions 当前验证阶段，避免后续接手误读。
+- **更新：** 同步 `START-HERE-NEXT-GPT.rd`、`docs/SESSION-HANDOFF.md`、`docs/PROJECT-ARCHITECTURE.md`、`docs/TESTING-AND-RELEASE.md` 和下一版本规约。
+- **测试：** 仅编辑文档，未重新运行应用测试；v0.1.14 应用测试与构建状态以对应 Actions run `42397308234` 的最终结论为准。
+- **构建：** 本提交不改变应用源码或安装包内容；本次未在本地执行 Windows 打包。
+- **待办：** 更新实际 NSIS/Release 结论，并在真实 ChatGPT 登录态页面验证结束标记的完整轮换链路。

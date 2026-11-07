@@ -20,7 +20,7 @@ The test suite uses Node's built-in test runner and should not need an Electron 
 ## Regression areas
 
 - Assistant marker defaults, normalization, disable behavior, and UI-configurable persistence.
-- A new assistant reply after submit can trigger; old assistant messages and user-prompt echoes cannot.
+- A new assistant reply after submit can trigger; an empty assistant placeholder present at baseline can trigger only after it is populated; populated old assistant messages and user-prompt echoes cannot.
 - Marker detection does not confirm while ChatGPT is still generating; a stable post-generation poll is required.
 - Main-area scanning only; content below the viewport does not get rejected by a viewport-only visibility check.
 - Chinese/Traditional Chinese/English conversation-length wording; red text or red frame evidence; no false positives for usage quotas, oversized user prompts, or sidebar controls.
@@ -39,7 +39,7 @@ npm test
 npm run dist:win
 ```
 
-Expected NSIS output should be in `dist/` with a name similar to `GPT Session Rotator-0.1.12-Setup.exe`. Confirm the actual artifact name from build output; do not assume it exists.
+Expected NSIS output should be in `dist/` with a name similar to `GPT Session Rotator-0.1.14-Setup.exe`. Confirm the actual artifact name from build output; do not assume it exists.
 
 Perform a clean install/launch test and, for an upgrade test, verify that application user data (including the embedded ChatGPT session and counters) is not inadvertently erased. Do not include user data or settings in the installer package.
 

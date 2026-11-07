@@ -18,7 +18,7 @@ Use SemVer intentionally:
 - Minor: backwards-compatible feature addition.
 - Major: incompatible behavior or config/API change.
 
-The next ordinary fix after 0.1.12 should normally be 0.1.13. Documentation/CI bootstrap commits that do not alter application behavior may keep the app version unchanged, but still need a development-log entry.
+The next ordinary fix after 0.1.14 should normally be 0.1.15. Documentation/CI bootstrap commits that do not alter application behavior may keep the app version unchanged, but still need a development-log entry.
 
 ## Every commit must have a ledger entry
 
