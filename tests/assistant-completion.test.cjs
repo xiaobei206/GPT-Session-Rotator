@@ -33,7 +33,7 @@ test('only a new assistant reply after the pre-submit baseline can trigger', () 
   };
   const detection = analyzeAssistantCompletionSnapshot(snapshot, '结束任务简报', { count:1, ids:['old-message'] });
   assert.deepEqual(detection, {
-    marker:'结束任务简报', messageId:'new-message', pageUrl:'https://chatgpt.com/c/new', isGenerating:false
+    marker:'结束任务简报', messageId:'new-message', pageUrl:'https://chatgpt.com/c/new', isGenerating:false, textSignature:''
   });
 });
 
@@ -134,4 +134,71 @@ test('does not treat a populated pre-submit assistant node as new when its conte
   assert.equal(analyzeAssistantCompletionSnapshot(snapshot, '本轮', {
     count:1, ids:['old-populated-message'], emptyIds:[]
   }), null);
+});
+
+
+test('assistant completion confirmation restarts when the marked reply continues changing', () => {
+  const state = createAssistantCompletionState();
+  const first = { marker:'本轮', messageId:'turn-1', pageUrl:'https://chatgpt.com/c/1', isGenerating:false, textSignature:'10:a' };
+  const changed = { ...first, textSignature:'20:b' };
+  assert.equal(observeAssistantCompletion(state, first, 1000).status, 'started');
+  assert.equal(observeAssistantCompletion(state, changed, 2500).status, 'started');
+  const stable = observeAssistantCompletion(state, changed, 4000);
+  assert.equal(stable.confirmed, true);
+  assert.equal(stable.elapsedMs, 1500);
+});
+
+test('scanner finds current app-shell assistant markdown nodes and returns structure-only diagnostics', () => {
+  assert.match(ASSISTANT_COMPLETION_SCAN_SCRIPT, /data-markdown-text-style/);
+  assert.match(ASSISTANT_COMPLETION_SCAN_SCRIPT, /data-turn-key/);
+  assert.match(ASSISTANT_COMPLETION_SCAN_SCRIPT, /data-content-search-unit-key/);
+  assert.match(ASSISTANT_COMPLETION_SCAN_SCRIPT, /data-app-action-timeline-scroll/);
+
+  const html = {
+    isConnected:true, parentElement:null, innerText:'',
+    getAttribute() { return null; },
+    getBoundingClientRect() { return { width:1400, height:900 }; }
+  };
+  let wrapper, content;
+  const root = {
+    isConnected:true, parentElement:html, innerText:'ChatGPT said: 本轮完成',
+    getAttribute() { return null; },
+    getBoundingClientRect() { return { width:1200, height:700 }; },
+    querySelectorAll(selector) {
+      return selector === '[data-markdown-text-style="assistant-message"]' ? [content] : [];
+    }
+  };
+  wrapper = {
+    isConnected:true, parentElement:root,
+    getAttribute(name) { return name === 'data-turn-key' ? 'app-shell-turn-42' : null; },
+    closest() { return this; },
+    querySelector() { return content; },
+    getBoundingClientRect() { return { width:1100, height:160 }; }
+  };
+  content = {
+    isConnected:true, parentElement:wrapper, innerText:'最终回显：本轮完成', textContent:'',
+    getAttribute() { return null; },
+    matches(selector) { return selector === '[data-markdown-text-style="assistant-message"]'; },
+    closest() { return wrapper; },
+    getBoundingClientRect() { return { width:1000, height:80 }; }
+  };
+  const documentMock = {
+    body:root, documentElement:html,
+    querySelector(selector) {
+      return selector === '[data-app-action-timeline-scroll][role="region"]' ? root : null;
+    },
+    querySelectorAll() { return []; }
+  };
+  const getComputedStyleMock = () => ({ display:'block', visibility:'visible', opacity:'1' });
+  const runScanner = new Function('document', 'location', 'getComputedStyle', 'return ' + ASSISTANT_COMPLETION_SCAN_SCRIPT + ';');
+  const snapshot = runScanner(documentMock, { href:'https://chatgpt.com/c/app-shell' }, getComputedStyleMock);
+  assert.equal(snapshot.assistantCount, 1);
+  assert.equal(snapshot.assistantMessages[0].id, 'app-shell-turn-42');
+  assert.equal(snapshot.assistantMessages[0].text, '最终回显：本轮完成');
+  assert.ok(snapshot.assistantMessages[0].textSignature);
+  assert.equal(snapshot.assistantMessages[0].source, 'assistant-markdown');
+  assert.equal(snapshot.diagnostics.selectorHits['assistant-markdown'], 1);
+  assert.equal(snapshot.diagnostics.rootSelector, 'app-timeline');
+  assert.equal(snapshot.isGenerating, false);
+  assert.equal(Object.hasOwn(snapshot.diagnostics, 'pageText'), false);
 });

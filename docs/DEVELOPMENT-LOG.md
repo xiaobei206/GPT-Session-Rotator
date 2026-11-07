@@ -169,3 +169,14 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **构建：** Windows x64 NSIS 成功，`GPT.Session.Rotator-0.1.14-Setup.exe`（102,026,649 bytes），SHA-256 `430eecd0f9c13be8fb15bad27652eaf96fea4135c34d8363a2221f7a6751e8f6`；blockmap（106,083 bytes），SHA-256 `67481615298a55b13413813d7c6c7929dd0e0e63d7945b122300e6786a697ca8`。
 - **发布：** `v0.1.14` 已正式发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.14。Release tag 指向应用修复提交 `fa449d80b13af4b6c32435b6d3a78a15a5ca2b2c`。
 - **限制：** 安装包未配置 Authenticode 签名；没有在用户真实 Windows/ChatGPT 登录态中执行端到端验证。
+
+
+## 2026-11-08 — 兼容新版 ChatGPT app-shell 助手消息 DOM（v0.1.15）
+
+- **用户反馈：** v0.1.14 运行时，助手回复中已出现结束标记但没有提前开启下一轮。用户日志只显示提交后立即进行的首次扫描读到 0 条助手节点；这不能证明后续扫描仍为 0。
+- **分析：** v0.1.14 仅查询旧版 \`[data-message-author-role="assistant"]\` 并限定在首个 \`main\` 内。新版 ChatGPT app-shell 可能使用活动时间线/transcript 根节点及 \`data-markdown-text-style="assistant-message"\`、\`data-turn-key\`、content-search key 等新标记，旧 role 选择器可能返回 0。
+- **修复：** 新扫描器优先定位 app timeline / transcript / conversation 根节点，兼容旧 role 选择器与新版 assistant markdown / content-search 节点；通过 turn key 获取稳定 ID。扫描日志附带各选择器命中数；60 秒仍无可见助手节点时输出不含正文的结构诊断。
+- **稳定性：** 每条消息额外计算内存文本签名；标记出现后若回复继续增长，稳定性确认重新开始。正文仍只用于进程内匹配，不输出、不保存、不上传。
+- **测试：** 新增 app-shell DOM 模拟扫描测试和标记出现后正文继续变化的复核测试。完整测试、语法检查及 Windows 安装包由本次 GitHub Actions 验证，运行结果待回填。
+- **构建：** 尚未验证；以 Actions 完整结论和 Release 附件为准。
+- **实机限制：** 本环境无法读取用户真实登录态页面。回归测试覆盖新版 app-shell 特征结构，但最终仍需在用户 Windows 安装后进行端到端确认。

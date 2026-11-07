@@ -1,6 +1,6 @@
 {
   "name": "gpt-session-rotator",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "A lightweight ChatGPT browser automation utility with timed, GitHub-quiet, and conversation-length and assistant-completion rotation",
   "main": "src/main.cjs",
   "scripts": {

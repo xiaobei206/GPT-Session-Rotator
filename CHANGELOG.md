@@ -1,3 +1,10 @@
+## 0.1.15 - 2026-11-08
+
+- Fixed assistant completion detection for the newer ChatGPT app-shell DOM. The scanner now supports app timeline/transcript roots, assistant markdown nodes marked with `data-markdown-text-style="assistant-message"`, and stable turn/content-search keys, while retaining legacy message-role selectors.
+- Added selector-health diagnostics that report selector hit counts, root selection, candidate counts, and visibility filtering without logging page text or assistant response content.
+- Stability confirmation now includes an in-memory text signature. If the assistant continues appending text after the marker first appears, confirmation restarts instead of rotating on a stale snapshot.
+- Added regression coverage for app-shell assistant nodes and marker-bearing replies that continue changing.
+
 ## 0.1.14 - 2026-11-08
 
 - Fixed assistant completion detection when ChatGPT creates an empty assistant message before submission and fills that same node with the current reply. The baseline now records IDs of empty placeholders, allowing those nodes to become eligible after being populated while continuing to exclude pre-existing messages that already contained text.

@@ -6,7 +6,7 @@ const { analyzeAssistantCompletionSnapshot, createAssistantCompletionState, obse
 const { fetchLatestCommit, createGithubMonitorState, observeGithubCommit, GITHUB_POLL_INTERVAL_MS, GITHUB_DEFAULT_QUIET_THRESHOLD_MS, normalizeGithubQuietThresholdMinutes } = require('./github-monitor.cjs');
 const { loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker } = require('./settings.cjs');
 
-const VERSION = '0.1.14';
+const VERSION = '0.1.15';
 const PARTITION = 'persist:gpt-session-rotator';
 const CHATGPT_HOME = 'https://chatgpt.com/';
 const HEADER_HEIGHT = 54;
@@ -213,6 +213,8 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
   let assistantProbeFailures = 0;
   let assistantMarkerStatusKey = null;
   let assistantFirstProbeLogged = false;
+  let assistantNodesDiscoveredLogged = false;
+  let assistantNoNodeDiagnosticLogged = false;
 
   const startGithubProbe = () => {
     if (githubRequestInFlight) return;
@@ -276,10 +278,24 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
       if (checkAssistantCompletion && run.assistantBaselineCaptured) {
         try {
           const snapshot = await wc.executeJavaScript(ASSISTANT_COMPLETION_SCAN_SCRIPT, true);
+          const count = Number.isInteger(snapshot?.assistantCount) ? snapshot.assistantCount : (snapshot?.assistantMessages?.length || 0);
+          const diagnostics = snapshot?.diagnostics;
+          const selectorSummary = diagnostics?.selectorHits
+            ? Object.entries(diagnostics.selectorHits).map(([name, hits]) => `${name}:${hits}`).join(', ')
+            : '不可用';
+          const rootName = diagnostics?.rootSelector || 'unknown';
           if (!assistantFirstProbeLogged) {
             assistantFirstProbeLogged = true;
-            const count = Number.isInteger(snapshot?.assistantCount) ? snapshot.assistantCount : (snapshot?.assistantMessages?.length || 0);
-            emitProgress('结束回显扫描', `页面检测器已正常读取助手消息节点 ${count} 条；正在等待本轮标记“${assistantCompletionMarker}”。回复正文只在内存中用于匹配，不会写入日志。`, 'info', run.cycle);
+            emitProgress('结束回显扫描', `页面检测器已启动；当前可见助手消息 ${count} 条，根节点=${rootName}；选择器命中：${selectorSummary}。首次扫描可能早于回复节点创建；后续仍每 1.5 秒扫描。正文只在内存中用于匹配，不会写入日志。`, 'info', run.cycle);
+          }
+          if (!assistantNodesDiscoveredLogged && count > 0) {
+            assistantNodesDiscoveredLogged = true;
+            const sources = [...new Set((snapshot.assistantMessages || []).map(message => String(message.source || '')).filter(Boolean))].join(', ') || 'unknown';
+            emitProgress('结束回显节点发现', `已发现 ${count} 条可见助手消息节点；DOM 识别路径=${sources}，根节点=${rootName}。`, 'info', run.cycle);
+          }
+          if (!assistantNoNodeDiagnosticLogged && count === 0 && Date.now() - startedAt >= 60_000) {
+            assistantNoNodeDiagnosticLogged = true;
+            emitProgress('结束回显节点诊断', `提交后已等待 60 秒，仍未发现可见助手消息节点；根节点=${rootName}，选择器命中=${selectorSummary}，原始候选=${diagnostics?.rawCandidateCount ?? 'unknown'}，可见候选=${diagnostics?.visibleCandidateCount ?? count}，可见性过滤=${diagnostics?.rejectedByVisibilityCount ?? 'unknown'}。仅记录结构计数，不含页面正文。`, 'warning', run.cycle);
           }
           const detected = analyzeAssistantCompletionSnapshot(snapshot, assistantCompletionMarker, run.assistantResponseBaseline);
           const confirmation = observeAssistantCompletion(assistantCompletionConfirmation, detected, Date.now());
@@ -886,7 +902,7 @@ ipcMain.handle('automation:start', async (_event, options) => {
   scheduler.pendingGithubRotation = null;
   scheduler.running = true;
   scheduler.nextRunAt = null;
-  emitProgress('启动运行', `0.1.14 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每90秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
+  emitProgress('启动运行', `0.1.15 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每90秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
   void primeGithubMonitorBaseline(scheduler.githubMonitorState);
   void executeCycle();
   return { ok:true };
