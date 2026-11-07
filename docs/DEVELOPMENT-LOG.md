@@ -105,3 +105,10 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **修复链路：** 修正 SemVer 正则转义；使用 `.gitattributes` 固定 Windows 工作区 LF；`dist:win` 显式 `--publish never` 避免 electron-builder 误尝试上传，交由独立 Release job 发布。
 - **限制：** 构建未配置 Authenticode 签名，使用 Electron 默认图标；未实际在用户电脑安装启动，未做真实 ChatGPT 登录态端到端验证。构建成功不能替代这些人工检查。
 - **应用版本：** 0.1.12，运行时代码未更改。
+
+
+## 2026-11-07 — 完善 README 正式版入口与用户说明
+
+- **内容：** 在 README 顶部加入 v0.1.12 正式版下载链接、Release 页面、未签名提示和接手文档入口，并恢复完整应用用户说明，涵盖轮换逻辑、隐私、自动化流程、运行/构建和 0.1.12 新增功能。
+- **应用代码/版本：** 不变，仍为 0.1.12。
+- **验证：** 复用成功的 Actions run `42388533990`：32 项测试、11 项语法检查、18 项源码清单、Windows x64 NSIS 构建和 Release 上传均通过。此提交仅改变 README，不改变已发布安装包内容。
