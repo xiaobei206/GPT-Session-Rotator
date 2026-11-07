@@ -50,3 +50,11 @@
 ## Actions 首次运行失败与修正
 
 首次运行 `42388131374` 已确认在版本校验步骤失败，原因是 workflow 中 PowerShell 正则被多转义一层；失败发生在 npm install 之前，因此该 run 没有验证测试或安装包。`windows-release.yml` 已修正 SemVer 与 SHA-256 清单解析方式，并由新的 main 提交重新触发。请只根据新 run 的 job 步骤和结论确认 Windows 安装包是否成功生成；首次失败 run 不代表应用代码测试失败。
+
+
+## Windows Actions 环境问题及修正
+
+- Run `42388131374`：因 SemVer 正则转义过度在版本元数据检查失败，未运行 npm install/tests/build。
+- Run `42388205169`：版本检查成功；因 Windows checkout 的 CRLF 转换导致 `.gitignore` 哈希不匹配，在清单步骤失败，未运行 npm install/tests/build。
+- 已加入 `.gitattributes`：`* text=auto eol=lf`，让 Windows 工作区保留清单计算所需的 LF；`SOURCE-MANIFEST.sha256` 已新增 `.gitattributes` 项，共 18 个文件。第三次 Actions 将验证修复后的完整 Windows 链路。
+- 前两次失败属于工作流校验实现问题，并非应用测试结果。

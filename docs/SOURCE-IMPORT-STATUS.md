@@ -35,3 +35,11 @@
 
 - Run `42388131374`：失败于 `Validate version metadata`，原因是 workflow PowerShell 正则转义问题；npm 安装、自动测试、语法检查与 Windows 打包均因前置步骤失败而跳过。
 - 已修正工作流，新的 main 提交将重新触发完整流程。只有新 run 成功并且 Release 资源实际存在后，才标记 Windows 构建/发布完成。
+
+
+## Windows Actions 校验问题记录
+
+- Run `42388131374`：SemVer 正则反斜杠多转义，版本校验失败。
+- Run `42388205169`：版本校验通过，但 Windows checkout 的 CRLF 转换导致 `.gitignore` SHA-256 不匹配。
+- 已修正 workflow 正则；添加 `.gitattributes` 固定 LF；更新清单为 18 个根目录相对文件。两次失败均发生在 npm install 前，未运行应用测试或 Windows 打包。
+- 第三次 Actions 的最终状态决定 Windows 打包和 Release 是否可确认完成。

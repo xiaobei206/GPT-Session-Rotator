@@ -75,3 +75,13 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **修复：** 改为无转义歧义的 SemVer 字符类表达式，并按 SHA-256 清单固定字段位置解析，避免 PowerShell/YAML 字符串转义再次影响清单校验。
 - **下一步：** 本次修正提交再次触发 Windows Actions；只有版本/清单、依赖安装、32 项测试、11 项语法检查、NSIS 构建和上传均通过后，Release job 才会创建 `v0.1.12`。
 - **本次本地应用测试：** 0.1.12 应用代码未改动；32/32 测试、11/11 语法检查及 17/17 源文件 SHA-256 已在上条记录中确认。Windows 打包仍以重跑 Actions 结果为准。
+
+
+## 2026-11-07 — 固定 Windows checkout 换行并修正源码清单校验
+
+- **根因：** 第二次 Actions `42388205169` 已通过 SemVer 检查，但 Windows runner 的 Git checkout 将仓库 LF 文本工作副本转换为 CRLF，工作区 SHA-256 与以 LF 计算的源码清单不一致。
+- **修复：** 新增 `.gitattributes`（`* text=auto eol=lf`），强制文本工作区使用 LF；将 `.gitattributes` 纳入 `SOURCE-MANIFEST.sha256`，更新为 18 个根目录相对路径项。工作流此前的 SemVer 正则也已在上个提交修正。
+- **测试：** 本地 0.1.12 应用测试仍为 32/32，11 个 JS/CJS 文件语法检查通过；18 项源码清单在 LF 工作区 `sha256sum -c` 全部通过。GitHub Windows Runner 尚待第三次执行验证。
+- **Actions 失败记录：** `42388131374` 失败于版本正则；`42388205169` 失败于 Windows CRLF 哈希差异。两次都在 npm install 前停止，未执行应用测试或安装包构建。
+- **应用版本：** 不变，仍为 0.1.12；未修改运行时代码。
+- **下一步：** 观察本次 `[release]` 提交触发的第三次 Actions，成功后确认 `v0.1.12` Release 和 EXE 附件；失败则依据真实日志继续修复。
