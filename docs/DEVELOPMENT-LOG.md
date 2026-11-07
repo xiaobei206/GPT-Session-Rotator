@@ -180,3 +180,10 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **测试：** 新增 app-shell DOM 模拟扫描测试和标记出现后正文继续变化的复核测试。完整测试、语法检查及 Windows 安装包由本次 GitHub Actions 验证，运行结果待回填。
 - **构建：** 尚未验证；以 Actions 完整结论和 Release 附件为准。
 - **实机限制：** 本环境无法读取用户真实登录态页面。回归测试覆盖新版 app-shell 特征结构，但最终仍需在用户 Windows 安装后进行端到端确认。
+
+
+## 2026-11-08 — 修正 v0.1.15 首轮 Windows 清单校验值（CI-only）
+
+- **Actions run：** `42400547124`；版本元数据校验通过，但源码清单在 `src/main.cjs` 停止，Runner 计算值为 `091a2ddb474b74f8669f3b7b08aa0abdc15b4d0f74b020a0c7e9191760e066c0`，与初次生成值不同。
+- **修复：** 将 `SOURCE-MANIFEST.sha256` 中 `src/main.cjs` 改为 Windows Runner 实际计算的 SHA-256。该 run 未进入依赖安装、自动测试、语法检查或打包。
+- **下一步：** 由本提交重新运行完整清单、测试、语法检查及 Windows 构建；如再有哈希差异，以 Runner 原始输出逐项修正。
