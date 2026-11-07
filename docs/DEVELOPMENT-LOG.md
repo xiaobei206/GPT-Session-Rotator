@@ -195,3 +195,14 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **失败原因：** 一项旧测试仍要求扫描器必须直接调用 `document.querySelector('main')` 且禁止 `document.body`，与新增的 app-shell root 优先级/最终 fallback 不符；新模拟 DOM 的文本断言则未反映 NFKC 将全角冒号归一为半角冒号的既有行为。
 - **修复：** 更新两条断言以覆盖 app timeline root 与最终 body fallback，并将测试期望文本改为规范化后的半角冒号。应用运行时代码不变。
 - **下一步：** 重新执行完整自动测试、语法检查、NSIS 构建和 Release；仅以新 run 的最终结论判断成功与否。
+
+
+## 2026-11-08 — v0.1.15 Actions 全通过并正式发布
+
+- **最终 Actions run：** \`42400753265\`，workflow conclusion \`success\`；\`Test and build Windows installer\` 与 \`Publish GitHub Release\` 两个 Job 均成功。
+- **版本/清单：** 版本元数据检查成功；18 项根目录相对 SHA-256 清单全部通过。
+- **自动测试：** \`npm test\` 为 38 passed / 0 failed；11 个 JS/CJS 文件的 \`node --check\` 全部通过。
+- **构建：** Windows x64 NSIS 安装包构建与工件上传成功。
+- **发布：** GitHub Release \`v0.1.15\` 已作为正式版创建（非 Draft、非 Pre-release）：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.15。
+- **安装包：** \`GPT.Session.Rotator-0.1.15-Setup.exe\`，102,028,250 bytes，SHA-256 \`b5e8ba76ae6a2e68399be50a784a3cac69dad9b06a9e061f5777120677be28d4\`；blockmap 106,067 bytes，SHA-256 \`4554b5936156b959a84088dc6d2161878f30677ed910714682da228bd876ae9f\`。
+- **限制：** 安装包未配置 Authenticode 签名；没有在用户真实 Windows/ChatGPT 登录态中端到端测试。因此本次只能确认 CI 和安装包成功，不能宣称用户现场的提前轮换已实测成功。

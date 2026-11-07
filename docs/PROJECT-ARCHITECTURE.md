@@ -84,3 +84,8 @@ The earliest valid trigger should end the current wait and enter the existing ne
 - Do not log full assistant response text. Minimal marker, reason, cycle and elapsed-time metadata are enough.
 - This app is not a general browser agent; avoid unrelated scraping or hidden telemetry.
 - Unit tests validate decision logic. They do not guarantee ChatGPT's selectors will remain unchanged; live UI verification remains a separate release check.
+
+
+## ChatGPT assistant app-shell scanner — v0.1.15
+
+The completion detector first selects an active app timeline/transcript/conversation root and supports both the legacy assistant-role attribute and the current app-shell assistant markdown marker \`data-markdown-text-style="assistant-message"\`. It uses stable turn/content-search keys as message IDs. The browser-side snapshot reports only selector hit counts, selected root, candidate/visibility counts and generation-state flags; page or reply text is never written to logs. A short-lived in-memory text signature is part of completion stability confirmation, so any continued response growth restarts the confirmation window.

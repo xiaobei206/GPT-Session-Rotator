@@ -4,9 +4,11 @@
 
 ## 已确认
 
-- 当前源码版本及最近正式安装包：`0.1.14`；`VERSION`、`package.json`、界面显示和启动日志同步。
-- 应用修复提交：`fa449d80b13af4b6c32435b6d3a78a15a5ca2b2c`；当前 `main` 还包含后续交接文档更新。
-- Actions run `42397308234` 最终成功：36/36 测试通过、11 个 JS/CJS 文件语法检查通过、18 项源码 SHA-256 清单通过、Windows x64 NSIS 构建成功、Release job 成功。
+- 当前源码版本及最近正式安装包：`0.1.15`；`VERSION`、`package.json`、界面显示和启动日志同步。
+- v0.1.15 app-shell 兼容修复提交：`37c4d728f335a194162f341c56a82ab95e110cc4`；清单修正提交 `5628c96932cb063fe83a078ce7caf5d4aac320c9`；测试断言修正提交 `dc7184d204ef4233e904fcbfb960cba657788a63`。
+- Actions run `42400753265` 最终成功：38/38 测试通过、11 个 JS/CJS 文件语法检查通过、18 项源码 SHA-256 清单通过、Windows x64 NSIS 构建、工件上传和 Release job 全部成功。
+- 正式 Release `v0.1.15`：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.15。
+- 安装包 `GPT.Session.Rotator-0.1.15-Setup.exe`：102,028,250 bytes；SHA-256 `b5e8ba76ae6a2e68399be50a784a3cac69dad9b06a9e061f5777120677be28d4`。Blockmap：106,067 bytes；SHA-256 `4554b5936156b959a84088dc6d2161878f30677ed910714682da228bd876ae9f`。
 - 用户已在 Windows 本地完成源码导入并成功推送。终端确认源码导入提交为 `fc22749d8f35f2ff9464605cbbb73df1098a64a3`，推送目标为 `origin/main`。
 - 远程文件树中存在 `src/`、`tests/`、`package.json`、`VERSION`、`CHANGELOG.md`、`.gitignore` 和 `SOURCE-MANIFEST.sha256`。
 - 源码包预期 SHA-256：`c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`。
@@ -30,10 +32,10 @@
 
 ## 下一步
 
-1. 用户准备验证时，从当前远程 `main` 检出版本运行 `npm test` 和 JavaScript 语法检查，记录真实计数和错误原文。
-2. 在 Windows 环境运行 `npm install` 和 `npm run dist:win`，只在成功后记录安装包构建通过。
-3. 人工检查完成标记、新旧回复隔离、屏幕外长度警告、警告消失后的计时重置、GitHub API 失败时的手动计时兜底。
-4. 任何源代码改动均按版本规约同步修改版本文件、变更日志、测试和开发日志；文档单独变更可保持应用版本不变。
+1. 用户在 Windows 上安装 v0.1.15，使用当前结束标记（如 `本轮`）实际跑一轮，确认新回复节点能被识别，回复生成结束且签名稳定后触发下一轮。关注 `结束回显扫描` 的 selector hit 计数、`结束回显节点发现` 和 `任务结束回显`。如果 60 秒仍无助手节点，查看 `结束回显节点诊断` 的 root/selector/visibility 计数；无需提供或保存回复正文。
+2. 后续 GPT 接手时再从当前远程 `main` 拉取源码并复核测试和状态，不要依赖这里的旧 SHA。
+3. 人工检查新旧回复隔离、回复继续增长时不提前触发、屏幕外长度警告、警告消失后的计时重置、GitHub API 失败时的手动计时兜底。
+4. 如再改源码，按版本规约同步修改版本文件、变更日志、测试和开发日志；文档单独变更可保持应用版本不变。
 
 后续 GPT 必须先检查最新远程状态，不要假设本文提到的源码导入提交仍是最新 HEAD。
 

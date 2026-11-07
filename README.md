@@ -1,10 +1,10 @@
 # GPT Session Rotator
 
-**正式版 v0.1.14 已发布。**
+**正式版 v0.1.15 已发布。**
 
-**Windows x64 安装包：** [下载 GPT Session Rotator 0.1.14](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.1.14/GPT.Session.Rotator-0.1.14-Setup.exe)
+**Windows x64 安装包：** [下载 GPT Session Rotator 0.1.15](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.1.15/GPT.Session.Rotator-0.1.15-Setup.exe)
 
-**[GitHub Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.14)**
+**[GitHub Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.15)**
 
 > 安装包由 GitHub Actions 在 Windows Runner 上构建并通过 Release 发布。当前 EXE 未配置 Authenticode 代码签名；请在 Windows 设备上完成安装和启动验证。
 
@@ -21,9 +21,15 @@
 
 ---
 
-# GPT Session Rotator 0.1.14 — User Guide
+# GPT Session Rotator 0.1.15 — User Guide
 
 A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT conversation, optionally selects Think, pastes a fixed prompt, submits it, and starts the next cycle when the configured wait expires or an early-rotation condition is met.
+
+## v0.1.15 助手结束回显修复
+
+- 兼容新版 ChatGPT app-shell：除了旧版助手 role 属性，也扫描活动时间线/transcript 中的 `data-markdown-text-style="assistant-message"` 节点，并通过 `data-turn-key` 等属性识别回合。
+- 启动日志现在列出根节点和各选择器命中计数；运行满 60 秒仍未发现助手节点时输出结构诊断，便于区分选择器未命中与可见性过滤，不记录回复正文。
+- 命中标记后比较内存文本签名；如果助手仍在继续补充文字，稳定确认会重新计时，等回复真正停稳后才提前轮换。
 
 ## Rotation rules
 
