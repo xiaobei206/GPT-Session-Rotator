@@ -6,7 +6,7 @@ const { analyzeAssistantCompletionSnapshot, createAssistantCompletionState, obse
 const { fetchLatestCommit, createGithubMonitorState, observeGithubCommit, GITHUB_POLL_INTERVAL_MS, GITHUB_DEFAULT_QUIET_THRESHOLD_MS, normalizeGithubQuietThresholdMinutes } = require('./github-monitor.cjs');
 const { loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker } = require('./settings.cjs');
 
-const VERSION = '0.1.12';
+const VERSION = '0.1.13';
 const PARTITION = 'persist:gpt-session-rotator';
 const CHATGPT_HOME = 'https://chatgpt.com/';
 const HEADER_HEIGHT = 54;
@@ -208,6 +208,7 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
   const assistantCompletionConfirmation = createAssistantCompletionState();
   let conversationLimitPendingLogged = false;
   let assistantProbeFailures = 0;
+  let assistantMarkerStatusKey = null;
 
   const startGithubProbe = () => {
     if (githubRequestInFlight) return;
@@ -273,10 +274,23 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
           const snapshot = await wc.executeJavaScript(ASSISTANT_COMPLETION_SCAN_SCRIPT, true);
           const detected = analyzeAssistantCompletionSnapshot(snapshot, assistantCompletionMarker, run.assistantResponseBaseline);
           const confirmation = observeAssistantCompletion(assistantCompletionConfirmation, detected, Date.now());
-          if (confirmation.confirmed) {
-            const evidence = { marker:detected.marker, messageId:detected.messageId, confirmedDurationMs:confirmation.elapsedMs, elapsedMs:Date.now() - startedAt };
-            emitProgress('任务结束回显', `本轮助手回复已出现结束标记“${detected.marker}”，且确认生成结束；不再等待剩余时间，立即开启下一轮。`, 'success', run.cycle, { earlyRotation:true, trigger:'assistant-completion-marker', detection:evidence });
-            return { reason:'assistant-completion-marker', evidence };
+
+          if (detected) {
+            const fingerprint = `${detected.messageId}|${detected.marker}`;
+            if (confirmation.status === 'generating' && assistantMarkerStatusKey !== `generating:${fingerprint}`) {
+              emitProgress('结束回显已识别', `已在本轮新增助手回复中找到标记“${detected.marker}”，但 ChatGPT 仍处于生成状态；等待生成结束后再轮换。`, 'info', run.cycle);
+              assistantMarkerStatusKey = `generating:${fingerprint}`;
+            } else if (confirmation.status === 'started' && assistantMarkerStatusKey !== `confirming:${fingerprint}`) {
+              emitProgress('结束回显待确认', `已找到本轮标记“${detected.marker}”，生成状态已结束；正在进行稳定性复核。`, 'info', run.cycle);
+              assistantMarkerStatusKey = `confirming:${fingerprint}`;
+            }
+            if (confirmation.confirmed) {
+              const evidence = { marker:detected.marker, messageId:detected.messageId, confirmedDurationMs:confirmation.elapsedMs, elapsedMs:Date.now() - startedAt };
+              emitProgress('任务结束回显', `本轮助手回复已出现结束标记“${detected.marker}”，且确认生成结束；不再等待剩余时间，立即开启下一轮。`, 'success', run.cycle, { earlyRotation:true, trigger:'assistant-completion-marker', detection:evidence });
+              return { reason:'assistant-completion-marker', evidence };
+            }
+          } else {
+            assistantMarkerStatusKey = null;
           }
         } catch (error) {
           observeAssistantCompletion(assistantCompletionConfirmation, null);
@@ -863,7 +877,7 @@ ipcMain.handle('automation:start', async (_event, options) => {
   scheduler.pendingGithubRotation = null;
   scheduler.running = true;
   scheduler.nextRunAt = null;
-  emitProgress('启动运行', `0.1.12 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每90秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
+  emitProgress('启动运行', `0.1.13 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每90秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
   void primeGithubMonitorBaseline(scheduler.githubMonitorState);
   void executeCycle();
   return { ok:true };

@@ -4,7 +4,7 @@
 
 ## 已确认
 
-- 应用版本：`0.1.12`；`VERSION` 与 `package.json` 均在仓库内。
+- 当前应用版本：`0.1.13`；`VERSION`、`package.json`、界面显示和启动日志同步。v0.1.12 为上一个正式版。
 - 用户已在 Windows 本地完成源码导入并成功推送。终端确认源码导入提交为 `fc22749d8f35f2ff9464605cbbb73df1098a64a3`，推送目标为 `origin/main`。
 - 远程文件树中存在 `src/`、`tests/`、`package.json`、`VERSION`、`CHANGELOG.md`、`.gitignore` 和 `SOURCE-MANIFEST.sha256`。
 - 源码包预期 SHA-256：`c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`。
@@ -73,3 +73,10 @@
 - 安装包：`GPT.Session.Rotator-0.1.12-Setup.exe`，大小 102,026,111 bytes，SHA-256 `2be1d305aa44f9de4447aa2699ce4af57ff66ae631efb99526d6c015a3e67a69`；另有 `GPT.Session.Rotator-0.1.12-Setup.exe.blockmap`（106,117 bytes）。
 - 安装包未配置 Authenticode 代码签名；构建日志提示使用 Electron 默认图标。需要在实际 Windows PC 安装并启动确认；真实 ChatGPT 登录态 UI、代理、新旧回复隔离和滚动区警告仍需要人工端到端测试。
 - 0.1.12 应用行为版本未改变。本轮修改仅包括源码清单/换行、Windows 构建命令和 Actions 发布链路。
+
+
+## v0.1.13 — 修复助手自定义结束标记漏检
+
+用户报告将标记设为 `本轮完成` 后，助手回复出现标记却不触发轮换。根因是 `analyzeAssistantCompletionSnapshot` 只检查本轮新增助手 DOM 节点中的最后一条；ChatGPT 若在带标记的回复后插入空白/辅助助手节点，之前的标记就被忽略。
+
+修复后会从新消息列表末尾向前查找命中标记的助手回复，仍按提交前 baseline 排除旧消息；命中时若仍在生成，日志明确提示正在等待；生成停止后提示稳定性复核。新增回归测试包括精确的 `本轮完成` 场景及旧消息隔离。版本升至 0.1.13。待 Actions 完成测试、Windows 打包和正式 Release。

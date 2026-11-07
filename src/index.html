@@ -2,11 +2,11 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GPT Session Rotator 0.1.12</title><link rel="stylesheet" href="style.css">
+<title>GPT Session Rotator 0.1.13</title><link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <div class="brand"><div class="logo">G</div><div><h1>GPT Session Rotator <span>0.1.12</span></h1><p>固定节奏轮换 · GitHub 静默提前轮换 · 对话满载提前轮换</p></div></div>
+  <div class="brand"><div class="logo">G</div><div><h1>GPT Session Rotator <span>0.1.13</span></h1><p>固定节奏轮换 · GitHub 静默提前轮换 · 对话满载提前轮换</p></div></div>
   <div class="status"><span id="statusDot" class="dot"></span><span id="statusText">待机中</span><span class="sep">|</span><span id="sessionCount">本次 0 轮 · 累计 0 轮</span></div>
 </header>
 <main class="dashboard">
@@ -41,7 +41,7 @@
     </div>
     <div class="completion-row">
       <label>助手结束回显 <input id="assistantCompletionMarker" type="text" maxlength="100" value="结束任务简报" aria-label="助手结束回显标记"></label>
-      <span class="hint">本轮新回复出现此标记且生成完成即轮换；留空关闭</span>
+      <span class="hint">本轮新回复出现此标记即识别；生成结束并稳定确认后轮换；留空关闭</span>
     </div>
     <label class="prompt-label" for="prompt">固定提示词 <span>每轮在已确认的新对话中粘贴并提交</span></label>
     <textarea id="prompt" placeholder="把完整提示词粘贴到这里……"></textarea>

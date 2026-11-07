@@ -94,3 +94,23 @@ test('browser scanner only reads assistant message nodes inside main and detects
   assert.match(ASSISTANT_COMPLETION_SCAN_SCRIPT, /document\.querySelector\('main'\)/);
   assert.doesNotMatch(ASSISTANT_COMPLETION_SCAN_SCRIPT, /document\.body/);
 });
+
+test('finds the custom completion marker when ChatGPT appends a trailing empty assistant node', () => {
+  const snapshot = { url:'https://chatgpt.com/c/current', isGenerating:false, assistantMessages:[
+    { id:'old-message', index:0, text:'上一轮本轮完成' },
+    { id:'new-marker-message', index:1, text:'本轮完成' },
+    { id:'new-trailing-node', index:2, text:'' }
+  ] };
+  const detection = analyzeAssistantCompletionSnapshot(snapshot, '本轮完成', { count:1, ids:['old-message'] });
+  assert.equal(detection?.marker, '本轮完成');
+  assert.equal(detection?.messageId, 'new-marker-message');
+  assert.equal(detection?.isGenerating, false);
+});
+
+test('does not match an old marker when the latest new assistant reply has no marker', () => {
+  const snapshot = { url:'https://chatgpt.com/c/current', isGenerating:false, assistantMessages:[
+    { id:'old-marker-message', index:0, text:'本轮完成' },
+    { id:'new-message', index:1, text:'其他回复内容' }
+  ] };
+  assert.equal(analyzeAssistantCompletionSnapshot(snapshot, '本轮完成', { count:1, ids:['old-marker-message'] }), null);
+});

@@ -1,3 +1,9 @@
+## 0.1.13 - 2026-11-08
+
+- Fixed custom assistant completion markers being missed when ChatGPT appends an empty or auxiliary assistant DOM node after the reply containing the marker. The detector now searches all newly-added assistant messages from newest to oldest while continuing to exclude every message in the pre-submit baseline.
+- Added runtime progress events when the configured marker is found while ChatGPT is still generating, and when generation has stopped and the detector is performing stability confirmation. This makes the reason for waiting observable without logging or persisting assistant reply text.
+- Added regression coverage for the exact custom marker `本轮完成`, including a trailing empty assistant node, and for ignoring marker text in old replies.
+
 # Changelog
 
 ## 0.1.12 - 2026-11-07

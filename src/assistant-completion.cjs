@@ -38,14 +38,18 @@ function analyzeAssistantCompletionSnapshot(snapshot, marker, baseline = null) {
     return true;
   });
 
-  const latest = eligible.at(-1);
-  if (!latest) return null;
-  const text = normalizeAssistantText(latest.text);
-  if (!text.includes(normalizedMarker)) return null;
+  // ChatGPT can append a trailing empty/status assistant node after the
+  // assistant message containing the completion marker. Search all new
+  // assistant messages from newest to oldest; the pre-submit baseline still
+  // excludes old replies.
+  const latestMatching = [...eligible].reverse().find(message =>
+    normalizeAssistantText(message.text).includes(normalizedMarker)
+  );
+  if (!latestMatching) return null;
 
   return {
     marker:normalizedMarker,
-    messageId:String(latest.id || `assistant-${latest.index ?? 'latest'}`),
+    messageId:String(latestMatching.id || `assistant-${latestMatching.index ?? 'latest'}`),
     pageUrl:String(snapshot?.url || ''),
     isGenerating:snapshot?.isGenerating === true
   };

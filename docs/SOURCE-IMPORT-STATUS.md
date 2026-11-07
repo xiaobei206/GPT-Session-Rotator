@@ -61,3 +61,11 @@
 - EXE：`GPT.Session.Rotator-0.1.12-Setup.exe`，102,026,111 bytes，SHA-256 `2be1d305aa44f9de4447aa2699ce4af57ff66ae631efb99526d6c015a3e67a69`。
 - `.blockmap`：`GPT.Session.Rotator-0.1.12-Setup.exe.blockmap`，106,117 bytes。
 - 代码签名：未配置，EXE 未签名。真实设备安装启动与 ChatGPT UI 端到端验证仍待用户机器完成。
+
+
+## v0.1.13 验证与发布
+
+- 修复助手结束标记漏检：搜索本轮新增助手消息中所有候选，而非只看最后一个 DOM 节点。
+- 新增日志显示标记匹配、仍在生成、稳定性复核阶段；不记录助手回复正文。
+- 回归测试覆盖 `本轮完成`、标记后跟随空助手节点、旧回复隔离。
+- 版本：0.1.13。等待 GitHub Actions Windows 测试/NSIS 构建和 Release `v0.1.13` 完成后补充实际结果。
