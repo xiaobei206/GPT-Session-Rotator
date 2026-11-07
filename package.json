@@ -1,0 +1,34 @@
+{
+  "name": "gpt-session-rotator",
+  "version": "0.1.12",
+  "description": "A lightweight ChatGPT browser automation utility with timed, GitHub-quiet, and conversation-length and assistant-completion rotation",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis --x64",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "local.gptsessionrotator",
+    "productName": "GPT Session Rotator",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "artifactName": "${productName}-${version}-Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

@@ -31,3 +31,17 @@ This is the chronological, engineering-facing record. Keep old entries intact. E
 - **Tests:** no application tests were run against the Git checkout because application source files are not yet present. Earlier authoring-environment evidence for the local archive: 32 unit tests passed and JavaScript syntax checks passed. Treat this as historical evidence, not remote-checkout verification.
 - **Windows package:** not built or verified.
 - **Limitations/next action:** upload/import the exact source archive or the extracted source tree, verify archive SHA-256 `c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`, then run `node --check` on all source files and `npm test`; build `npm run dist:win` only on a suitable Windows environment. Never mark this project source-complete before that happens.
+
+## 2026-11-07 — import verified 0.1.12 application source
+
+- **App version:** 0.1.12; source import only, no application behavior change.
+- **Source integrity:** ZIP SHA-256 verified as $ExpectedHash.
+- **Files:** imported src/, 	ests/, package.json, VERSION, .gitignore, and CHANGELOG.md; merged app README with repository navigation; regenerated root-relative source manifest.
+- **Syntax checks:** 11 JavaScript/CJS files passed using 
+ode --check.
+- **Automated tests:** 
+pm.cmd test exited 0; total=未解析, pass=未解析, fail=未解析.
+- **Windows package:** not built in this operation.
+- **Manual verification:** live ChatGPT UI not verified; completion-marker and red length-warning behavior still require manual validation.
+- **Next action:** inspect CI results, build 
+pm.cmd run dist:win on Windows, and manually test the documented triggers.

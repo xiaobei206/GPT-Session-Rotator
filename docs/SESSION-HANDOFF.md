@@ -1,6 +1,4 @@
-> **CURRENT REPOSITORY STATUS — 2026-11-07:** The handoff/documentation scaffold is on `main`, but the application source files have **not yet been imported into this Git tree**. Do not tell the user the full project has been submitted. The verified local deliverable is `GPT-Session-Rotator-0.1.12-source.zip`, SHA-256 `c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`. It contains 32 historical unit tests that passed in the authoring environment; the Windows NSIS installer and live ChatGPT UI were not tested. Next priority: get the exact archive/source tree into this repository, verify the hash and file manifest, then run syntax checks and `npm test` from the actual Git checkout. Do not create a fake lockfile or claim a successful Windows build.
-
-# Session Handoff — Current State
+# Session Handoff 鈥?Current State
 
 Updated: 2026-11-07
 
@@ -17,18 +15,18 @@ Updated: 2026-11-07
 
 ## Latest user-reported issue and 0.1.12 intent
 
-The user noticed that after a new prompt, GPT may return an explicit “结束任务简报” end-of-task summary or a red conversation-length warning, but the app continued waiting the entire manual interval. Root causes identified in the source discussion:
+The user noticed that after a new prompt, GPT may return an explicit 鈥滅粨鏉熶换鍔＄畝鎶モ€?end-of-task summary or a red conversation-length warning, but the app continued waiting the entire manual interval. Root causes identified in the source discussion:
 
 1. The old visibility filter excluded DOM nodes whose rectangles were outside the current viewport, even if the rendered warning existed lower in the main scroll region.
 2. The prior warning detector emphasized red border/background and could miss red text without a frame.
 3. Rotation should be keyed off the new assistant reply's explicit completion marker, not the model's general response timing.
 
-0.1.12 adds a configurable assistant marker (default `结束任务简报`), limits the check to assistant replies added after the current submission baseline, requires the generation-stop control to be gone and a stable subsequent poll, and scans red warning evidence throughout the rendered main conversation DOM. Length-limit evidence must remain stable for five seconds.
+0.1.12 adds a configurable assistant marker (default `缁撴潫浠诲姟绠€鎶), limits the check to assistant replies added after the current submission baseline, requires the generation-stop control to be gone and a stable subsequent poll, and scans red warning evidence throughout the rendered main conversation DOM. Length-limit evidence must remain stable for five seconds.
 
 ## Current product rules
 
 - GitHub target: `xiaobei206/padavan-4.4-2`, branch `main`.
-- GitHub poll: every 90 seconds; quiet threshold default 15 minutes, UI range 1–180 whole minutes; stored in user-data `settings.json`; live updates apply during a run.
+- GitHub poll: every 90 seconds; quiet threshold default 15 minutes, UI range 1鈥?80 whole minutes; stored in user-data `settings.json`; live updates apply during a run.
 - Startup SHA is baseline, not a trigger. GitHub server `Date` is required for age calculations. Failures do not trigger and must not pause manual timing.
 - Assistant marker is configurable while running; empty disables it. Only new assistant messages after submit count; never scan the user's prompt as a completion event.
 - Conversation-length warnings: main content only; Chinese/Traditional Chinese/English; red text/frame/background evidence; five-second continuous confirmation; not affected by scroll position.
@@ -48,3 +46,16 @@ The user noticed that after a new prompt, GPT may return an explicit “结束�
 - Automated tests validate the extracted decision/scanner logic with synthetic snapshots; they are not a real Electron/ChatGPT end-to-end test.
 - ChatGPT's DOM can change and selectors may require adjustment. Preserve strict main-area scoping and the no-full-response-logging rule.
 - Packaging, auto-update, signing, and installation/upgrade behavior are not proven by the baseline test suite.
+
+## Source import update — 2026-11-07
+
+The verified 0.1.12 source archive has been imported into the repository.
+
+- Archive SHA-256: $ExpectedHash
+- JavaScript syntax: 11 files passed.
+- 
+pm.cmd test: exit=0; total=未解析; pass=未解析; fail=未解析.
+- Windows installer build: not run.
+- Live ChatGPT UI verification: still required.
+
+Next: verify the diff and pushed commit, inspect GitHub Actions, then perform the documented Windows packaging and manual UI checks.

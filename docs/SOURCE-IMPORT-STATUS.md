@@ -2,25 +2,26 @@
 
 Updated: 2026-11-07
 
-## Truthful state
+## Verified source import
 
-The repository was initially empty. These commits establish a durable engineering handoff and commit/documentation policy. They do **not** yet contain the full application source tree.
+- App version: 0.1.12
+- Source ZIP SHA-256: $ExpectedHash
+- App files: src/ and 	ests/ imported from the hash-verified archive.
+- JavaScript syntax checks: 11 files passed.
+- Automated tests: total=未解析, pass=未解析, fail=未解析; 
+pm.cmd test exited successfully.
+- Windows NSIS installer: not built in this import operation.
+- Live ChatGPT UI end-to-end verification: not completed in this import operation.
+- package-lock.json: not supplied by the source archive; none was fabricated.
 
-- Latest local source archive: `GPT-Session-Rotator-0.1.12-source.zip`
-- SHA-256: `c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`
-- Historical local test evidence: 32 tests passed before the repository source import.
-- `package-lock.json`: absent from the local archive; do not fabricate one.
-- Windows NSIS installer: not built.
-- Live ChatGPT UI: not end-to-end verified.
+## Remaining validation
 
-## Completion checklist
+- [ ] Run 
+pm.cmd install and 
+pm.cmd run dist:win on Windows when preparing the installer.
+- [ ] Manually verify assistant completion-marker behavior in a real ChatGPT session.
+- [ ] Manually verify red conversation-length warnings outside the current viewport.
+- [ ] Verify GitHub quiet-threshold behavior and manual wait fallback.
+- [ ] Inspect GitHub Actions results after the push.
 
-- [ ] Import the exact archive or extracted source tree to the Git repository.
-- [ ] Verify the archive hash and source file manifest from the checked-out branch.
-- [ ] Run JavaScript syntax checks and `npm test` from the actual checkout.
-- [ ] Inspect `git diff --check` and the complete changed-file list.
-- [ ] Build `npm run dist:win` on Windows and record exact output.
-- [ ] Manually validate the end-of-task marker, off-screen red length warning, GitHub quiet threshold, and manual-timer fallback in a real ChatGPT session.
-- [ ] Append results to `docs/DEVELOPMENT-LOG.md` in the same commit that completes import.
-
-Do not remove this blocker or claim source-complete until the relevant checks actually pass.
+Do not claim Windows packaging or live UI testing passed until those checks actually pass.
