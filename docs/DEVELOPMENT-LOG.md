@@ -20,3 +20,14 @@ This is the chronological, engineering-facing record. Keep old entries intact. E
 - **Tests:** no app tests run for this docs-only commit because the remote checkout does not yet contain app source. The extracted local 0.1.12 source baseline independently passed 32 tests before repository import.
 - **Windows package:** not run.
 - **Limitations / next action:** this commit alone is a handoff/doc scaffold, not a usable application checkout. The following commit imports the source, release metadata, file manifest, issue template, and CI workflow, then records the actual source-import test results.
+
+
+## 2026-11-07 — source import status verified
+
+- **App version:** documentation-only; application baseline remains 0.1.12.
+- **Intent/effect:** make the Git handoff explicitly honest about the remaining source-import blocker, so a future GPT does not start development against an empty application tree or assume the docs-only commits contain the app.
+- **Root cause:** the target repository was initially empty. The handoff scaffold was committed, but the verified 0.1.12 source archive has not yet been safely materialized as files on `main`. Attempts to stage raw archive chunks were not completed into a verified repository tree.
+- **Files:** prepend the current-status blocker to `START-HERE-NEXT-GPT.rd` and `docs/SESSION-HANDOFF.md`; add root `README.md` and `docs/SOURCE-IMPORT-STATUS.md`; append this ledger entry.
+- **Tests:** no application tests were run against the Git checkout because application source files are not yet present. Earlier authoring-environment evidence for the local archive: 32 unit tests passed and JavaScript syntax checks passed. Treat this as historical evidence, not remote-checkout verification.
+- **Windows package:** not built or verified.
+- **Limitations/next action:** upload/import the exact source archive or the extracted source tree, verify archive SHA-256 `c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`, then run `node --check` on all source files and `npm test`; build `npm run dist:win` only on a suitable Windows environment. Never mark this project source-complete before that happens.

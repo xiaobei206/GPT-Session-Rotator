@@ -1,3 +1,5 @@
+> **CURRENT REPOSITORY STATUS — 2026-11-07:** The handoff/documentation scaffold is on `main`, but the application source files have **not yet been imported into this Git tree**. Do not tell the user the full project has been submitted. The verified local deliverable is `GPT-Session-Rotator-0.1.12-source.zip`, SHA-256 `c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`. It contains 32 historical unit tests that passed in the authoring environment; the Windows NSIS installer and live ChatGPT UI were not tested. Next priority: get the exact archive/source tree into this repository, verify the hash and file manifest, then run syntax checks and `npm test` from the actual Git checkout. Do not create a fake lockfile or claim a successful Windows build.
+
 # GPT Session Rotator — Next GPT Mandatory Handoff Prompt
 
 > **Read this file first on every new conversation. Do not start coding until you have inspected the current GitHub repository state.**
