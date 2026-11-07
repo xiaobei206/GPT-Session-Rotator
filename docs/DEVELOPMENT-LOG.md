@@ -129,3 +129,13 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **Actions run：** `42392659844` 在源码清单步骤停止，原因是新增 `CHANGELOG.md` 版本说明后未同步替换清单哈希；应用安装、单元测试和 Windows 打包均未运行。
 - **修复：** 重新计算 `CHANGELOG.md` 的 SHA-256 并更新 `SOURCE-MANIFEST.sha256`，其余 17 个清单条目保持本轮代码批次的正确哈希。
 - **下一步：** 由本提交重新触发 Windows Actions，完成测试、语法检查、NSIS 构建和 v0.1.13 Release。
+
+
+## 2026-11-08 — Actions 验证并正式发布 v0.1.13
+
+- **Actions run：** `42392748703` 最终 `success`，Windows 构建和 GitHub Release 两个 Job 均成功。
+- **测试：** `npm test`：34 passed / 0 failed；11 个 JS/CJS 文件 `node --check` 通过；18 项根目录相对 SHA-256 清单全部通过。
+- **构建：** `npm run dist:win` 成功，Windows x64 NSIS 输出 `GPT.Session.Rotator-0.1.13-Setup.exe`（102,026,276 bytes），SHA-256 `3cd3ad715a0f5fd6a11f71bd024f2de13baf3b46a3a710ae50ec8ed78af36587`；blockmap（106,082 bytes），SHA-256 `4eade552c8b22325a7b8f444cb52beab300641ae29e0c643fb2615c07253cefe`。
+- **Release：** `v0.1.13` 已正式发布，EXE 与 blockmap 均已上传：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.13 。Release tag 指向源码修复提交 `3dc2806e66118ba14d74d8dde49db544500785ca`。
+- **功能修复：** 新增测试确认 `本轮完成` 在新助手消息里，即使随后有空助手节点也能识别；历史消息仍不得触发。运行日志显示“已识别但仍生成”及“生成结束待稳定复核”阶段，不记录回复正文。
+- **限制：** 未配置 Authenticode 代码签名；实际设备安装启动与 ChatGPT 登录态端到端行为尚待用户机器人工验证。

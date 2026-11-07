@@ -69,3 +69,13 @@
 - 新增日志显示标记匹配、仍在生成、稳定性复核阶段；不记录助手回复正文。
 - 回归测试覆盖 `本轮完成`、标记后跟随空助手节点、旧回复隔离。
 - 版本：0.1.13。等待 GitHub Actions Windows 测试/NSIS 构建和 Release `v0.1.13` 完成后补充实际结果。
+
+
+## v0.1.13 发布完成
+
+- Actions run `42392748703`：最终 `success`。
+- Windows Test/Build job：成功；npm install 成功；34/34 测试通过；11/11 语法检查通过；18 项 SHA-256 清单通过；Windows x64 NSIS 构建与 artifact 上传成功。
+- GitHub Release：`v0.1.13` 已正式发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.13
+- EXE：102,026,276 bytes；SHA-256 `3cd3ad715a0f5fd6a11f71bd024f2de13baf3b46a3a710ae50ec8ed78af36587`。
+- blockmap：106,082 bytes；SHA-256 `4eade552c8b22325a7b8f444cb52beab300641ae29e0c643fb2615c07253cefe`。
+- EXE 未做 Authenticode 签名；实际设备安装/启动与 ChatGPT UI 端到端验证仍待人工完成。

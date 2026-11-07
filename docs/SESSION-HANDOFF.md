@@ -79,4 +79,13 @@
 
 用户报告将标记设为 `本轮完成` 后，助手回复出现标记却不触发轮换。根因是 `analyzeAssistantCompletionSnapshot` 只检查本轮新增助手 DOM 节点中的最后一条；ChatGPT 若在带标记的回复后插入空白/辅助助手节点，之前的标记就被忽略。
 
-修复后会从新消息列表末尾向前查找命中标记的助手回复，仍按提交前 baseline 排除旧消息；命中时若仍在生成，日志明确提示正在等待；生成停止后提示稳定性复核。新增回归测试包括精确的 `本轮完成` 场景及旧消息隔离。版本升至 0.1.13。待 Actions 完成测试、Windows 打包和正式 Release。
+修复后会从新消息列表末尾向前查找命中标记的助手回复，仍按提交前 baseline 排除旧消息；命中时若仍在生成，日志明确提示正在等待；生成停止后提示稳定性复核。新增回归测试包括精确的 `本轮完成` 场景及旧消息隔离。版本升至 0.1.13。已由 GitHub Actions run `42392748703` 验证 34/34 测试、11/11 语法检查、18 项 SHA-256 清单、Windows x64 NSIS 构建与正式 Release 全部成功。
+
+
+## v0.1.13 Release 最终结果
+
+- Release：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.13
+- Actions run `42392748703`：`Test and build Windows installer` 与 `Publish GitHub Release` 两个 Job 均成功。
+- `npm test`：34 passed / 0 failed；11 个 JS/CJS 文件 `node --check` 通过；18 项源码 SHA-256 清单通过。
+- Windows NSIS：`GPT.Session.Rotator-0.1.13-Setup.exe`，102,026,276 bytes，SHA-256 `3cd3ad715a0f5fd6a11f71bd024f2de13baf3b46a3a710ae50ec8ed78af36587`；blockmap 106,082 bytes，SHA-256 `4eade552c8b22325a7b8f444cb52beab300641ae29e0c643fb2615c07253cefe`。
+- 未配置 Authenticode 签名，使用 Electron 默认图标；需要用户在实际 Windows PC 安装和启动。真实 ChatGPT UI 的完整验证仍需人工确认。
