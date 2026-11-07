@@ -122,3 +122,10 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **回归测试：** 新增 `本轮完成` + 后续空助手节点测试，以及旧回复标记不得误触发测试。实际 Actions 结果待运行后回填。
 - **版本：** `package.json`、`VERSION`、HTML 标题/界面版本、主进程版本及启动日志升至 0.1.13。
 - **构建：** 本次提交触发 Windows Actions；只在 run 成功和 Release 附件上传后确认正式发布完成。
+
+
+## 2026-11-08 — 补齐 v0.1.13 的 CHANGELOG SHA-256
+
+- **Actions run：** `42392659844` 在源码清单步骤停止，原因是新增 `CHANGELOG.md` 版本说明后未同步替换清单哈希；应用安装、单元测试和 Windows 打包均未运行。
+- **修复：** 重新计算 `CHANGELOG.md` 的 SHA-256 并更新 `SOURCE-MANIFEST.sha256`，其余 17 个清单条目保持本轮代码批次的正确哈希。
+- **下一步：** 由本提交重新触发 Windows Actions，完成测试、语法检查、NSIS 构建和 v0.1.13 Release。
