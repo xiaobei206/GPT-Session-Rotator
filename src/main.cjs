@@ -6,7 +6,7 @@ const { analyzeAssistantCompletionSnapshot, createAssistantCompletionState, obse
 const { fetchLatestCommit, createGithubMonitorState, observeGithubCommit, GITHUB_POLL_INTERVAL_MS, GITHUB_DEFAULT_QUIET_THRESHOLD_MS, normalizeGithubQuietThresholdMinutes } = require('./github-monitor.cjs');
 const { loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker } = require('./settings.cjs');
 
-const VERSION = '0.1.13';
+const VERSION = '0.1.14';
 const PARTITION = 'persist:gpt-session-rotator';
 const CHATGPT_HOME = 'https://chatgpt.com/';
 const HEADER_HEIGHT = 54;
@@ -182,12 +182,15 @@ async function primeGithubMonitorBaseline(monitorState) {
 async function captureAssistantResponseBaseline(wc, run) {
   try {
     const snapshot = await wc.executeJavaScript(ASSISTANT_COMPLETION_SCAN_SCRIPT, true);
+    const baselineMessages = Array.isArray(snapshot?.assistantMessages) ? snapshot.assistantMessages : [];
     run.assistantResponseBaseline = {
       count:Number.isInteger(snapshot?.assistantCount) ? snapshot.assistantCount : 0,
-      ids:Array.isArray(snapshot?.assistantMessages) ? snapshot.assistantMessages.map(message => String(message.id || '')).filter(Boolean) : []
+      ids:baselineMessages.map(message => String(message.id || '')).filter(Boolean),
+      // Retain only empty message IDs, never historical assistant response text.
+      emptyIds:baselineMessages.filter(message => !String(message.text || '').trim()).map(message => String(message.id || '')).filter(Boolean)
     };
     run.assistantBaselineCaptured = true;
-    emitProgress('回显监测基线', `已记录本轮提交前的助手回复基线（${run.assistantResponseBaseline.count} 条）；只匹配本轮新回复中的结束标记。`, 'info', run.cycle);
+    emitProgress('回显监测基线', `已记录本轮提交前的助手回复基线（${run.assistantResponseBaseline.count} 条，其中 ${run.assistantResponseBaseline.emptyIds.length} 个空占位节点）；空节点后续被本轮回复填充时也会识别，已有内容的旧消息仍被排除。`, 'info', run.cycle);
   } catch (error) {
     run.assistantBaselineCaptured = false;
     run.assistantResponseBaseline = null;
@@ -209,6 +212,7 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
   let conversationLimitPendingLogged = false;
   let assistantProbeFailures = 0;
   let assistantMarkerStatusKey = null;
+  let assistantFirstProbeLogged = false;
 
   const startGithubProbe = () => {
     if (githubRequestInFlight) return;
@@ -272,6 +276,11 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
       if (checkAssistantCompletion && run.assistantBaselineCaptured) {
         try {
           const snapshot = await wc.executeJavaScript(ASSISTANT_COMPLETION_SCAN_SCRIPT, true);
+          if (!assistantFirstProbeLogged) {
+            assistantFirstProbeLogged = true;
+            const count = Number.isInteger(snapshot?.assistantCount) ? snapshot.assistantCount : (snapshot?.assistantMessages?.length || 0);
+            emitProgress('结束回显扫描', `页面检测器已正常读取助手消息节点 ${count} 条；正在等待本轮标记“${assistantCompletionMarker}”。回复正文只在内存中用于匹配，不会写入日志。`, 'info', run.cycle);
+          }
           const detected = analyzeAssistantCompletionSnapshot(snapshot, assistantCompletionMarker, run.assistantResponseBaseline);
           const confirmation = observeAssistantCompletion(assistantCompletionConfirmation, detected, Date.now());
 
@@ -877,7 +886,7 @@ ipcMain.handle('automation:start', async (_event, options) => {
   scheduler.pendingGithubRotation = null;
   scheduler.running = true;
   scheduler.nextRunAt = null;
-  emitProgress('启动运行', `0.1.13 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每90秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
+  emitProgress('启动运行', `0.1.14 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每90秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
   void primeGithubMonitorBaseline(scheduler.githubMonitorState);
   void executeCycle();
   return { ok:true };

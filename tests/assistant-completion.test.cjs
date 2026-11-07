@@ -114,3 +114,24 @@ test('does not match an old marker when the latest new assistant reply has no ma
   ] };
   assert.equal(analyzeAssistantCompletionSnapshot(snapshot, '本轮完成', { count:1, ids:['old-marker-message'] }), null);
 });
+
+
+test('detects the current reply when ChatGPT fills an assistant placeholder that existed before submit', () => {
+  const snapshot = { url:'https://chatgpt.com/c/current', isGenerating:false, assistantMessages:[
+    { id:'assistant-placeholder', index:0, text:'最终状态：本轮' }
+  ] };
+  const detection = analyzeAssistantCompletionSnapshot(snapshot, '本轮', {
+    count:1, ids:['assistant-placeholder'], emptyIds:['assistant-placeholder']
+  });
+  assert.equal(detection?.marker, '本轮');
+  assert.equal(detection?.messageId, 'assistant-placeholder');
+});
+
+test('does not treat a populated pre-submit assistant node as new when its content later changes', () => {
+  const snapshot = { url:'https://chatgpt.com/c/current', isGenerating:false, assistantMessages:[
+    { id:'old-populated-message', index:0, text:'历史内容更新后提到了本轮' }
+  ] };
+  assert.equal(analyzeAssistantCompletionSnapshot(snapshot, '本轮', {
+    count:1, ids:['old-populated-message'], emptyIds:[]
+  }), null);
+});

@@ -30,10 +30,18 @@ function analyzeAssistantCompletionSnapshot(snapshot, marker, baseline = null) {
   const messages = Array.isArray(snapshot?.assistantMessages) ? snapshot.assistantMessages : [];
   const baselineCount = Number.isInteger(baseline?.count) && baseline.count >= 0 ? baseline.count : null;
   const baselineIds = new Set(Array.isArray(baseline?.ids) ? baseline.ids.map(String) : []);
+  const baselineEmptyIds = new Set(Array.isArray(baseline?.emptyIds) ? baseline.emptyIds.map(String) : []);
   const hasStableBaselineIds = baselineIds.size > 0;
   const eligible = messages.filter(message => {
     if (!message || typeof message.text !== 'string') return false;
-    if (hasStableBaselineIds) return !baselineIds.has(String(message.id || ''));
+    if (hasStableBaselineIds) {
+      const id = String(message.id || '');
+      // ChatGPT may create an empty assistant placeholder before submit and
+      // populate that same DOM node while streaming the new response. Accept
+      // only placeholders that were provably empty at baseline; populated old
+      // assistant messages remain excluded.
+      return !baselineIds.has(id) || baselineEmptyIds.has(id);
+    }
     if (baselineCount !== null && Number.isInteger(message.index) && message.index < baselineCount) return false;
     return true;
   });

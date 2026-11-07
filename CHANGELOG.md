@@ -1,3 +1,9 @@
+## 0.1.14 - 2026-11-08
+
+- Fixed assistant completion detection when ChatGPT creates an empty assistant message before submission and fills that same node with the current reply. The baseline now records IDs of empty placeholders, allowing those nodes to become eligible after being populated while continuing to exclude pre-existing messages that already contained text.
+- Added a first-scan progress event that reports whether the assistant DOM scanner is active and the number of assistant message nodes found, without logging reply content.
+- Added regression tests for reused empty placeholders and continued exclusion of populated historical messages.
+
 ## 0.1.13 - 2026-11-08
 
 - Fixed custom assistant completion markers being missed when ChatGPT appends an empty or auxiliary assistant DOM node after the reply containing the marker. The detector now searches all newly-added assistant messages from newest to oldest while continuing to exclude every message in the pre-submit baseline.
