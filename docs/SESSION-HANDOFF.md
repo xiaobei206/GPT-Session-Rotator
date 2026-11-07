@@ -1,61 +1,36 @@
-# Session Handoff 鈥?Current State
+# 当前会话交接状态
 
-Updated: 2026-11-07
+更新日期：2026-11-07
 
-## Confirmed baseline
+## 已确认
 
-- Application version: **0.1.12** (`VERSION`, `package.json`, UI version display).
-- Runtime: Electron main process in `src/main.cjs`; renderer UI under `src/`.
-- Local source archive SHA-256: `c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`.
-- Local baseline command: `node --test tests/*.test.cjs`.
-- Observed result: **32 tests passed, 0 failed** on 2026-11-07.
-- Windows NSIS packaging: **not verified** in the authoring environment; `electron-builder`/Electron install was unavailable.
-- `package-lock.json`: absent. Don't use `npm ci` until a lockfile is deliberately created and checked in.
-- Live ChatGPT UI selectors have not yet been confirmed end-to-end for every current page layout.
+- 应用版本：`0.1.12`；`VERSION` 与 `package.json` 均在仓库内。
+- 用户已在 Windows 本地完成源码导入并成功推送。终端确认源码导入提交为 `fc22749d8f35f2ff9464605cbbb73df1098a64a3`，推送目标为 `origin/main`。
+- 远程文件树中存在 `src/`、`tests/`、`package.json`、`VERSION`、`CHANGELOG.md`、`.gitignore` 和 `SOURCE-MANIFEST.sha256`。
+- 源码包预期 SHA-256：`c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`。
+- 当前源码没有 `package-lock.json`。没有锁文件前，不要使用 `npm ci`，也不要凭空生成或伪造锁文件。
 
-## Latest user-reported issue and 0.1.12 intent
+## 验证状态：不要虚报
 
-The user noticed that after a new prompt, GPT may return an explicit 鈥滅粨鏉熶换鍔＄畝鎶モ€?end-of-task summary or a red conversation-length warning, but the app continued waiting the entire manual interval. Root causes identified in the source discussion:
+- 本次收尾仅修订交接文档，没有重新运行 `node --check`、`npm test` 或 `npm run dist:win`。
+- 先前导入脚本留下了 `$ExpectedHash` 字面量和 `total/pass/fail=未解析` 等占位内容。旧记录中的这些字段不是可核验的测试统计，不能作为当前远程源码已通过测试的证据。
+- 早期源代码包在导入前曾有 32 项测试通过的历史记录；这不等于在当前 Git 检出版本上重新运行并通过。
+- Windows NSIS 安装包尚未在本次导入流程中确认构建成功。
+- 真实登录状态下的 ChatGPT 页面端到端行为仍待人工验证。
 
-1. The old visibility filter excluded DOM nodes whose rectangles were outside the current viewport, even if the rendered warning existed lower in the main scroll region.
-2. The prior warning detector emphasized red border/background and could miss red text without a frame.
-3. Rotation should be keyed off the new assistant reply's explicit completion marker, not the model's general response timing.
+## 0.1.12 需要保持的功能
 
-0.1.12 adds a configurable assistant marker (default `缁撴潫浠诲姟绠€鎶), limits the check to assistant replies added after the current submission baseline, requires the generation-stop control to be gone and a stable subsequent poll, and scans red warning evidence throughout the rendered main conversation DOM. Length-limit evidence must remain stable for five seconds.
+- GitHub 目标为 `xiaobei206/padavan-4.4-2` 的 `main`，轮询间隔 90 秒，默认静默阈值 15 分钟，设置范围 1–180 分钟；启动时 SHA 仅作基线，GitHub 时间使用响应 `Date` 头。探测失败不应触发轮换或暂停手动等待。
+- 助手完成标记默认为 `结束任务简报`。只允许检查本轮提交提示词后新增的助手回复；生成结束并稳定确认后才触发下一轮；空标记禁用此触发。
+- 对话长度提示只检查 ChatGPT 主对话区，支持中/繁/英文和红字、红框或红背景证据，持续 5 秒确认；不应被滚动位置排除。
+- 手动等待始终是兜底最大等待；预设有 40 分钟、没有 60 分钟。
+- 不存储助手完整回复，不恢复网络正文捕获或诊断 ZIP 功能。
 
-## Current product rules
+## 下一步
 
-- GitHub target: `xiaobei206/padavan-4.4-2`, branch `main`.
-- GitHub poll: every 90 seconds; quiet threshold default 15 minutes, UI range 1鈥?80 whole minutes; stored in user-data `settings.json`; live updates apply during a run.
-- Startup SHA is baseline, not a trigger. GitHub server `Date` is required for age calculations. Failures do not trigger and must not pause manual timing.
-- Assistant marker is configurable while running; empty disables it. Only new assistant messages after submit count; never scan the user's prompt as a completion event.
-- Conversation-length warnings: main content only; Chinese/Traditional Chinese/English; red text/frame/background evidence; five-second continuous confirmation; not affected by scroll position.
-- Manual interval is always the maximum-wait fallback. Presets include 40 and exclude 60 minutes.
-- Lightweight privacy: do not save or log full assistant reply bodies or network response bodies. Do not restore CDP/network-body diagnostic capture.
+1. 用户准备验证时，从当前远程 `main` 检出版本运行 `npm test` 和 JavaScript 语法检查，记录真实计数和错误原文。
+2. 在 Windows 环境运行 `npm install` 和 `npm run dist:win`，只在成功后记录安装包构建通过。
+3. 人工检查完成标记、新旧回复隔离、屏幕外长度警告、警告消失后的计时重置、GitHub API 失败时的手动计时兜底。
+4. 任何源代码改动均按版本规约同步修改版本文件、变更日志、测试和开发日志；文档单独变更可保持应用版本不变。
 
-## Best next actions
-
-1. Fetch and inspect current GitHub `main`, `git status`, and recent history before modifying code.
-2. Run the test suite on the actual checked-out commit and inspect CI results.
-3. On Windows, install dependencies and build `dist:win`; capture actual terminal result (do not mark passed based on source checks alone).
-4. Manually validate a real ChatGPT run: (a) a response containing the exact configured completion marker, (b) a marker appearing only in the user prompt or old reply, (c) a red length warning below the scroll position, (d) warning disappearance/reset, and (e) GitHub API failure while the manual timer still proceeds.
-5. Only make a new application release after evidence of a defect or a clear user request. If needed, next ordinary patch is 0.1.13 and must update all version metadata plus logs/tests.
-
-## Known limitations
-
-- Automated tests validate the extracted decision/scanner logic with synthetic snapshots; they are not a real Electron/ChatGPT end-to-end test.
-- ChatGPT's DOM can change and selectors may require adjustment. Preserve strict main-area scoping and the no-full-response-logging rule.
-- Packaging, auto-update, signing, and installation/upgrade behavior are not proven by the baseline test suite.
-
-## Source import update — 2026-11-07
-
-The verified 0.1.12 source archive has been imported into the repository.
-
-- Archive SHA-256: $ExpectedHash
-- JavaScript syntax: 11 files passed.
-- 
-pm.cmd test: exit=0; total=未解析; pass=未解析; fail=未解析.
-- Windows installer build: not run.
-- Live ChatGPT UI verification: still required.
-
-Next: verify the diff and pushed commit, inspect GitHub Actions, then perform the documented Windows packaging and manual UI checks.
+后续 GPT 必须先检查最新远程状态，不要假设本文提到的源码导入提交仍是最新 HEAD。

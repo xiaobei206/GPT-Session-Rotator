@@ -1,82 +1,64 @@
-> **源码导入已完成：0.1.12。** 源码 ZIP SHA-256 已核验，应用源码及测试已导入。
-> 本次语法检查通过 11 个文件；自动测试结果：total=未解析, pass=未解析, fail=未解析。
-> Windows 安装包尚未在本次脚本中构建；真实 ChatGPT 页面端到端检查仍需人工验证。见 docs/SESSION-HANDOFF.md。
-# GPT Session Rotator 鈥?Next GPT Mandatory Handoff Prompt
+# GPT Session Rotator — 下一轮 GPT 必读交接指令
 
-> **Read this file first on every new conversation. Do not start coding until you have inspected the current GitHub repository state.**
-> Repository: https://github.com/xiaobei206/GPT-Session-Rotator
-> Default branch: `main`
-> Current published source baseline: **0.1.12** (2026-11-07)
+> 更新日期：2026-11-07
+> 仓库：https://github.com/xiaobei206/GPT-Session-Rotator
+> 默认分支：`main`
+> 应用版本：`0.1.12`
 
-## Instructions to the next GPT
+## 当前状态先看这里
 
-You are taking over an ongoing Windows Electron application project. The user expects you to continue development directly from the real repository, not reconstruct the project from chat memory. Treat the checked-in code and documents as the source of truth; this prompt only points you to them.
+- 应用源码和 `tests/` 已由用户导入并推送到 `main`。源码导入提交：`fc22749d8f35f2ff9464605cbbb73df1098a64a3`。
+- 当前交接文档用于修正导入后遗留的状态记录。先前脚本曾留下字面量 `$ExpectedHash` 和无法解析的测试计数；不要把这些占位符当成验证结果。
+- 本次文档收尾没有重新运行源码检查、自动测试或 Windows 打包。因此，当前远程代码的测试状态仍须后续实际确认；不得声称安装包或 ChatGPT 实机验证已通过。
+- 源码归档的预期 SHA-256：`c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`。
 
-### Required first-pass inspection (do this in order)
+## 每次接手必须做的事
 
-1. Read this entire file.
-2. Read `README.md`, `VERSION`, `package.json`, and the latest entries in `CHANGELOG.md`.
-3. Read `docs/SESSION-HANDOFF.md`, `docs/PROJECT-ARCHITECTURE.md`, `docs/DEVELOPMENT-RULES.md`, `docs/TESTING-AND-RELEASE.md`, and the newest entry in `docs/DEVELOPMENT-LOG.md`.
-4. Inspect `git status`, current branch, latest commit, and recent history. Fetch remote `main` before editing. Never assume local files or a prior assistant's claimed SHA are current.
-5. Inspect relevant implementation and tests before changing behavior. The current test suite is `node --test` / `npm test` and needs no third-party packages.
-6. Run the tests before editing to establish a baseline, then run tests and syntax checks again after editing.
-7. Check open GitHub issues/PRs and the most recent commits if the connected tools make them available. Do not invent repository state if an endpoint is unavailable.
+1. 先读完本文件，再读 `README.md`、`VERSION`、`package.json`、`CHANGELOG.md`。
+2. 阅读 `docs/SESSION-HANDOFF.md`、`docs/PROJECT-ARCHITECTURE.md`、`docs/DEVELOPMENT-RULES.md`、`docs/TESTING-AND-RELEASE.md`、`docs/SOURCE-IMPORT-STATUS.md` 和最新的 `docs/DEVELOPMENT-LOG.md`。
+3. `git fetch origin`，检查 `git status --short --branch`、`git log -8 --oneline --decorate` 和远程 `main`。以当前 Git 内容为准，不依赖旧对话中记忆的 SHA。
+4. 在修改代码前，从当前检出目录运行 `npm test`，并执行各 JavaScript/CJS 文件的 `node --check`。如环境、依赖或命令导致无法执行，记录原始错误，不要猜测结果。
+5. 修改后重新跑相关测试与语法检查，检查 `git diff --check`、`git diff` 和 `git status`。打包需在合适的 Windows 环境实际执行 `npm run dist:win`。
+6. 查阅当前 CI/Actions 状态（若存在），不得只凭提交成功就称测试或 CI 通过。
+7. 开发、测试、发布规则和交接状态须与相应代码一起更新；推送后确认远程 `main` 和关键文件。
 
-If you cannot access the repository or do not have write permission, report that blocker precisely. Do not claim that a change has been committed, tested, or built until a tool confirms it.
+## 项目目标与必须保留的行为
 
-## Mission and user expectations
+- Windows Electron 应用：在嵌入式 ChatGPT 页面中循环开启新对话、可选 Think、粘贴固定提示词并提交；手动等待时间始终是最大等待时间和兜底。
+- GitHub 提前轮换监控 `xiaobei206/padavan-4.4-2` 的 `main`：每 90 秒轮询，默认静默阈值 15 分钟，可设置为 1–180 的整数分钟。启动时已存在的 SHA 只建立基线，不得立即触发。年龄以 GitHub 响应的 `Date` 头计算。请求失败不得触发提前轮换，也不得暂停手动计时。
+- 助手完成标记默认是 `结束任务简报`，可在运行中修改；留空则禁用。仅检查当前提交提示词之后新增的助手回复，不能把用户提示词或旧回复当作命中。命中后还须确认生成已停止，并在后续轮询中保持稳定。
+- 对话长度警告仅在 ChatGPT 主对话内容区内识别，支持简体中文、繁体中文和英文；红色文字、红色边框或红色背景可作为证据。即使警告在当前滚动视口之外，也必须能够识别；同一警告须连续确认 5 秒。
+- 手动等待预设包含 40 分钟、不包含 60 分钟；保留自定义分钟数输入。
+- 发生任何提前轮换后，都进入既有的新一轮流程；GitHub 或页面探测失败不能产生莫名暂停。
 
-Keep GPT Session Rotator a lightweight, reliable automation utility. Preserve the existing working flow and UI unless the user explicitly approves a change. Prefer small, testable changes over architectural rewrites. The user prefers direct work and concrete artifacts, but honesty about tests and build limitations is mandatory.
+## 隐私边界
 
-### Product behavior to preserve
+- 助手回复文本仅允许在内存中用于完成标记匹配，不得保存或写入日志。
+- 不得重新加入 CDP 网络捕获、页面正文存档、API 请求/响应正文、SSE/WebSocket 负载记录、诊断会话目录或诊断 ZIP 导出。
+- 不提交 cookies、浏览器个人资料、Token、密码、本地 `settings.json`、`node_modules/`、`dist/` 或含提示词/回复正文的日志。
 
-- Windows Electron app with an embedded ChatGPT browser, optional proxy settings, a fixed prompt, optional Think selection, automatic new-conversation cycling, and a user-configurable manual maximum wait.
-- Existing automation sequence and retry behavior in `src/main.cjs` must be preserved unless a demonstrated bug requires a minimal targeted fix.
-- GitHub early rotation watches `main` of `xiaobei206/padavan-4.4-2`. Poll every **90 seconds**; quiet threshold defaults to **15 minutes** and is configurable from **1鈥?80 whole minutes**. Setting is stored in the app's user-data `settings.json` and changes apply during an active run. A commit that already existed when automation started is only a baseline and must not trigger rotation. GitHub timing uses the response `Date` header; failures must not trigger or pause the normal manual timer.
-- Conversation-length detection checks only the rendered ChatGPT main conversation area, not sidebar/navigation/out-of-main portals. Support Chinese/Traditional Chinese/English variants and red text or red frame/background evidence. A matching warning must stay continuously detected for **5 seconds**, regardless of where in the main area's scroll content it appears.
-- Assistant-completion detection defaults to the marker `缁撴潫浠诲姟绠€鎶. It may inspect only the **new assistant reply added after the current cycle's submission baseline**. It must not match user prompt text or an old assistant message. A marker match may rotate only after generation has ended and stability confirmation succeeds. The marker is user-configurable while running; an empty value disables this trigger.
-- Any confirmed early-rotation condition enters the existing next-cycle flow. The configured manual maximum wait remains a fallback. Page/GitHub detection failures must not create an unexplained pause.
-- Lightweight privacy is intentional: inspect the assistant text in memory for marker matching only; do not persist or log assistant response bodies. Do not restore CDP network capture, page-body capture, API request/response-body capture, SSE/WebSocket payload recording, diagnostic-session directories, or diagnostic ZIP export.
-- Manual wait presets include 40 minutes and do **not** include a 60-minute preset. Existing custom minutes entry remains.
+## 版本与提交约束
 
-## Non-negotiable development rules
+- 每次正式应用行为变更都要同步更新 `package.json`、`VERSION`、`src/index.html` 的版本显示、`CHANGELOG.md` 和 `docs/DEVELOPMENT-LOG.md`。0.1.12 之后的常规修复版本通常应为 `0.1.13`。
+- 每个代码或开发流程变更提交，必须在同一提交中更新 `docs/DEVELOPMENT-LOG.md`；说明原因、文件、实际测试结果、打包状态、限制和后续事项。
+- 不删除失败测试来让结果变绿；不伪造测试/打包结果；不创建虚假的 `package-lock.json`；不强推，不重写已发布历史，不盲目 `git add .`。
+- 文档中如有脚本占位符、未解析的统计或未经核实的断言，必须明确标注或修复，不能让下一轮 GPT 将其当成事实。
 
-1. **Version every formal application change.** Increment `package.json`, `VERSION`, UI version display, and release/changelog metadata consistently. Do not ship `FIX`, `FIX1`, or a changed executable under an unchanged version. For a normal bug-fix release after 0.1.12, use `0.1.13`; choose another SemVer increment only when justified and documented.
-2. **Every code-changing Git commit must update `docs/DEVELOPMENT-LOG.md` in the same commit.** Include date, version, scope, root cause/problem, changed files/modules, tests actually run/results, build state, limitations, and next action. Use commit messages from `docs/DEVELOPMENT-RULES.md`.
-3. Keep `CHANGELOG.md` user-facing and `docs/DEVELOPMENT-LOG.md` engineering-facing; update both for app releases. Keep `docs/SESSION-HANDOFF.md` current after material changes.
-4. Add focused regression tests for bug fixes. Never remove a failing test just to make CI green. If a behavior cannot be covered by a pure unit test (real ChatGPT UI, Electron session, proxy, Windows packaging), clearly label it as requiring manual verification.
-5. Run `npm test` and JavaScript syntax checks before committing. Build the Windows installer on a suitable Windows environment or clearly state that it was not built. Do not describe unit tests as an end-to-end test.
-6. Inspect `git diff` and `git status` before committing. Do not force-push, rewrite published history, or silently overwrite unrelated changes. Never use `git add .` blindly if generated or user files are present.
-7. Do not commit credentials, cookies, profiles, local `settings.json`, node_modules, build output, logs containing prompts or assistant reply text, test secrets, or diagnostic captures.
-8. Keep documentation and test files in the same commit as the implementation. Do not claim GitHub Actions passed until its run is actually read and its conclusion is successful.
-9. If an implementation detail is unclear, inspect the actual code and tests. Do not guess from old conversation summaries or infer that a prior assistant's claimed artifact/commit exists.
-10. After each successful push, read the remote `main` head and confirm the changed key files are present. Provide the commit SHA, tests, packaging status, and any manual test still needed.
+## 关键文件
 
-## Repository map
+- `src/main.cjs`：Electron 主进程、自动化循环、计时、IPC 与轮换触发器整合。
+- `src/preload.cjs`：受限 IPC 桥接。
+- `src/renderer.js`、`src/index.html`、`src/style.css`：设置、控制和界面。
+- `src/github-monitor.cjs`：GitHub SHA 基线、提交静默时间和阈值。
+- `src/assistant-completion.cjs`：新增助手回复与完成标记判断。
+- `src/conversation-limit.cjs`：主对话区域的长度警告识别及五秒确认。
+- `src/settings.cjs`：设置验证与持久化。
+- `tests/*.test.cjs`：Node 内置测试运行器测试。
+- `docs/DEVELOPMENT-LOG.md`：按时间顺序记录开发历史。
+- `docs/SESSION-HANDOFF.md`：当前状态、风险和下一步。
 
-- `src/main.cjs`: Electron main process, application lifecycle, automation cycle, wait scheduling, GitHub/assistant/length trigger integration, IPC handlers.
-- `src/preload.cjs`: constrained IPC bridge from renderer.
-- `src/renderer.js`, `src/index.html`, `src/style.css`: user interface and settings.
-- `src/github-monitor.cjs`: GitHub SHA baseline/quiet-threshold logic.
-- `src/assistant-completion.cjs`: assistant reply marker recognition and browser-side scanner.
-- `src/conversation-limit.cjs`: Chinese/English conversation-limit recognition, main-area scan, 5-second confirmation.
-- `src/settings.cjs`: validation and persistence of user settings.
-- `tests/*.test.cjs`: built-in Node test suite.
-- `CHANGELOG.md`: user-facing behavior changes by release.
-- `docs/DEVELOPMENT-LOG.md`: chronological engineering ledger; append every code-changing commit.
-- `docs/SESSION-HANDOFF.md`: current state, known gaps, next recommended tasks.
-- `docs/PROJECT-ARCHITECTURE.mdd: component boundaries and flow.
-- `docs/TESTING-AND-RELEASE.md`: verification and Windows packaging checklist.
+## 给下一轮 GPT 的首要任务
 
-## Current baseline at handoff
+先基于实际远程 `main` 检查状态。在用户准备好进行验证后，运行 `npm test` 和 JavaScript 语法检查，记录准确的测试总数与通过/失败数；随后再决定是否构建 Windows 安装包，以及安排真实 ChatGPT 页面验证。不要因为源码已经推送就推断这些验证已完成。
 
-- Version: `0.1.12`.
-- Core automated tests: 32 passing in the initial source baseline (`node --test tests/*.test.cjs`). Re-run them from the current checkout; this number is historical until confirmed on the current commit.
-- Windows NSIS installer: not verified by the source-baseline authoring environment because Electron/electron-builder dependencies were not installed there. Do not mark packaging as passed without a real build.
-- `package-lock.json` is absent in the baseline. Evaluate and generate it only with a functioning npm/network environment; if added, commit it and update the ledger. Until then, CI should not use `npm ci`.
-- This repository's first import may contain setup/handoff documentation commits before the source-import commit. Always inspect `git log` to understand actual history.
-- Real logged-in ChatGPT UI behavior has not been confirmed end-to-end for every selector/layout. Unit tests cover intended decision logic, not live ChatGPT Markup.
-
-## Required response after taking over
-
-Once repository inspection is complete, begin with a concise status based on actual evidence: current branch/HEAD, version, tests run, build status, and next concrete task. Then continue the user's requested work. Do not repeat questions already answered in repository documents. Keep the handoff documents updated as development proceeds.
+每次接手后先简洁汇报实际确认的分支/提交、版本、测试状态、打包状态和下一项具体工作，然后继续推进，不要重复询问文档中已有答案。

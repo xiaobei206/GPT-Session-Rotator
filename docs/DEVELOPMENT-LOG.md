@@ -45,3 +45,13 @@ pm.cmd test exited 0; total=未解析, pass=未解析, fail=未解析.
 - **Manual verification:** live ChatGPT UI not verified; completion-marker and red length-warning behavior still require manual validation.
 - **Next action:** inspect CI results, build 
 pm.cmd run dist:win on Windows, and manually test the documented triggers.
+
+## 2026-11-07 — 修正源码导入后的交接记录
+
+- **应用版本：** 文档维护，不改变 0.1.12 应用代码。
+- **背景：** 用户已在 Windows 本地成功提交并推送源码导入提交 `fc22749d8f35f2ff9464605cbbb73df1098a64a3` 至 `origin/main`。远程文件树已包含 `src/` 和 `tests/`。
+- **本次修正：** 更新 `START-HERE-NEXT-GPT.rd`、`docs/SESSION-HANDOFF.md` 和 `docs/SOURCE-IMPORT-STATUS.md`，明确源码已导入，并区分“文件已推送”和“测试/打包已验证”。
+- **更正旧记录：** 先前导入脚本写入的字面量 `$ExpectedHash` 和 `total/pass/fail=未解析` 是占位或无法解析的字段，不得当作测试结果。历史源包测试记录不能替代当前远程检出的实测结果。
+- **测试：** 本次仅更新文档，没有重新运行 `npm test`、`node --check` 或任何应用运行测试。当前远程检出版本的测试数值仍待实际执行。
+- **Windows 安装包：** 本次未构建或验证。
+- **下一步：** 用户准备进行验证后，从当前远程 `main` 运行测试与语法检查，再按需构建 Windows 安装包和进行 ChatGPT 实机验证。
