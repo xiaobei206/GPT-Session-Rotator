@@ -12,9 +12,9 @@
 
 ## 验证状态：不要虚报
 
-- 本次收尾仅修订交接文档，没有重新运行 `node --check`、`npm test` 或 `npm run dist:win`。
+- 当前远程源码已通过本地复核：与导入提交逐文件核对 17/17 匹配；Node.js v22.16.0 的 `npm test` 为 32 passed / 0 failed；`node --check` 为 11 个文件全部通过。
 - 先前导入脚本留下了 `$ExpectedHash` 字面量和 `total/pass/fail=未解析` 等占位内容。旧记录中的这些字段不是可核验的测试统计，不能作为当前远程源码已通过测试的证据。
-- 早期源代码包在导入前曾有 32 项测试通过的历史记录；这不等于在当前 Git 检出版本上重新运行并通过。
+- 本轮测试针对与 GitHub 导入提交逐文件核对一致的 0.1.12 源码目录重新执行，32 项全部通过。
 - Windows NSIS 安装包尚未在本次导入流程中确认构建成功。
 - 真实登录状态下的 ChatGPT 页面端到端行为仍待人工验证。
 
@@ -34,3 +34,14 @@
 4. 任何源代码改动均按版本规约同步修改版本文件、变更日志、测试和开发日志；文档单独变更可保持应用版本不变。
 
 后续 GPT 必须先检查最新远程状态，不要假设本文提到的源码导入提交仍是最新 HEAD。
+
+## 本轮验证与 Actions 发布流程 — 2026-11-07
+
+- 本地验证环境：Node.js v22.16.0、npm 10.9.2。
+- 自动测试：`npm test`，32 项通过、0 失败。
+- 语法检查：`node --check` 覆盖 11 个 `.js` / `.cjs` 文件，全部通过。
+- 源码一致性：17 个应用源文件/元数据的 Git blob 与导入源包逐文件核对一致。
+- 源码清单：修正为仓库根目录相对路径，17 项 SHA-256 全部通过。清单涵盖 `.gitignore`、`CHANGELOG.md`、`VERSION`、`package.json`、`src/` 和 `tests/`；仓库合并导航后的 `README.md` 不纳入应用源文件清单。
+- 新增 `.github/workflows/windows-release.yml`：Windows Runner 自动核验版本与清单、安装依赖、运行测试与语法检查、构建 NSIS，并上传 EXE 构建产物。仅在提交信息包含 `[release]` 时自动发布正式 GitHub Release；也可通过 `workflow_dispatch` 手动运行，默认只验证不发布。
+- 当前没有已发布 Release 或 Git Tag；本次发布流程使用 `v0.1.12`。是否成功必须以 Actions run 和 Release 页面实际结果为准。
+- Windows 安装包和 ChatGPT 实机验证：尚未确认成功。

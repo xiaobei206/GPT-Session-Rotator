@@ -55,3 +55,15 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **测试：** 本次仅更新文档，没有重新运行 `npm test`、`node --check` 或任何应用运行测试。当前远程检出版本的测试数值仍待实际执行。
 - **Windows 安装包：** 本次未构建或验证。
 - **下一步：** 用户准备进行验证后，从当前远程 `main` 运行测试与语法检查，再按需构建 Windows 安装包和进行 ChatGPT 实机验证。
+
+
+## 2026-11-07 — 验证 0.1.12 并接入 Windows Actions Release
+
+- **应用版本：** 0.1.12；本次未修改应用运行时代码。
+- **验证对象：** 已由用户推送的源码导入提交。17 个应用源文件/元数据的 Git blob 与本地归档逐项一致。
+- **测试：** Node.js v22.16.0 / npm 10.9.2；`npm test`：32 passed、0 failed；`node --check`：11 个 JS/CJS 文件全部通过。
+- **修复：** 将 `SOURCE-MANIFEST.sha256` 的归档目录前缀改为仓库根目录相对路径；对 17 项重新计算 SHA-256 并全部验证通过。
+- **Actions：** 新增 `.github/workflows/windows-release.yml`，在 Windows Runner 验证版本与源码清单、安装 npm 依赖、运行测试与语法检查、构建 x64 NSIS，并上传安装程序工件。带 `[release]` 的 main 提交在构建成功后发布 `v0.1.12` Release；手动工作流默认不发布。
+- **Windows 构建：** 本地环境未执行 Windows NSIS 构建；等待本次 Actions 实际结果，不能预先标记通过。
+- **实机验证：** ChatGPT 页面选择器、结束标记、滚动区长度警告及代理行为仍须人工验证。
+- **下一步：** 查看由本提交触发的 Actions run；若失败，按日志修复并重新触发。仅在 Release 页面确实出现且附件存在后确认发布完成。
