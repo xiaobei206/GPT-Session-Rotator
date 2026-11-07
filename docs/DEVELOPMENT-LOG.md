@@ -160,3 +160,12 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **测试：** 仅编辑文档，未重新运行应用测试；v0.1.14 应用测试与构建状态以对应 Actions run `42397308234` 的最终结论为准。
 - **构建：** 本提交不改变应用源码或安装包内容；本次未在本地执行 Windows 打包。
 - **待办：** 更新实际 NSIS/Release 结论，并在真实 ChatGPT 登录态页面验证结束标记的完整轮换链路。
+
+
+## 2026-11-08 — Actions 验证并正式发布 v0.1.14
+
+- **Actions run：** `42397308234` 最终成功；Windows Test/Build 与 Publish GitHub Release 两个 Job 均成功。
+- **测试：** `npm test`：36 passed / 0 failed；11 个 JS/CJS 文件 `node --check` 通过；18 项根目录相对 SHA-256 清单全部通过。
+- **构建：** Windows x64 NSIS 成功，`GPT.Session.Rotator-0.1.14-Setup.exe`（102,026,649 bytes），SHA-256 `430eecd0f9c13be8fb15bad27652eaf96fea4135c34d8363a2221f7a6751e8f6`；blockmap（106,083 bytes），SHA-256 `67481615298a55b13413813d7c6c7929dd0e0e63d7945b122300e6786a697ca8`。
+- **发布：** `v0.1.14` 已正式发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.14。Release tag 指向应用修复提交 `fa449d80b13af4b6c32435b6d3a78a15a5ca2b2c`。
+- **限制：** 安装包未配置 Authenticode 签名；没有在用户真实 Windows/ChatGPT 登录态中执行端到端验证。

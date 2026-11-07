@@ -79,3 +79,13 @@
 - EXE：102,026,276 bytes；SHA-256 `3cd3ad715a0f5fd6a11f71bd024f2de13baf3b46a3a710ae50ec8ed78af36587`。
 - blockmap：106,082 bytes；SHA-256 `4eade552c8b22325a7b8f444cb52beab300641ae29e0c643fb2615c07253cefe`。
 - EXE 未做 Authenticode 签名；实际设备安装/启动与 ChatGPT UI 端到端验证仍待人工完成。
+
+
+## v0.1.14 验证与正式发布
+
+- Actions run `42397308234`：最终成功。
+- 36/36 单元测试通过；11 个 JS/CJS 语法检查通过；18 项 SHA-256 清单通过。
+- Windows x64 NSIS 安装包：`GPT.Session.Rotator-0.1.14-Setup.exe`，102,026,649 bytes；SHA-256 `430eecd0f9c13be8fb15bad27652eaf96fea4135c34d8363a2221f7a6751e8f6`。
+- blockmap：106,083 bytes；SHA-256 `67481615298a55b13413813d7c6c7929dd0e0e63d7945b122300e6786a697ca8`。
+- 正式 Release：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.14
+- 安装包未签名；用户设备安装启动与真实 ChatGPT 登录态端到端行为仍待人工验证。

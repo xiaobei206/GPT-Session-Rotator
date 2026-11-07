@@ -4,8 +4,9 @@
 
 ## 已确认
 
-- 当前源码版本：`0.1.14`；`VERSION`、`package.json`、界面显示和启动日志同步。最近已发布安装包为 `v0.1.13`。
-- `main` 最新应用修复提交：`fa449d80b13af4b6c32435b6d3a78a15a5ca2b2c`。Actions run `42397308234` 已通过版本检查、源码清单、依赖安装、单元测试和 JS/CJS 语法检查；NSIS/Release 状态须实时查看。
+- 当前源码版本及最近正式安装包：`0.1.14`；`VERSION`、`package.json`、界面显示和启动日志同步。
+- 应用修复提交：`fa449d80b13af4b6c32435b6d3a78a15a5ca2b2c`；当前 `main` 还包含后续交接文档更新。
+- Actions run `42397308234` 最终成功：36/36 测试通过、11 个 JS/CJS 文件语法检查通过、18 项源码 SHA-256 清单通过、Windows x64 NSIS 构建成功、Release job 成功。
 - 用户已在 Windows 本地完成源码导入并成功推送。终端确认源码导入提交为 `fc22749d8f35f2ff9464605cbbb73df1098a64a3`，推送目标为 `origin/main`。
 - 远程文件树中存在 `src/`、`tests/`、`package.json`、`VERSION`、`CHANGELOG.md`、`.gitignore` 和 `SOURCE-MANIFEST.sha256`。
 - 源码包预期 SHA-256：`c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`。
@@ -101,3 +102,13 @@
 - **回归测试：** 新增空占位节点复用成功用例，以及已有正文历史节点仍排除用例。
 - **CI：** Actions run `42397308234` 已通过版本元数据、18 项源码 SHA-256、npm install、单元测试和 11 个 JS/CJS 语法检查；NSIS 构建正在执行（以实时 Actions 最终结论为准）。
 - **人工验证：** 尚未在用户 Windows 设备及真实 ChatGPT 登录态中端到端验证。若安装后仍未轮换，需查看“回显监测基线”“结束回显扫描”“结束回显已识别/待确认”这几类日志确定具体阶段。
+
+
+## v0.1.14 正式发布结果 — 2026-11-08
+
+- Release：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.14
+- Actions run：`42397308234`，Build 和 Publish 两个 Job 均成功。
+- 自动测试：36 passed / 0 failed；JS/CJS 语法检查：11 个文件通过；源码清单：18 项全部通过。
+- EXE：`GPT.Session.Rotator-0.1.14-Setup.exe`，102,026,649 bytes；SHA-256 `430eecd0f9c13be8fb15bad27652eaf96fea4135c34d8363a2221f7a6751e8f6`。
+- blockmap：106,083 bytes；SHA-256 `67481615298a55b13413813d7c6c7929dd0e0e63d7945b122300e6786a697ca8`。
+- 安装包未配置 Authenticode 签名；需用户 Windows 机器完成实际安装启动和 ChatGPT 登录态端到端验证。

@@ -1,10 +1,10 @@
 # GPT Session Rotator
 
-**正式版 v0.1.13 已发布。**
+**正式版 v0.1.14 已发布。**
 
-**Windows x64 安装包：** [下载 GPT Session Rotator 0.1.13](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.1.13/GPT.Session.Rotator-0.1.13-Setup.exe)
+**Windows x64 安装包：** [下载 GPT Session Rotator 0.1.14](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.1.14/GPT.Session.Rotator-0.1.14-Setup.exe)
 
-**[GitHub Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.13)**
+**[GitHub Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.14)**
 
 > 安装包由 GitHub Actions 在 Windows Runner 上构建并通过 Release 发布。当前 EXE 未配置 Authenticode 代码签名；请在 Windows 设备上完成安装和启动验证。
 
@@ -21,7 +21,7 @@
 
 ---
 
-# GPT Session Rotator 0.1.13 — User Guide
+# GPT Session Rotator 0.1.14 — User Guide
 
 A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT conversation, optionally selects Think, pastes a fixed prompt, submits it, and starts the next cycle when the configured wait expires or an early-rotation condition is met.
 
@@ -37,11 +37,11 @@ GitHub requests use the embedded browser's Electron session, including the proxy
 
 The Chinese/English conversation-length warning detector checks red-text or red-framed length-limit messages anywhere in the rendered ChatGPT main content DOM, including content below the current scroll viewport. The same warning must be observed continuously for five seconds before early rotation; sidebars, navigation, generic alerts, and out-of-main portals do not qualify.
 
-The app also watches the latest assistant reply added after the current cycle submits its prompt. By default, the reply must contain `结束任务简报`; the marker can be changed in the UI (up to 100 characters), persists in `settings.json`, and applies immediately during a run. Once the marker appears in the new assistant reply and generation has ended, the next cycle starts without waiting for the manual interval. Leave the field blank to disable this trigger. Older assistant replies and the user's prompt are excluded. The reply text is inspected in memory only for marker matching and is not written to logs or files.
+The app also watches the latest assistant reply added after the current cycle submits its prompt. By default, the reply must contain `结束任务简报`; the marker can be changed in the UI (up to 100 characters), persists in `settings.json`, and applies immediately during a run. ChatGPT may create an empty assistant placeholder before submission and fill that same node with the current reply; a node proven empty in the pre-submit baseline is allowed to match after it is populated, while nodes that already contained historical text remain excluded. The marker must be present, generation must stop, and a subsequent stable DOM poll must confirm it before the next cycle starts. Leave the field blank to disable this trigger. The reply text is inspected in memory only for marker matching and is not written to logs or files.
 
 ## Kept lightweight
 
-0.1.13 retains the previous removal of always-on CDP diagnostics, network request/response body capture, diagnostics directories, and one-click diagnostics ZIP export. It does not record ChatGPT page bodies, API bodies, SSE content, WebSocket payloads, or DOM event timelines. The small on-screen run log remains and can still be exported manually as a TSV table. Assistant response text is never added to this log. Existing diagnostic folders from older versions are left untouched; 0.1.12 does not append to them.
+0.1.14 retains the previous removal of always-on CDP diagnostics, network request/response body capture, diagnostics directories, and one-click diagnostics ZIP export. It does not record ChatGPT page bodies, API bodies, SSE content, WebSocket payloads, or DOM event timelines. The small on-screen run log remains and can still be exported manually as a TSV table. Assistant response text is never added to this log. Existing diagnostic folders from older versions are left untouched; 0.1.12 does not append to them.
 
 ## Automation sequence
 
@@ -82,12 +82,13 @@ npm test
 - The GitHub API may be subject to unauthenticated rate limits. A 90-second poll interval is approximately 40 requests per hour while a wait window is active.
 - Existing app data such as the lifetime cycle count and embedded-browser session are preserved.
 
-## 0.1.13 修复
+## 0.1.14 修复
 
-- 修复自定义助手结束回显标记偶发漏检：如果 ChatGPT 在含标记的助手回复后又插入空白/辅助助手 DOM 节点，检测器仍会从本轮新增回复中反向查找命中项。
-- 运行日志会提示“已识别标记但仍在生成”或“生成结束，正在稳定性复核”，便于区分等待与漏检；不会记录助手回复正文。
+- 修复预先创建的空助手 DOM 节点后来被本轮回答复用时，标记因节点 ID 已存在于提交前基线而被误判为旧消息的漏检。
+- 仅允许提交前确认为空的节点被填充后参与匹配；提交前已有正文的旧消息继续排除。
+- 新增“结束回显扫描”状态日志和两项回归测试；36 项测试通过，回复正文仍只在内存中匹配，不写入日志。
 
-## 0.1.12 新增行为
+## 0.1.13 修复记录与 0.1.12 新增行为
 
 - GitHub main 分支每 90 秒检查一次，静默阈值默认 15 分钟，可在主界面设为 1–180 分钟；配置保存在应用本地设置文件中，运行中修改立即生效。
 - GitHub 仍只对本次自动轮换启动后出现的新 SHA 计时，启动前已有提交不触发轮换。

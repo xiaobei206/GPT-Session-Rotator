@@ -4,14 +4,14 @@
 > 仓库：https://github.com/xiaobei206/GPT-Session-Rotator
 > 默认分支：`main`
 > 源码版本：`0.1.14`（main：`fa449d80b13af4b6c32435b6d3a78a15a5ca2b2c`）
-> 最近正式安装包：`0.1.13`（新版本 Release 状态必须实时检查）
+> 最近正式安装包：`0.1.14`（Release 已正式发布）
 
 ## 当前状态先看这里
 
 - 应用源码和 `tests/` 已由用户导入并推送到 `main`。源码导入提交：`fc22749d8f35f2ff9464605cbbb73df1098a64a3`。
 - 当前交接文档用于修正导入后遗留的状态记录。先前脚本曾留下字面量 `$ExpectedHash` 和无法解析的测试计数；不要把这些占位符当成验证结果。
 - 已发布正式版：`0.1.13`；该版本 Actions run `42392748703` 完整成功：34 项测试、11 个 JS/CJS 语法检查、18 项源码 SHA-256 清单、Windows x64 NSIS 构建及 Release 上传均通过。
-- 当前 `main` 源码为 `0.1.14`，提交 `fa449d80b13af4b6c32435b6d3a78a15a5ca2b2c`：修复提交前已存在的空助手占位节点在提交后被填充时，因旧 ID 被排除而漏检的问题。CI run `42397308234` 已通过版本检查、源码清单、依赖安装、单元测试和 JS/CJS 语法检查；NSIS/Release 的最终结果必须重新查询 Actions 和 Releases，不能沿用旧状态。
+- 当前 `main` 源码为 `0.1.14`，应用修复提交 `fa449d80b13af4b6c32435b6d3a78a15a5ca2b2c`：修复提交前已存在的空助手占位节点在提交后被填充时，因旧 ID 被排除而漏检的问题。Actions run `42397308234` 最终成功：36/36 测试、11/11 JS/CJS 语法检查、18 项源码 SHA-256 清单、Windows x64 NSIS 构建和 Release 上传均通过。
 - 源码归档的预期 SHA-256：`c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`。
 
 ## 每次接手必须做的事
@@ -61,7 +61,7 @@
 
 ## 给下一轮 GPT 的首要任务
 
-当前已完成本地测试与语法检查。下一步检查本提交触发的 GitHub Actions Windows 构建；若测试和安装包构建均成功，Release job 将发布 `v0.1.13` 并附上 NSIS 安装程序。随后再进行真实 ChatGPT 页面验证。不要因为源码已经推送就推断这些验证已完成。
+v0.1.14 已正式发布，下载入口见 README。下一步是用户 Windows 设备实际安装/启动，并在真实 ChatGPT 登录态中验证 `本轮` 标记从命中、停止生成、稳定复核到新建下一轮的完整流程。不要把 CI 单元测试或 NSIS 构建成功误认为已完成人工端到端验证。
 
 每次接手后先简洁汇报实际确认的分支/提交、版本、测试状态、打包状态和下一项具体工作，然后继续推进，不要重复询问文档中已有答案。
 
@@ -115,3 +115,13 @@
 - 日志新增“结束回显扫描”，只记录扫描成功与助手节点数量；回复文本只在内存内匹配，不落日志、不持久化。
 - 两项回归测试分别验证空节点复用可触发和有正文历史消息继续排除。
 - 真实 ChatGPT 登录态页面端到端验证仍须在用户设备完成；查看当前 Actions / Release 实际状态，不得凭版本号推断安装包已发布。
+
+
+## v0.1.14 Actions 与 Release 最终结果
+
+- Actions run：`42397308234`，最终 Release 已创建，两个 Job 均成功。
+- `npm test`：36 passed / 0 failed；11 个 JS/CJS 文件 `node --check` 通过；18 项源码 SHA-256 清单全部通过。
+- Windows x64 NSIS：`GPT.Session.Rotator-0.1.14-Setup.exe`，102,026,649 bytes；SHA-256 `430eecd0f9c13be8fb15bad27652eaf96fea4135c34d8363a2221f7a6751e8f6`。
+- blockmap：106,083 bytes；SHA-256 `67481615298a55b13413813d7c6c7929dd0e0e63d7945b122300e6786a697ca8`。
+- Release：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.14
+- 安装包未配置 Authenticode 签名；真实 Windows 安装启动和 ChatGPT 登录态实机验证仍待用户设备完成。
