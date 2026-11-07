@@ -29,3 +29,9 @@
 - 提交信息包含 `[release]` 且验证/构建 job 成功：自动创建版本标签并发布 GitHub Release，附带安装程序。
 - 手动运行 `workflow_dispatch` 时，`publish_release` 默认 `false`；需要发布时显式选择 `true`。
 - Release 的最终成功状态以 Actions 与 Releases 页面的实际记录为准。
+
+
+## Actions 首次运行记录
+
+- Run `42388131374`：失败于 `Validate version metadata`，原因是 workflow PowerShell 正则转义问题；npm 安装、自动测试、语法检查与 Windows 打包均因前置步骤失败而跳过。
+- 已修正工作流，新的 main 提交将重新触发完整流程。只有新 run 成功并且 Release 资源实际存在后，才标记 Windows 构建/发布完成。

@@ -44,7 +44,7 @@ jobs:
           if ($version -ne $package.version) {
             throw "VERSION ($version) does not match package.json ($($package.version))."
           }
-          if ($version -notmatch '^\\d+\\.\\d+\\.\\d+$') {
+          if ($version -notmatch '^[0-9]+[.][0-9]+[.][0-9]+$') {
             throw "Invalid SemVer version: $version"
           }
           "version=$version" >> $env:GITHUB_OUTPUT
@@ -54,11 +54,12 @@ jobs:
         run: |
           $count = 0
           foreach ($line in Get-Content SOURCE-MANIFEST.sha256) {
-            if ($line -notmatch '^([0-9a-f]{64})\\s+(.+)$') {
+            if ($line.Length -lt 68) { throw "Invalid manifest line: $line" }
+            $expected = $line.Substring(0, 64)
+            if ($expected -notmatch '^[0-9a-f]{64}$' -or $line.Substring(64, 2) -ne '  ') {
               throw "Invalid manifest line: $line"
             }
-            $expected = $Matches[1]
-            $relative = $Matches[2].Trim().Replace('/', [IO.Path]::DirectorySeparatorChar)
+            $relative = $line.Substring(66).Trim().Replace('/', [IO.Path]::DirectorySeparatorChar)
             if (!(Test-Path -LiteralPath $relative -PathType Leaf)) {
               throw "Manifest file missing: $relative"
             }

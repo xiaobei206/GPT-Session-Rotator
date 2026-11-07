@@ -45,3 +45,8 @@
 - 新增 `.github/workflows/windows-release.yml`：Windows Runner 自动核验版本与清单、安装依赖、运行测试与语法检查、构建 NSIS，并上传 EXE 构建产物。仅在提交信息包含 `[release]` 时自动发布正式 GitHub Release；也可通过 `workflow_dispatch` 手动运行，默认只验证不发布。
 - 当前没有已发布 Release 或 Git Tag；本次发布流程使用 `v0.1.12`。是否成功必须以 Actions run 和 Release 页面实际结果为准。
 - Windows 安装包和 ChatGPT 实机验证：尚未确认成功。
+
+
+## Actions 首次运行失败与修正
+
+首次运行 `42388131374` 已确认在版本校验步骤失败，原因是 workflow 中 PowerShell 正则被多转义一层；失败发生在 npm install 之前，因此该 run 没有验证测试或安装包。`windows-release.yml` 已修正 SemVer 与 SHA-256 清单解析方式，并由新的 main 提交重新触发。请只根据新 run 的 job 步骤和结论确认 Windows 安装包是否成功生成；首次失败 run 不代表应用代码测试失败。

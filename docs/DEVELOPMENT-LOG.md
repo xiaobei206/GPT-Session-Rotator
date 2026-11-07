@@ -67,3 +67,11 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **Windows 构建：** 本地环境未执行 Windows NSIS 构建；等待本次 Actions 实际结果，不能预先标记通过。
 - **实机验证：** ChatGPT 页面选择器、结束标记、滚动区长度警告及代理行为仍须人工验证。
 - **下一步：** 查看由本提交触发的 Actions run；若失败，按日志修复并重新触发。仅在 Release 页面确实出现且附件存在后确认发布完成。
+
+
+## 2026-11-07 — 修正首次 Actions 工作流校验脚本
+
+- **背景：** 首次自动运行 `42388131374` 在 `Validate version metadata` 步骤失败，原因是工作流 YAML 内 PowerShell 正则反斜杠多转义，导致合法版本 `0.1.12` 未匹配。尚未运行 npm 安装、测试或打包步骤，也未创建 Release。
+- **修复：** 改为无转义歧义的 SemVer 字符类表达式，并按 SHA-256 清单固定字段位置解析，避免 PowerShell/YAML 字符串转义再次影响清单校验。
+- **下一步：** 本次修正提交再次触发 Windows Actions；只有版本/清单、依赖安装、32 项测试、11 项语法检查、NSIS 构建和上传均通过后，Release job 才会创建 `v0.1.12`。
+- **本次本地应用测试：** 0.1.12 应用代码未改动；32/32 测试、11/11 语法检查及 17/17 源文件 SHA-256 已在上条记录中确认。Windows 打包仍以重跑 Actions 结果为准。
