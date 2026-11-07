@@ -187,3 +187,11 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **Actions run：** `42400547124`；版本元数据校验通过，但源码清单在 `src/main.cjs` 停止，Runner 计算值为 `091a2ddb474b74f8669f3b7b08aa0abdc15b4d0f74b020a0c7e9191760e066c0`，与初次生成值不同。
 - **修复：** 将 `SOURCE-MANIFEST.sha256` 中 `src/main.cjs` 改为 Windows Runner 实际计算的 SHA-256。该 run 未进入依赖安装、自动测试、语法检查或打包。
 - **下一步：** 由本提交重新运行完整清单、测试、语法检查及 Windows 构建；如再有哈希差异，以 Runner 原始输出逐项修正。
+
+
+## 2026-11-08 — 更新 app-shell 扫描回归测试断言（CI-only）
+
+- **Actions run：** `42400647281` 已通过版本检查、18 项源码清单和依赖安装；`npm test` 为 36 passed / 2 failed，未运行语法检查与 NSIS 构建。
+- **失败原因：** 一项旧测试仍要求扫描器必须直接调用 `document.querySelector('main')` 且禁止 `document.body`，与新增的 app-shell root 优先级/最终 fallback 不符；新模拟 DOM 的文本断言则未反映 NFKC 将全角冒号归一为半角冒号的既有行为。
+- **修复：** 更新两条断言以覆盖 app timeline root 与最终 body fallback，并将测试期望文本改为规范化后的半角冒号。应用运行时代码不变。
+- **下一步：** 重新执行完整自动测试、语法检查、NSIS 构建和 Release；仅以新 run 的最终结论判断成功与否。

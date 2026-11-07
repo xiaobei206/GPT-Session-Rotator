@@ -84,15 +84,15 @@ test('confirmation resets if the marker disappears, message changes, or page cha
   assert.equal(observeAssistantCompletion(state, b, 6000).confirmed, true);
 });
 
-test('browser scanner only reads assistant message nodes inside main and detects generation stop controls', () => {
+test('browser scanner supports legacy and app-shell conversation roots and detects generation stop controls', () => {
   assert.doesNotThrow(() => new Function(`return ${ASSISTANT_COMPLETION_SCAN_SCRIPT}`));
   assert.match(ASSISTANT_COMPLETION_SCAN_SCRIPT, /data-message-author-role="assistant"/);
   assert.match(ASSISTANT_COMPLETION_SCAN_SCRIPT, /stop generating|停止生成/);
   assert.match(ASSISTANT_COMPLETION_SCAN_SCRIPT, /const isRendered/);
   assert.match(ASSISTANT_COMPLETION_SCAN_SCRIPT, /if \(!isRendered\(el\)\) return false/);
   assert.doesNotMatch(ASSISTANT_COMPLETION_SCAN_SCRIPT, /window\.innerHeight|window\.innerWidth/);
-  assert.match(ASSISTANT_COMPLETION_SCAN_SCRIPT, /document\.querySelector\('main'\)/);
-  assert.doesNotMatch(ASSISTANT_COMPLETION_SCAN_SCRIPT, /document\.body/);
+  assert.match(ASSISTANT_COMPLETION_SCAN_SCRIPT, /data-app-action-timeline-scroll/);
+  assert.match(ASSISTANT_COMPLETION_SCAN_SCRIPT, /document\.body/); // body is only a final fallback when no conversation root exists.
 });
 
 test('finds the custom completion marker when ChatGPT appends a trailing empty assistant node', () => {
@@ -194,7 +194,7 @@ test('scanner finds current app-shell assistant markdown nodes and returns struc
   const snapshot = runScanner(documentMock, { href:'https://chatgpt.com/c/app-shell' }, getComputedStyleMock);
   assert.equal(snapshot.assistantCount, 1);
   assert.equal(snapshot.assistantMessages[0].id, 'app-shell-turn-42');
-  assert.equal(snapshot.assistantMessages[0].text, '最终回显：本轮完成');
+  assert.equal(snapshot.assistantMessages[0].text, '最终回显:本轮完成');
   assert.ok(snapshot.assistantMessages[0].textSignature);
   assert.equal(snapshot.assistantMessages[0].source, 'assistant-markdown');
   assert.equal(snapshot.diagnostics.selectorHits['assistant-markdown'], 1);
