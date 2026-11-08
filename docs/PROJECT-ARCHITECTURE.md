@@ -90,3 +90,8 @@ The earliest valid trigger should end the current wait and enter the existing ne
 ## ChatGPT assistant app-shell scanner — v0.1.15
 
 The completion detector first selects an active app timeline/transcript/conversation root and supports both the legacy assistant-role attribute and the current app-shell assistant markdown marker \`data-markdown-text-style="assistant-message"\`. It uses stable turn/content-search keys as message IDs. The browser-side snapshot reports only selector hit counts, selected root, candidate/visibility counts and generation-state flags; page or reply text is never written to logs. A short-lived in-memory text signature is part of completion stability confirmation, so any continued response growth restarts the confirmation window.
+
+
+## Startup Actions gate (v0.2.3)
+
+Before the first ChatGPT cycle of each Start operation, the main process calls `src/github-actions-gate.cjs` to list queued/active Actions runs on the monitored repository's `main` branch. The gate waits in bounded 60-second polling intervals and is cancellable by Stop. Its timeout equals the configured maximum-wait duration captured at Start; timeout or API failure is fail-open, with a warning, so startup never blocks indefinitely. The monitor's commit baseline is established only after the gate resolves, preventing a commit whose Actions finished during the gate from being mistaken for a newly submitted task.

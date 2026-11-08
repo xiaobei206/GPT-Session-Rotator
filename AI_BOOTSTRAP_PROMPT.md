@@ -2,11 +2,11 @@
 
 ## Current implementation state
 
-- Latest published release is v0.2.2: https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2.
-- v0.2.2 fixes the Token status contract between main-process save/clear results and renderer state, and adds safe heartbeat logs for successful unchanged GitHub main polls.
-- Heartbeat logs contain short SHA, GitHub-Date-based commit age, baseline/candidate state, auth mode, and threshold; they never contain Token values or commit message/body.
-- v0.2.1 Windows CI/Release run `42483241721` passed 44 tests, 12 JS/CJS syntax checks, 19 source-manifest entries and Windows x64 NSIS publication.
-- v0.2.2 final Actions run `42487228051` succeeded: 46 tests, 13 JS/CJS syntax checks, 20 source-manifest entries, Windows x64 NSIS build/upload and official Release publish. Real Windows DPAPI/PAT and signed-in ChatGPT end-to-end checks remain manual.
+- Latest published release remains v0.2.2 until v0.2.3 CI validation and the formal release workflow are confirmed.
+- v0.2.3 adds a startup gate for queued/active GitHub Actions runs on `xiaobei206/padavan-4.4-2/main`: every 60 seconds, with the configured maximum-wait interval as the hard deadline, Stop cancellation, and fail-open behavior on timeout/API errors.
+- The commit baseline is established only after the startup gate resolves. The gate logs workflow name, Run ID/status and short SHA only; it never logs Token values or commit titles/body.
+- v0.2.2 final Actions run `42487228051` succeeded with 46 tests, 13 JS/CJS syntax checks, 20 manifest entries, Windows x64 NSIS build/upload and official Release publication.
+- v0.2.3 Actions, Windows packaging and formal release must be confirmed live. Real Windows DPAPI/PAT and signed-in ChatGPT end-to-end checks remain manual.
 
 # AI Bootstrap Prompt — GPT Session Rotator
 
@@ -24,10 +24,10 @@
 
 ## 当前已知基线（接手时须复核）
 
-- 当前最新正式版：v0.2.2，Release：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2。
-- v0.2.2 最终 Actions run `42487228051` 成功：46/46 测试、13 项 JavaScript/CJS 语法、20 项 SHA-256 manifest、Windows x64 NSIS 构建/上传和正式 Release 全部成功。
-- v0.2.2 修复 Token 保存/清除状态同步；GitHub main 成功查询即使 SHA 未变化也须记录短 SHA、提交年龄、基线/候选状态与认证方式，不得将 Token 或 commit body 写入日志。
-- v0.2.2 的 Windows Actions、安装包和 Release 状态必须实时核验；不得宣称本机 DPAPI、真实 PAT 验证或 ChatGPT 登录态端到端已完成。
+- 最新正式版本仍为 v0.2.2；v0.2.3 是加入启动前 Actions 门禁的待验证版本。
+- v0.2.2 最终 Actions run `42487228051` 成功：46/46 测试、13 项 JavaScript/CJS 语法、20 项 SHA-256 manifest、Windows x64 NSIS 构建与正式 Release 全部成功。
+- v0.2.3 的启动门禁必须在 Start 时检查 `xiaobei206/padavan-4.4-2/main` 上排队/运行中的 Actions，60 秒复查，停止可取消，超时等于当前设置的最长等待时间；超时或请求失败要继续启动，不得无限等待。
+- v0.2.3 的 Windows Actions、安装包和正式 Release 状态必须实时核验；不得宣称本机 DPAPI、真实 PAT 权限或 ChatGPT 登录态端到端验证已完成。
 
 ## 不可破坏的功能和隐私边界
 

@@ -1,3 +1,9 @@
+## 0.2.3 - 2026-11-08
+
+- Added a bounded startup gate for GitHub Actions on `xiaobei206/padavan-4.4-2/main`: queued or active workflows are rechecked every 60 seconds before a new ChatGPT cycle begins.
+- The gate is cancellable with Stop and uses the selected maximum-wait interval as its hard deadline; if Actions status cannot be fetched or workflows have not finished by the deadline, the app logs a warning and proceeds instead of waiting indefinitely.
+- If the optional Token lacks Actions permission, the app retries the public Actions endpoint anonymously. Token values and commit titles/body are never logged.
+
 ## 0.2.2 - 2026-11-08
 
 - Fixed GitHub Token UI state synchronization: save/clear IPC responses now expose the same configured/rejected status fields as the initial status query, so the 30-second option, clear button, and status label reflect the saved credential immediately.

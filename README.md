@@ -1,6 +1,6 @@
 # GPT Session Rotator
 
-**最新正式版：v0.2.2 已于 2026-11-08 发布。修复 GitHub Token 保存/清除后界面状态不同步，并为成功的未变化 SHA 轮询增加状态日志。**
+**最新正式版：v0.2.2 已于 2026-11-08 发布。当前开发版本 v0.2.3 将在启动前检查目标仓库 Actions，并以最长等待时间作为门禁上限。**
 
 **最新正式安装包：** [下载 GPT Session Rotator 0.2.2](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.2/GPT.Session.Rotator-0.2.2-Setup.exe)
 
@@ -21,9 +21,16 @@
 
 ---
 
-# GPT Session Rotator 0.2.2 — User Guide
+# GPT Session Rotator 0.2.3 — User Guide
 
 A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT conversation, optionally selects Think, pastes a fixed prompt, submits it, and starts the next cycle when the configured wait expires or an early-rotation condition is met.
+
+## v0.2.3 启动前等待 GitHub Actions
+
+- 点击“开始”后，程序先查询 `xiaobei206/padavan-4.4-2` 的 `main` 分支工作流。发现排队、等待或运行中的 Actions 时，每 60 秒复查一次；只有确认没有活动工作流后才打开新 ChatGPT 对话。
+- 门禁最长等待时间使用当前设置的最长等待分钟数。达到上限仍有工作流未结束，或一直无法查询状态时，会记录警告并继续启动；不会无限等待。点击“停止”可以立即取消门禁。
+- 门禁只在每次点击“开始”时执行；正常轮换周期保持原样。Token 若无 Actions 读取权限，程序会对公开仓库的 Actions 接口退回匿名查询，不会因此判定 Token 无效。
+- 启动前等待中的日志只显示工作流名、Run ID、状态和短 SHA，不显示提交标题、Token 或正文。
 
 ## v0.2.2 GitHub Token 状态同步与轮询日志
 
@@ -73,12 +80,14 @@ The app also watches the latest assistant reply added after the current cycle su
 
 ## Automation sequence
 
-1. Navigate to the ChatGPT new-chat entry and wait 30 seconds.
-2. Verify that a fresh conversation and composer are available. If not, skip submission rather than risk using an old conversation.
-3. Expand the sidebar if needed.
-4. If enabled, attempt to set Think up to three times. The first failure refreshes the current empty conversation and waits 30 seconds; the second failure waits another 30 seconds; after the third failure the cycle continues.
-5. Wait 20 seconds, paste the configured prompt, wait another 20 seconds, then submit.
-6. During the wait window, monitor GitHub (90-second interval), the assistant completion marker, and conversation-length warnings (1.5-second DOM scan interval). A completed new assistant reply containing the configured marker starts the next cycle; a red-text or red-frame length warning must remain continuously detected for five seconds. Whichever early-rotation condition is first confirmed starts the next cycle; otherwise the manual timer remains in control.
+1. When Start is pressed, query queued/active Actions runs for `xiaobei206/padavan-4.4-2` on `main`. If any exist, recheck every 60 seconds and do not open a new ChatGPT conversation until they finish. Stop cancels this startup gate.
+2. The gate is bounded by the currently configured maximum-wait interval. If that deadline expires or the Actions status cannot be fetched, log a warning and proceed; the gate cannot wait forever.
+3. After the gate clears or times out, record the GitHub main commit baseline, navigate to the ChatGPT new-chat entry, and wait 30 seconds.
+4. Verify that a fresh conversation and composer are available. If not, skip submission rather than risk using an old conversation.
+5. Expand the sidebar if needed.
+6. If enabled, attempt to set Think up to three times. The first failure refreshes the current empty conversation and waits 30 seconds; the second failure waits another 30 seconds; after the third failure the cycle continues.
+7. Wait 20 seconds, paste the configured prompt, wait another 20 seconds, then submit.
+8. During the wait window, monitor GitHub (90-second interval), the assistant completion marker, and conversation-length warnings (1.5-second DOM scan interval). A completed new assistant reply containing the configured marker starts the next cycle; a red-text or red-frame length warning must remain continuously detected for five seconds. Whichever early-rotation condition is first confirmed starts the next cycle; otherwise the manual timer remains in control.
 
 ## Run and build
 

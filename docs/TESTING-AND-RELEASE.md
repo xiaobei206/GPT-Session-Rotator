@@ -68,3 +68,12 @@ Perform a clean install/launch test and, for an upgrade test, verify that applic
 - [ ] Push non-forcefully, then verify remote `main` SHA and key files.
 - [ ] Manually run the app against ChatGPT for completion marker, length warning, and fallback behavior.
 - [ ] Keep the log truthful about what was and was not tested.
+
+
+## Startup GitHub Actions gate
+
+- Starting automation checks queued/active workflow runs whose head branch is `main` in `xiaobei206/padavan-4.4-2`. Workflow statuses `queued`, `in_progress`, `waiting`, `pending`, and `requested` block a new ChatGPT cycle; completed runs do not block regardless of conclusion.
+- Recheck every 60 seconds. The gate timeout is the same duration selected as the maximum-wait interval when Start is pressed. A timeout or repeated API failure logs a warning and proceeds; the gate must never loop indefinitely.
+- Stop cancels the gate. A stopped gate must not launch the first cycle, even if its previous API request completes later.
+- Each Actions API request has a 15-second timeout. If an optional PAT lacks Actions permission, retry the public repository request without authentication rather than treating the PAT as invalid.
+- Test the no-active-runs fast path, active-run filtering by main branch/status, active-to-completed release, hard deadline on stuck runs/API errors, and Stop cancellation. Logs may include workflow name, run ID/status and short SHA only; never include commit titles/bodies, tokens, or response payloads.

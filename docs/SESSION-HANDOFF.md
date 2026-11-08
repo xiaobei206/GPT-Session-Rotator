@@ -2,17 +2,13 @@
 
 更新日期：2026-11-08
 
-> **最新正式版：** v0.2.2 已正式发布（Release ID `438281311`）：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2。
+> **最新正式版：** v0.2.2 已发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2。当前源码拟升至 v0.2.3，正式发布状态以本次 Windows Actions 和 Release 的实际结果为准。
 >
-> **安装包：** `GPT.Session.Rotator-0.2.2-Setup.exe`，102,031,538 bytes；SHA-256 `4ac5d9887fef82db8fefc70dfdc33b8864d97a4154f799da72ea4ee74881a4c1`。Blockmap：106,062 bytes；SHA-256 `8d579a55d4ab17261a8fec412616cac5543fda88b5d23d7990a231c3d6965b32`。
+> **v0.2.3 本轮功能：** 点击“开始”后，先检查 `xiaobei206/padavan-4.4-2/main` 的排队/运行中 GitHub Actions；每 60 秒复查，等待上限等于点击开始时选定的最长等待时间。点击停止可取消门禁；超时或持续无法查询时记录警告并继续启动，不会无限等待。GitHub 提交基线只在门禁结束后记录。
 >
-> **最终 Actions：** run `42487228051` completed/success；46/46 测试、13 个 JavaScript/CJS 语法检查、20 项源码清单校验、Windows x64 NSIS 构建与上传、正式 Release job 全部成功。
+> **隐私边界：** 启动门禁日志只记录工作流名、Run ID、状态和短 SHA，不记录提交标题/正文或 Token。Token 若缺少 Actions 读取权限，会对公开仓库接口退回匿名查询，不会将其误判为 Token 无效。
 >
-> **v0.2.2 修复内容：** Token 保存/清除 IPC 统一返回 `githubTokenConfigured`、`githubTokenRejected` 和轮询间隔，渲染层也兼容旧字段。保存后立即启用 30 秒档、启用清除按钮并显示“已加密保存”；清除后显示“未设置”并回到 90 秒。
->
-> **GitHub 可观测性：** main SHA 没变化的成功查询也写入“GitHub轮询检查”日志，包括短 SHA、提交年龄、基线/候选状态、认证方式和静默阈值。不会写入 Token 或 commit message/body。
->
-> **尚需实机验证：** Windows 本机 DPAPI 保存/重启读取、真实 Token 权限和 ChatGPT 登录态下完整提前轮换尚未由 Actions 覆盖。安装包未配置 Authenticode 签名。
+> **验证状态：** 当前 connector 没有可执行本地工作树；v0.2.3 本地 `npm test`/语法检查未运行。必须等待并记录本轮 Windows Actions 测试、源码清单和 NSIS 构建实际结果后再发布。
 
 ## 本轮功能和改动
 

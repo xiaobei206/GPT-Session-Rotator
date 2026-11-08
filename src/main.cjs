@@ -4,9 +4,10 @@ const fs = require('node:fs');
 const { analyzeConversationLimitSnapshot, createConversationLimitConfirmationState, observeConversationLimitEvidence, CONVERSATION_LIMIT_SCAN_SCRIPT } = require('./conversation-limit.cjs');
 const { analyzeAssistantCompletionSnapshot, createAssistantCompletionState, observeAssistantCompletion, ASSISTANT_COMPLETION_SCAN_SCRIPT, normalizeAssistantCompletionMarker } = require('./assistant-completion.cjs');
 const { fetchLatestCommit, createGithubMonitorState, observeGithubCommit, GITHUB_POLL_INTERVAL_MS, GITHUB_DEFAULT_QUIET_THRESHOLD_MS, normalizeGithubPollIntervalSeconds, normalizeGithubQuietThresholdMinutes } = require('./github-monitor.cjs');
+const { fetchActiveMainWorkflowRuns, waitForMainActionsToFinish, GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS, REPOSITORY: GITHUB_ACTIONS_REPOSITORY } = require('./github-actions-gate.cjs');
 const { loadGithubPollIntervalSeconds, saveGithubPollIntervalSeconds, loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker, normalizeGithubToken, loadGithubToken, saveGithubToken, clearGithubToken } = require('./settings.cjs');
 
-const VERSION = '0.2.2';
+const VERSION = '0.2.3';
 const PARTITION = 'persist:gpt-session-rotator';
 const CHATGPT_HOME = 'https://chatgpt.com/';
 const HEADER_HEIGHT = 54;
@@ -37,6 +38,7 @@ const scheduler = {
   timer: null,
   nextRunAt: null,
   activeRun: null,
+  startupActionsGate: null,
   githubMonitorState: createGithubMonitorState(),
   githubBaselinePending: false,
   lastGithubCommit: null,
@@ -239,6 +241,91 @@ async function fetchLatestMainCommit() {
     }
     throw error;
   }
+}
+
+async function fetchActiveMainActions(timeoutMs) {
+  const ses = session.fromPartition(PARTITION);
+  const token = hasAuthenticatedGithubToken() ? githubToken : '';
+  return fetchActiveMainWorkflowRuns({
+    fetchImpl:(url, init) => ses.fetch(url, init),
+    token,
+    timeoutMs
+  });
+}
+
+function startAutomationAfterActionsGate(monitorState, maxWaitMs) {
+  const gate = { cancelled:false };
+  scheduler.startupActionsGate = gate;
+  const maxWaitMinutes = Math.max(1, Math.round(maxWaitMs / 60_000));
+  emitProgress(
+    'GitHub Actions启动门禁',
+    `正在检查 ${GITHUB_ACTIONS_REPOSITORY} 的 main 分支是否有排队或运行中的 Actions；每 ${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)} 秒复查，最多等待 ${maxWaitMinutes} 分钟。可随时点击停止取消等待。`,
+    'info',
+    0
+  );
+
+  const launchCycle = result => {
+    if (scheduler.startupActionsGate === gate) scheduler.startupActionsGate = null;
+    if (!scheduler.running || gate.cancelled || result?.status === 'cancelled') return;
+    if (result?.status === 'timeout') {
+      const lastState = result.activeRuns?.length
+        ? `最近一次成功查询仍发现 ${result.activeRuns.length} 条排队/运行中的工作流`
+        : result.lastError
+          ? '等待期间未能持续取得 GitHub Actions 状态'
+          : 'GitHub Actions 状态尚未确认';
+      emitProgress(
+        'GitHub Actions等待超时',
+        `启动前等待已达最长上限 ${maxWaitMinutes} 分钟；${lastState}。按要求结束门禁并继续启动，不会无限等待。`,
+        'warning',
+        0
+      );
+    } else if (result?.status !== 'clear') {
+      emitProgress('GitHub Actions门禁异常', '启动前门禁发生意外异常；为避免卡死，已跳过门禁并按原计划继续启动。', 'warning', 0);
+    }
+    // Establish the commit baseline only after the gate; commits whose Actions
+    // finished during the gate remain pre-existing commits for this run.
+    void primeGithubMonitorBaseline(monitorState);
+    void executeCycle();
+  };
+
+  void waitForMainActionsToFinish({
+    checkActiveRuns:timeoutMs => fetchActiveMainActions(timeoutMs),
+    timeoutMs:maxWaitMs,
+    pollIntervalMs:GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS,
+    isCancelled:() => gate.cancelled || !scheduler.running,
+    onCheck:check => {
+      if (gate.cancelled || !scheduler.running) return;
+      if (check.ok && check.activeRuns.length === 0) {
+        emitProgress(
+          'GitHub Actions检查通过',
+          `GitHub main 当前没有排队或运行中的 Actions；启动门禁在约 ${Math.floor(check.elapsedMs / 1000)} 秒后放行，开始第 1 轮。`,
+          'success',
+          0
+        );
+        return;
+      }
+      if (check.ok) {
+        const summaries = check.activeRuns.slice(0, 3).map(run => {
+          const sha = run.headSha ? ` SHA ${run.headSha.slice(0, 7)}` : '';
+          return `${run.name} #${run.id} [${run.status}]${sha}`;
+        }).join('；');
+        const extra = check.activeRuns.length > 3 ? `；另有 ${check.activeRuns.length - 3} 条` : '';
+        emitProgress(
+          'GitHub Actions仍在运行',
+          `main 上有 ${check.activeRuns.length} 条 Actions 正在排队或运行：${summaries}${extra}。已等待 ${Math.floor(check.elapsedMs / 1000)} 秒；每 ${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)} 秒复查，最长 ${maxWaitMinutes} 分钟。`,
+          'info',
+          0
+        );
+      } else if (check.checks === 1 || check.checks % 5 === 0) {
+        emitProgress(
+          'GitHub Actions查询失败',
+          `暂时无法确认 main 分支 Actions 状态（${String(check.error || '未知错误').slice(0, 160)}）；稍后重试，最多等待 ${maxWaitMinutes} 分钟，到时会按要求继续启动。`,
+          'warning',
+          0
+        );
+      }
+    }
+  }).then(launchCycle).catch(() => launchCycle({ status:'error' }));
 }
 
 async function primeGithubMonitorBaseline(monitorState) {
@@ -971,6 +1058,10 @@ function stopScheduler(reason = '用户停止') {
   scheduler.nextRunAt = null;
   if (scheduler.timer) clearTimeout(scheduler.timer);
   scheduler.timer = null;
+  if (scheduler.startupActionsGate) {
+    scheduler.startupActionsGate.cancelled = true;
+    scheduler.startupActionsGate = null;
+  }
   if (scheduler.activeRun) scheduler.activeRun.cancelled = true;
   emitProgress('已停止', `${reason}；后续轮换已停止。`, 'warning', scheduler.cycle);
 }
@@ -1002,9 +1093,8 @@ ipcMain.handle('automation:start', async (_event, options) => {
   scheduler.pendingGithubRotation = null;
   scheduler.running = true;
   scheduler.nextRunAt = null;
-  emitProgress('启动运行', `0.2.2 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
-  void primeGithubMonitorBaseline(scheduler.githubMonitorState);
-  void executeCycle();
+  emitProgress('启动运行', `0.2.3 固定流程：先检查 GitHub main 分支是否有排队/运行中的 Actions（每${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)}秒复查，最多等待${Math.round(scheduler.intervalMs / 60000)}分钟，停止按钮可取消，超时后继续）；门禁放行后新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成结束后提前轮换）。`, 'success', 0);
+  startAutomationAfterActionsGate(scheduler.githubMonitorState, scheduler.intervalMs);
   return { ok:true };
 });
 

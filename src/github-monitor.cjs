@@ -30,7 +30,7 @@ async function fetchLatestCommit({ fetchImpl = globalThis.fetch, timeoutMs = REQ
     const headers = {
       Accept:'application/vnd.github+json',
       'X-GitHub-Api-Version':'2022-11-28',
-      'User-Agent':'GPT-Session-Rotator/0.2.2',
+      'User-Agent':'GPT-Session-Rotator/0.2.3',
       'Cache-Control':'no-cache',
       Pragma:'no-cache'
     };

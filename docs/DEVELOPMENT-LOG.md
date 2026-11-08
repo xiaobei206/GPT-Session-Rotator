@@ -370,3 +370,16 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **blockmap：** `GPT.Session.Rotator-0.2.2-Setup.exe.blockmap`，106,062 bytes；GitHub Release digest SHA-256：`8d579a55d4ab17261a8fec412616cac5543fda88b5d23d7990a231c3d6965b32`。
 - **构建与签名：** Release run 的 NSIS 构建和上传全部成功；未配置 Authenticode 代码签名证书，按 CI 设置跳过签名。
 - **实机边界：** 尚未在用户 Windows PC 上验证 Token 的 DPAPI 保存/重启读取、真实 GitHub Token 权限或 ChatGPT 登录态中发现新提交并触发下一轮。用户安装后应验证保存状态、30 秒档、清除状态和按所选间隔出现的“GitHub轮询检查”日志。
+
+
+## 2026-11-08 — v0.2.3 新增 GitHub Actions 启动前门禁（CI 待验证）
+
+- **用户需求：** 每次手动启动自动轮换时，先检查目标仓库 main 分支是否有旧任务的 GitHub Actions 正在排队或运行，避免手动停止应用后立刻启动并与仍未完成的构建/测试冲突。
+- **设计：** 查询 `xiaobei206/padavan-4.4-2` 的 Actions runs，过滤 main 分支的 `queued`、`in_progress`、`waiting`、`pending`、`requested` 状态；每 60 秒重查。无活动工作流则立刻放行。
+- **超时/取消：** 等待上限为点击“开始”时选定的最长等待时长；Actions API 单次请求最多 15 秒。Stop 可以取消门禁，取消后的旧检查不会启动任何 ChatGPT 轮次。超时或持续无法查询时写入警告并按要求继续启动，绝不无限等待。
+- **基线时序：** 只有门禁清除或超时后才记录 GitHub main commit baseline，避免门禁等待期间已存在的 commit 被误判成启动后的新提交。
+- **权限兼容：** 可先用已保存 Token 查询 Actions；若 PAT 无 Actions 权限（401/403/404），对公开仓库退回匿名 API 请求，不把 Actions 端点权限不足误判为 Token 无效。
+- **隐私：** 只记录工作流名、Run ID、状态和短 SHA；不记录 commit title/body、Token 或 API 正文。
+- **回归测试：** 新增 `src/github-actions-gate.cjs` 与 `tests/github-actions-gate.test.cjs`，覆盖活动状态筛选、匿名回退、无活动立即放行、等待至完成、固定超时/API 失败超时和停止取消。
+- **本地验证：** 此 connector 会话没有本地工作树，未声称运行 `npm test`、`node --check` 或 `git diff --check`。需要 Windows Actions 实际验证全套测试、清单和 NSIS。
+- **发布状态：** 应用版本 0.2.3，尚未正式发布；仅在 CI 验证成功后另提交 `[release]` 发布记录并确认最终安装包资产。
