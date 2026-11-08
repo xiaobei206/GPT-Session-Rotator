@@ -2,10 +2,10 @@
 
 ## Current implementation state
 
-- Latest published release is still v0.2.2 while the official v0.2.3 release workflow is running. v0.2.3 validation commit `b3ca80047059368ab6bc3b116a3bd2701c261a86` passed Actions run `42489476190` with 56 tests, 15 JS/CJS syntax checks, 22 manifest entries, Windows x64 NSIS build and upload.
+- Latest published release is v0.2.3: https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.3. Final Release Actions run `42489779743` succeeded with 56 tests, 15 JS/CJS syntax checks, 22 manifest entries, Windows x64 NSIS build/upload and release publication.
 - v0.2.3 adds a startup gate for queued/active GitHub Actions runs on `xiaobei206/padavan-4.4-2/main`: every 60 seconds, with the configured maximum-wait interval as the hard deadline, Stop cancellation, and fail-open behavior on timeout/API errors.
 - The commit baseline is established only after the startup gate resolves. The gate logs workflow name, Run ID/status and short SHA only; it never logs Token values or commit titles/body.
-- v0.2.2 final Actions run `42487228051` succeeded with 46 tests, 13 JS/CJS syntax checks, 20 manifest entries, Windows x64 NSIS build/upload and official Release publication. The v0.2.3 final source validation run `42489476190` also succeeded with 56 tests, 15 syntax checks and 22 manifest entries; the official release job is being re-run from a dedicated `[release]` commit.
+- v0.2.3 final Actions run `42489779743` succeeded: 56 tests, 15 JS/CJS syntax checks, 22 source-manifest entries, Windows x64 NSIS build/upload and official Release publication. Installer SHA-256: `c2222fe20e6b82267fd37843f002ad209fd67c5d64c25d891bbf79bc19741d24`.
 - v0.2.3 Actions, Windows packaging and formal release must be confirmed live. Real Windows DPAPI/PAT and signed-in ChatGPT end-to-end checks remain manual.
 
 # AI Bootstrap Prompt — GPT Session Rotator
@@ -24,8 +24,8 @@
 
 ## 当前已知基线（接手时须复核）
 
-- 最新正式版本仍为 v0.2.2；v0.2.3 是加入启动前 Actions 门禁的待验证版本。
-- v0.2.2 最终 Actions run `42487228051` 成功：46/46 测试、13 项 JavaScript/CJS 语法、20 项 SHA-256 manifest、Windows x64 NSIS 构建与正式 Release 全部成功。
+- 最新正式版本为 v0.2.3，已正式发布；v0.2.2 及更早版本的测试数字仅属历史。
+- v0.2.3 最终 Actions run `42489779743` 成功：56/56 测试、15 项 JavaScript/CJS 语法、22 项 SHA-256 manifest、Windows x64 NSIS 构建与正式 Release 全部成功。
 - v0.2.3 的启动门禁必须在 Start 时检查 `xiaobei206/padavan-4.4-2/main` 上排队/运行中的 Actions，60 秒复查，停止可取消，超时等于当前设置的最长等待时间；超时或请求失败要继续启动，不得无限等待。
 - v0.2.3 的 Windows Actions、安装包和正式 Release 状态必须实时核验；不得宣称本机 DPAPI、真实 PAT 权限或 ChatGPT 登录态端到端验证已完成。
 

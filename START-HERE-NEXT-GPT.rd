@@ -1,18 +1,18 @@
-> **当前开发状态（2026-11-08）：** v0.2.3 启动前 GitHub Actions 门禁已通过 Windows CI（run `42489476190`：56/56 tests、15 个 JS/CJS 语法检查、22 项源码清单、Windows x64 NSIS 构建/上传）。最新正式版仍为 v0.2.2；现在由独立 `[release]` 提交启动正式发布验证，发布链接以 Release 页面最终状态为准。
+> **当前开发状态（2026-11-08）：** v0.2.3 已正式发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.3。最终 Actions run `42489779743` 中 56/56 测试、15 项 JS/CJS 语法、22 项源码清单、Windows x64 NSIS 构建/上传和 Release job 均成功。
 
 # GPT Session Rotator — 下一轮 GPT 必读交接指令
 
 > 更新日期：2026-11-08
 > 仓库：https://github.com/xiaobei206/GPT-Session-Rotator
 > 默认分支：`main`
-> 源码版本：`0.2.3`（CI 已通过，Release 验证中）
-> 最新正式安装包：`0.2.2`（当前正式 Release）
+> 源码版本：`0.2.3`
+> 最新正式安装包：`0.2.3`（Release 已正式发布）
 
 > **接手规则：** 先检查远程 `main`、最新 Actions 与 Releases，再读本文件后续历史背景。不要把旧版本交接信息当作实时状态。
 
 ## 当前状态
 
-- v0.2.2 已正式发布；v0.2.3 的 Windows CI 已通过，正在执行独立的正式 Release 工作流；只有查到正式 tag/资产后才替换安装包链接。
+- v0.2.3 已正式发布；Windows build 与 Release job 均成功，下载入口以 README 和 Release v0.2.3 为准。
 - 设置面板布局：独立滚动区 + 固定主操作栏；提示词输入框默认 140px 高、可调整，工具栏提供“提示词”快捷按钮。
 - 真实用户桌面分辨率/缩放下的目视验收仍待反馈。
 - 项目规则、源代码和以往事故记录见下方原有接手清单及 `docs/DEVELOPMENT-LOG.md`。
@@ -44,7 +44,7 @@
 
 ## 版本与提交约束
 
-- 每次正式应用行为变更都要同步更新 `package.json`、`VERSION`、`src/index.html` 的版本显示、`CHANGELOG.md` 和 `docs/DEVELOPMENT-LOG.md`。0.2.2 之后的常规修复版本通常应为 `0.2.3`。
+- 每次正式应用行为变更都要同步更新 `package.json`、`VERSION`、`src/index.html` 的版本显示、`CHANGELOG.md` 和 `docs/DEVELOPMENT-LOG.md`。0.2.3 之后的常规修复版本通常应为 `0.2.4`。
 - 每个代码或开发流程变更提交，必须在同一提交中更新 `docs/DEVELOPMENT-LOG.md`；说明原因、文件、实际测试结果、打包状态、限制和后续事项。
 - 不删除失败测试来让结果变绿；不伪造测试/打包结果；不创建虚假的 `package-lock.json`；不强推，不重写已发布历史，不盲目 `git add .`。
 - 文档中如有脚本占位符、未解析的统计或未经核实的断言，必须明确标注或修复，不能让下一轮 GPT 将其当成事实。

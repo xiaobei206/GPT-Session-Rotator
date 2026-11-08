@@ -1,10 +1,10 @@
 # GPT Session Rotator
 
-**最新正式版仍为 v0.2.2。v0.2.3 启动前 GitHub Actions 门禁已通过 Windows CI（56/56 测试、15 项语法检查、22 项源码清单），正在进入正式发布验证。**
+**最新正式版：v0.2.3 已于 2026-11-08 正式发布。** 启动前会检查目标仓库 main 的排队/运行中 Actions；每 60 秒复查，超时或查询失败后继续启动，不会无限等待。
 
-**最新正式安装包：** [下载 GPT Session Rotator 0.2.2](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.2/GPT.Session.Rotator-0.2.2-Setup.exe)
+**最新正式安装包：** [下载 GPT Session Rotator 0.2.3](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.3/GPT.Session.Rotator-0.2.3-Setup.exe)
 
-**[最新正式 Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2)**
+**[最新正式 Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.3)**
 
 > 安装包由 GitHub Actions 在 Windows Runner 上构建并通过 Release 发布。当前 EXE 未配置 Authenticode 代码签名；请在 Windows 设备上完成安装和启动验证。
 

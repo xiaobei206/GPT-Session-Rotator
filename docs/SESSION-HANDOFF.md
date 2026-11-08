@@ -2,15 +2,15 @@
 
 更新日期：2026-11-08
 
-> **最新正式版：** v0.2.2：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2。v0.2.3 启动前 Actions 门禁已通过验证提交的 Windows CI；正在由独立 `[release]` 提交触发正式发布验证，Release 资产需以工作流最终结果为准。
+> **最新正式版：** v0.2.3 已正式发布（Release ID `438298327`）：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.3。
 >
-> **v0.2.3 最终验证提交：** `b3ca80047059368ab6bc3b116a3bd2701c261a86`；Actions run `42489476190`（https://github.com/xiaobei206/GPT-Session-Rotator/actions/runs/42489476190），completed/success。
+> **正式安装包：** `GPT.Session.Rotator-0.2.3-Setup.exe`，102,033,908 bytes；SHA-256 `c2222fe20e6b82267fd37843f002ad209fd67c5d64c25d891bbf79bc19741d24`。Blockmap：106,096 bytes；SHA-256 `bd5721ef9993efef0130a361cc1deed475721093b42a4409c9119918bdc734e4`。
 >
-> **自动验证：** 56/56 测试通过，15 个 JS/CJS 文件语法检查通过，22 项 `SOURCE-MANIFEST.sha256` 通过；Windows x64 NSIS 构建与工件上传成功。Actions 工件 ZIP：102,141,658 bytes，SHA-256 `90aa609c0b42dd8eaf1a1522f792991b91ccffc87eecd2032fd0b78d98b52ed3`，artifact ID `13620902700`。
+> **最终 Actions：** run `42489779743` completed/success；`Test and build Windows installer` 与 `Publish GitHub Release` 两个 job 均成功。自动测试 56/56 通过，15 个 JS/CJS 文件语法检查通过，22 项源码清单通过，Windows x64 NSIS 构建、工件上传及正式 Release 创建全部成功。
 >
-> **v0.2.3 行为：** 点击“开始”先检查 `xiaobei206/padavan-4.4-2/main` 的排队/运行中 Actions，每 60 秒复查；等待上限为开始时选择的最长等待时长。停止可取消；超时/API 持续失败时记录警告并继续启动。Token/匿名回退共用请求时间预算，超时后的迟到响应不会误报“检查通过”。
+> **v0.2.3 门禁行为：** 点击“开始”先检查 `xiaobei206/padavan-4.4-2/main` 的排队/运行中 Actions，每 60 秒复查；最长等待采用启动时选择的人工最长等待时长。点击“停止”可取消；API 查询失败或达到上限仍未完成会记录警告并继续启动。Token/匿名回退共用同一请求时间预算；截止时间后的迟到响应不会放行，也不会生成误导性的成功日志。
 >
-> **隐私边界：** 启动门禁日志只记录工作流名、Run ID、状态和短 SHA，不记录提交标题/正文或 Token。Real Windows DPAPI/PAT 和 ChatGPT 登录态端到端仍需手工验证。安装包未配置 Authenticode 签名。
+> **实机边界：** CI 不等于用户 Windows 的 DPAPI/PAT 或 ChatGPT 登录态端到端已验证。安装包未配置 Authenticode 签名，真实设备上的启动门禁仍需人工确认。
 
 ## 本轮功能和改动
 
