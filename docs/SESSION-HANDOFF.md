@@ -15,7 +15,9 @@
 - 应用：`src/index.html`、`src/style.css`、`src/renderer.js`、`src/main.cjs`、`VERSION`、`package.json`、`CHANGELOG.md`、`SOURCE-MANIFEST.sha256`。
 - 测试：新增 `tests/ui-layout.test.cjs`，验证 Start/Stop/Reload/提示词按钮不在滚动容器内，提示词和其他设置在滚动容器内，且有纵向滚动/可调整高度。
 - 文档：README、AI bootstrap、下轮接手文件、测试清单和累计开发日志同步更新。
-- 工具会话没有本地工作树；不要声称本地 Node 测试或本地 Windows 打包已执行。以本轮 GitHub Actions 的实际日志为准。
+- **最新 CI：** run `42483012468` 已整体成功：44/44 tests、12 个 JS/CJS 语法检查、19 项 SHA-256 manifest、Windows x64 NSIS 构建和 Actions 工件上传均通过。工件 ZIP：102,138,790 bytes，SHA-256 `7f9e795480fd590f251c6bc9e866a607ea98a08c07628009e12667667cb3a96c`。
+- 该提交尚未触发正式 Release；本轮 `[release]` docs-only 提交会重跑完整 CI 并发布 v0.2.1。Release 发布完成后须再核验 tag 与 EXE/blockmap 摘要。
+- 工具会话没有本地工作树；不要声称本地 Node 测试、本地 Windows 打包或用户电脑人工视觉验收已执行。以 Actions 实际日志为准。
 - v0.2.0 正式版链接：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0。
 
 --- 历史交接记录（仅作背景；以上状态优先）

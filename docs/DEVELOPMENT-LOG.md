@@ -311,3 +311,14 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **版本 / 元数据：** 更新 `VERSION`、`package.json`、界面和启动日志版本为 0.2.1；更新 README、CHANGELOG、接手文档及源码 SHA-256 清单。
 - **本地验证边界：** 当前 connector 会话未提供可运行的本地工作树，未宣称本地 `npm test`、`node --check` 或 `git diff --check` 已通过。此前 v0.2.0 Windows CI 通过 42/42 测试；本次新增 UI 回归测试和整个项目会由新的 Windows Actions run 验证。
 - **Windows / Release：** 此提交先触发验证构建，不触发正式 Release。只有所有单元测试、11+ JS/CJS 语法检查、manifest、Windows x64 NSIS 构建和工件上传成功后，才创建独立 `[release]` 文档提交。
+
+
+## 2026-11-08 — v0.2.1 设置滚动布局 Windows CI 验证通过，准备正式发布
+
+- **验证提交：** `4c7ee71e9d05ece7da18ed0a328f7fb17fdac108`
+- **Actions run：** `42483012468`（https://github.com/xiaobei206/GPT-Session-Rotator/actions/runs/42483012468），整体 completed/success；`Test and build Windows installer` 成功，Release job 因为本提交不是 `[release]` 而按设计 skipped。
+- **自动测试：** 44 tests、44 pass、0 fail；包含 2 项新建 UI 布局回归测试，验证主要操作按钮位于独立滚动区之外、提示词位于滚动区内，且样式支持滚动/调整高度。
+- **语法检查：** 12 个 JS/CJS 文件全部 `node --check` 通过。
+- **源码清单：** 19 项 `SOURCE-MANIFEST.sha256` 全部通过。
+- **Windows 构建与上传：** 成功构建 x64 NSIS `GPT Session Rotator-0.2.1-Setup.exe` 及 blockmap，并上传 Actions artifact `windows-nsis-installer.zip`；102,138,790 bytes，ZIP SHA-256 `7f9e795480fd590f251c6bc9e866a607ea98a08c07628009e12667667cb3a96c`，artifact ID `13618491167`。
+- **已知边界：** 本次自动化验证没有覆盖用户电脑上的人工窗口视觉验收；尚未发布 v0.2.1。接下来单独 `[release]` docs-only 提交将触发正式发布流程，发布完成后再核对 EXE 与 blockmap 的实际 Release 资产。

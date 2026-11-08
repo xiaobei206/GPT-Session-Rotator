@@ -1,6 +1,6 @@
 > **2026-11-08 当前任务：** 最新正式版 v0.2.0 已发布；本轮目标 v0.2.1 修复左上设置区裁切。已确认根因是 `.controls{overflow:hidden}` + 固定 330px 面板，没有独立滚动容器，提示词框仅 50px。修正为固定操作栏（包含开始/停止/刷新/提示词快捷入口）和独立纵向滚动设置区，提示词框增高且可调整。
 >
-> **验收标准：** 新增 `tests/ui-layout.test.cjs`；版本所有元数据同步；SHA-256 manifest 校验通过；Windows CI 所有测试、语法检查、NSIS 构建/上传成功；独立 `[release]` 流程正式发布后才交付。
+> **验证状态：** Windows Actions run `42483012468` 已完成并成功：44/44 tests、12 项语法检查、19 项 manifest、NSIS 构建/工件上传全部通过。当前提交将以单独 `[release]` 消息重跑完整 CI 并触发 v0.2.1 正式发布；须核实 Release 资产后交付。
 >
 
 # GPT Session Rotator — 下一轮 GPT 必读交接指令
