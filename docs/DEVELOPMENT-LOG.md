@@ -346,3 +346,15 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **版本/清单：** 更新版本元数据、GitHub User-Agent、`CHANGELOG.md`、README、测试/发布说明、交接文档和 `SOURCE-MANIFEST.sha256`。
 - **本地验证：** 当前 connector 会话未提供可执行本地工作树；未声称本地 `npm test`、`node --check` 或 `git diff --check` 已运行。Windows Actions 必须验证测试、语法、manifest 和 NSIS 构建。
 - **发布状态：** 此条为应用源码版本 0.2.2 的验证提交，不含 `[release]`；正式发布必须等验证构建成功后另发独立 `[release]` 文档提交，再确认实际 Release 资产。
+
+
+## 2026-11-08 — v0.2.2 Windows CI 验证通过，触发正式 Release
+
+- **验证提交：** `24206277861c1dd725e31592c7de9f8a7d782b3a`。
+- **Actions run：** `42487032072`（https://github.com/xiaobei206/GPT-Session-Rotator/actions/runs/42487032072），整体 completed/success；Test/build job 成功，Publish job 因验证提交不含 `[release]` 而按设计 skipped。
+- **自动测试：** 46 tests、46 pass、0 fail；包含 Token 保存/清除状态契约、未变化 SHA 的安全轮询心跳，以及原有功能回归。
+- **语法与清单：** 13 个 JS/CJS 文件 `node --check` 全部通过；20 项 `SOURCE-MANIFEST.sha256` 全部通过。
+- **Windows 构建与上传：** x64 NSIS `GPT Session Rotator-0.2.2-Setup.exe` 和 blockmap 构建成功；Actions 工件 `windows-nsis-installer.zip`，102,139,073 bytes，SHA-256 `44682ffe944ab3f33a7b1fe036ea4e7b6b59b5f2ae7edd21cae03e00653589e6`，artifact ID `13619494585`。
+- **签名状态：** 当前没有配置 Authenticode 代码签名证书；安装包按既有 CI 流程跳过代码签名。
+- **发布动作：** 本提交标题包含 `[release]`，让 Release job 在重新跑过版本、manifest、测试、语法和 Windows 安装包构建后创建正式 Release；只有该 run 成功并能读到正式资产后，才更新最终下载链接和安装包摘要。
+- **实机边界：** CI 不会验证用户电脑上的 DPAPI 解密、真实 PAT 权限或 ChatGPT 登录态下发现新提交后提前轮换；这些仍需要本机实测。

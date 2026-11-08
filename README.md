@@ -25,9 +25,15 @@
 
 A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT conversation, optionally selects Think, pastes a fixed prompt, submits it, and starts the next cycle when the configured wait expires or an early-rotation condition is met.
 
+## v0.2.2 GitHub Token 状态同步与轮询日志
+
+- 保存或清除 Token 后，界面状态会立即与主进程返回的凭据状态同步：30 秒选项、清除按钮和“已加密保存/未设置”标签不再彼此矛盾。
+- 轮询成功但 main SHA 没变化时，也会记录“GitHub轮询检查”，包括短 SHA、提交年龄、是否仍为启动基线/候选提交、请求认证方式和静默阈值。
+- 日志只包含状态与短 SHA，不记录 Token、提交消息或提交正文。
+
+
 ## v0.2.1 设置区布局优化
 ## GitHub Token 状态同步与轮询日志
-
 - 保存或清除 Token 后，界面状态会立即与主进程返回的凭据状态同步：30 秒选项、清除按钮和“已加密保存/未设置”标签不再彼此矛盾。
 - 轮询成功但 main SHA 没变化时，也会记录“GitHub轮询检查”，包括短 SHA、提交年龄、是否仍为启动基线/候选提交、请求认证方式和静默阈值。
 - 日志只包含状态与短 SHA，不记录 Token、提交消息或提交正文。
