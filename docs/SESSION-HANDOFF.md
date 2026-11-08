@@ -2,15 +2,15 @@
 
 更新日期：2026-11-08
 
-> **最新正式版：** v0.2.1 已发布；Release：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.1。
+> **最新正式版：** v0.2.1 已发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.1。v0.2.2 源码修改待本次验证，正式发布状态以实时 Actions 与 Release 为准。
 >
-> **本轮修复：** 左侧设置卡片现由固定操作栏与独立纵向滚动设置区组成。最长等待、开始/停止、刷新 GPT、提示词快捷入口一直留在固定栏；代理、Think、GitHub、结束标记和固定提示词在下方滚动区中。提示词默认高度 140px、可垂直调整，并可通过“提示词”按钮滚动聚焦。
+> **v0.2.2 修复内容：** Token 保存/清除 IPC 结果统一返回 `githubTokenConfigured`、`githubTokenRejected` 和轮询间隔，渲染层同时兼容旧结果字段；保存后立即启用 30 秒档、启用清除按钮并显示“已加密保存”，清除后恢复“未设置”且轮询回落到 90 秒。
 >
-> **CI：** 最终 Release run `42483241721` 成功：44/44 测试、12 项 JS/CJS 语法检查、19 项 manifest、Windows x64 NSIS 构建/上传及 Release 发布均通过。
+> **GitHub 可观测性：** main SHA 未变化的成功查询也写入“GitHub轮询检查”日志，包含短 SHA、基于 GitHub Date 的提交年龄、基线/候选状态、请求认证方式和静默阈值。Token 和 commit message/body 不会写入日志。
 >
-> **安装包：** `GPT.Session.Rotator-0.2.1-Setup.exe`，102,031,179 bytes，SHA-256 `ac63d87b015d90407ba2de0d9c59756dab24cfa73d49503e791f19ba32457010`。
+> **待本次 Actions 验证：** 新增 Token/UI 字段契约和成功轮询可观测性回归测试；Windows 测试、manifest、语法检查和 NSIS 构建须以实际 Actions 结果为准。
 >
-> **待用户设备验证：** 尚未在用户实际屏幕分辨率/Windows 缩放下人工运行并目视确认面板布局。若仍有遮挡，请提供窗口尺寸/DPI 和不含提示词正文的截图或描述；无需提供 Token 或聊天内容。
+> **未完成实机验证：** 尚未在用户 Windows 电脑上实测真实 DPAPI Token 保存/重启读取、真实 GitHub Token 认证及新提交触发整段流程。CI 通过不代表实机端到端完成。
 
 ## 本轮功能和改动
 

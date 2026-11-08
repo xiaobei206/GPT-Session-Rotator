@@ -27,6 +27,8 @@ The test suite uses Node's built-in test runner and should not need an Electron 
 - Length warning needs five continuous seconds; warning disappearance, changes, and long observation gaps reset the timer.
 - GitHub polling offers 90/120/150/180 seconds without a token and additionally 30 seconds only when authenticated; default is 90 seconds. Invalid or unauthenticated 30-second choices are rejected.
 - Authenticated commit requests add a Bearer header; unauthenticated requests do not. Token persistence uses safeStorage encryption, never plaintext settings; unavailable encryption fails closed. Token clearing and HTTP 401 fallback return polling to 90 seconds.
+- Token save/clear IPC results use the same `githubTokenConfigured` / `githubTokenRejected` keys as the initial status query, so the 30-second option, clear button, and status label update immediately.
+- Unchanged successful polls emit a `GitHub轮询检查` heartbeat with short SHA, GitHub-Date-based commit age, monitor state, auth mode, and threshold; neither Token nor commit body may enter the log.
 - Changing the poll interval reschedules the active poll cadence. Quiet-threshold default/range and immediate re-evaluation are also checked.
 - Existing SHA at startup is baseline only; new SHA is eligible; GitHub Date is required; failed requests do not trigger; next SHA resets candidate.
 - Settings persist and invalid values are rejected.

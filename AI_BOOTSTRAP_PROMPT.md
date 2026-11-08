@@ -2,11 +2,11 @@
 
 ## Current implementation state
 
-- Latest published release: GPT Session Rotator v0.2.1. Release: https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.1.
-- v0.2.1 fixes the clipped settings panel by keeping wait settings and Start/Stop/Refresh/Prompt actions in a fixed toolbar while proxy/Think/GitHub/completion/prompt settings scroll independently.
-- The prompt textarea is 140px high by default, vertically resizable from 100px up to 300px; the fixed “提示词” toolbar button scrolls it into view and focuses it.
-- Latest release Actions run `42483241721`: 44/44 tests, 12 JS/CJS syntax checks, 19 source manifest entries, Windows x64 NSIS build/upload, and Release publication all succeeded.
-- Remaining manual boundary: the user has not yet visually verified the layout on their own screen DPI/window sizing. Do not claim real-device visual verification before user feedback.
+- Latest published release remains v0.2.1 until v0.2.2 validation and the release workflow is confirmed.
+- v0.2.2 fixes the Token status contract between main-process save/clear results and renderer state, and adds safe heartbeat logs for successful unchanged GitHub main polls.
+- Heartbeat logs contain short SHA, GitHub-Date-based commit age, baseline/candidate state, auth mode, and threshold; they never contain Token values or commit message/body.
+- v0.2.1 Windows CI/Release run `42483241721` passed 44 tests, 12 JS/CJS syntax checks, 19 source-manifest entries and Windows x64 NSIS publication.
+- Check v0.2.2 Actions and official Release live before claiming success. Real Windows DPAPI/PAT and signed-in ChatGPT end-to-end checks remain manual.
 
 # AI Bootstrap Prompt — GPT Session Rotator
 
@@ -24,12 +24,10 @@
 
 ## 当前已知基线（接手时须复核）
 
-- 最新已知正式版为 `v0.1.15`；Release： https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.15
-- 对应最终成功的 Actions run 为 `42400753265`：38/38 测试通过、11/11 个 JS/CJS 语法检查通过、18 项源码 SHA-256 清单通过，Windows x64 NSIS 构建及 Release 发布成功。
-- v0.1.15 修复新版 ChatGPT app-shell 助手节点识别，并加入 selector 命中计数和正文稳定性复核；但**没有**在用户真实 Windows + ChatGPT 登录态中完成人工端到端验证。
-- 当前开发项：0.1.16 新增 GitHub API 查询间隔下拉菜单，选项 90/120/150/180 秒，默认 90 秒；运行中选择会调整后续轮询。先检查本次 Actions 和 Release 再汇报。
-- 用户此前反馈把助手结束标记设为 `本轮完成` 后未触发下一轮。真实 Windows + ChatGPT 登录态端到端验证仍未完成；不要把单元测试通过说成现场问题已经解决。
-- 相关日志可能出现 `结束回显扫描`、`结束回显节点发现`、`结束回显节点诊断`、`任务结束回显`。可请用户只提供这些不含回复正文的状态日志；不要要求上传完整聊天正文、cookies、个人资料或网络请求/响应正文。
+- 当前已发布正式版：v0.2.1；当前源码拟升至 v0.2.2，是否正式发布必须实时检查 Release 和 Actions。
+- v0.2.1 最终 Actions run `42483241721` 成功：44/44 测试、12 项 JavaScript/CJS 语法、19 项 SHA-256 manifest、Windows x64 NSIS 构建和正式 Release 全部成功。
+- v0.2.2 修复 Token 保存/清除状态同步；GitHub main 成功查询即使 SHA 未变化也须记录短 SHA、提交年龄、基线/候选状态与认证方式，不得将 Token 或 commit body 写入日志。
+- v0.2.2 的 Windows Actions、安装包和 Release 状态必须实时核验；不得宣称本机 DPAPI、真实 PAT 验证或 ChatGPT 登录态端到端已完成。
 
 ## 不可破坏的功能和隐私边界
 

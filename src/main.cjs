@@ -6,7 +6,7 @@ const { analyzeAssistantCompletionSnapshot, createAssistantCompletionState, obse
 const { fetchLatestCommit, createGithubMonitorState, observeGithubCommit, GITHUB_POLL_INTERVAL_MS, GITHUB_DEFAULT_QUIET_THRESHOLD_MS, normalizeGithubPollIntervalSeconds, normalizeGithubQuietThresholdMinutes } = require('./github-monitor.cjs');
 const { loadGithubPollIntervalSeconds, saveGithubPollIntervalSeconds, loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker, normalizeGithubToken, loadGithubToken, saveGithubToken, clearGithubToken } = require('./settings.cjs');
 
-const VERSION = '0.2.1';
+const VERSION = '0.2.2';
 const PARTITION = 'persist:gpt-session-rotator';
 const CHATGPT_HOME = 'https://chatgpt.com/';
 const HEADER_HEIGHT = 54;
@@ -154,7 +154,12 @@ async function updateGithubToken(value) {
   githubToken = token;
   githubTokenRejected = false;
   emitProgress('GitHub Token 已保存', 'Token 已通过 Windows DPAPI 加密保存在本机；30 秒轮询选项已开放。Token 内容不会写入日志。', 'success', scheduler.cycle);
-  return { ok:true, configured:true, rejected:false };
+  return {
+    ok:true,
+    githubTokenConfigured:true,
+    githubTokenRejected:false,
+    githubPollIntervalSeconds:Math.round(githubPollIntervalMs / 1000)
+  };
 }
 
 function removeGithubToken() {
@@ -167,7 +172,12 @@ function removeGithubToken() {
   githubTokenRejected = false;
   if (githubPollIntervalMs < 90_000) updateGithubPollInterval(90);
   emitProgress('GitHub Token 已清除', '已清除本机加密 Token；GitHub 轮询恢复为未认证模式，30 秒选项已关闭。', 'warning', scheduler.cycle);
-  return { ok:true, configured:false, rejected:false };
+  return {
+    ok:true,
+    githubTokenConfigured:false,
+    githubTokenRejected:false,
+    githubPollIntervalSeconds:Math.round(githubPollIntervalMs / 1000)
+  };
 }
 
 function saveStats() {
@@ -321,10 +331,25 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
         githubFailures = 0;
 
         const observation = observeGithubCommit(scheduler.githubMonitorState, commit, githubQuietThresholdMs);
+        if (observation.status === 'unchanged') {
+          const candidateIsCurrent = scheduler.githubMonitorState?.candidateSha === commit.sha;
+          const baselineIsCurrent = scheduler.githubMonitorState?.baselineSha === commit.sha;
+          const stateDetail = candidateIsCurrent
+            ? `候选提交 ${commit.sha.slice(0, 7)} 仍在监测中`
+            : baselineIsCurrent
+              ? '当前 SHA 仍是启动基线（不会触发轮换）'
+              : '当前 SHA 未变化';
+          emitProgress(
+            'GitHub轮询检查',
+            `main 查询成功；最新 SHA ${commit.sha.slice(0, 7)}；提交年龄约 ${Math.floor(commit.ageMs / 60_000)} 分钟；${stateDetail}；请求认证=${hasAuthenticatedGithubToken() ? 'Token' : '匿名'}；静默阈值 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟。`,
+            'info',
+            run.cycle
+          );
+        }
         if (observation.status === 'baseline') {
           emitProgress('GitHub启动基线', `已记录启动时 main 分支的基线提交 ${commit.sha.slice(0, 7)}。此提交早于本次运行，不会触发立即轮换；只有运行期间出现新提交，且之后静默满 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟，才会提前轮换。`, 'info', run.cycle);
         } else if (observation.status === 'new-commit') {
-          emitProgress('GitHub检测到新提交', `main 分支出现本次运行启动后的新提交 ${commit.sha.slice(0, 7)}；开始监测其后续静默时间。`, 'info', run.cycle);
+          emitProgress('GitHub检测到新提交', `main 分支出现本次运行启动后的新提交 ${commit.sha.slice(0, 7)}；提交年龄约 ${Math.floor(commit.ageMs / 60_000)} 分钟；请求认证=${hasAuthenticatedGithubToken() ? 'Token' : '匿名'}；静默阈值 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟。`, 'info', run.cycle);
         } else if (observation.status === 'baseline-restored') {
           emitProgress('GitHub提交回退', `main 分支回到启动基线 ${commit.sha.slice(0, 7)}；清除未触发的候选提交，不提前轮换。`, 'info', run.cycle);
         }
@@ -977,7 +1002,7 @@ ipcMain.handle('automation:start', async (_event, options) => {
   scheduler.pendingGithubRotation = null;
   scheduler.running = true;
   scheduler.nextRunAt = null;
-  emitProgress('启动运行', `0.2.1 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
+  emitProgress('启动运行', `0.2.2 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
   void primeGithubMonitorBaseline(scheduler.githubMonitorState);
   void executeCycle();
   return { ok:true };

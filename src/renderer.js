@@ -29,8 +29,8 @@ function setRunning(value) {
   $('stopBtn').disabled = !value;
 }
 function syncGithubAuthControls(status = {}) {
-  const configured = status.githubTokenConfigured === true;
-  const rejected = status.githubTokenRejected === true;
+  const configured = status.githubTokenConfigured === true || status.configured === true;
+  const rejected = status.githubTokenRejected === true || status.rejected === true;
   const fastOption = $('githubPollInterval').querySelector('option[value="30"]');
   if (fastOption) fastOption.disabled = !configured || rejected;
   $('clearGithubTokenBtn').disabled = !configured;
@@ -224,4 +224,4 @@ window.rotator.getStatus().then(status => {
   }
 }).catch(() => {});
 
-log('程序就绪', `0.2.1：轻量模式；GitHub API 查询间隔可选 ${$('githubPollInterval').value} 秒；配置 Token 可开放 30 秒档，运行中即时生效；GitHub 静默阈值可配置。助手新回复结束标记（默认“结束任务简报”）需生成完成并稳定确认；红字/红框扫描覆盖主内容区全部滚动位置，连续确认5秒。不会保存网页回复正文或采集API正文。`);
+log('程序就绪', `0.2.2：轻量模式；GitHub API 查询间隔可选 ${$('githubPollInterval').value} 秒；配置 Token 可开放 30 秒档，运行中即时生效；GitHub 静默阈值可配置。助手新回复结束标记（默认“结束任务简报”）需生成完成并稳定确认；红字/红框扫描覆盖主内容区全部滚动位置，连续确认5秒。不会保存网页回复正文或采集API正文。`);

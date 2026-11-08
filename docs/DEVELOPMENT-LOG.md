@@ -333,3 +333,16 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **安装包：** `GPT.Session.Rotator-0.2.1-Setup.exe`，102,031,179 bytes；GitHub Release digest SHA-256：`ac63d87b015d90407ba2de0d9c59756dab24cfa73d49503e791f19ba32457010`。
 - **blockmap：** `GPT.Session.Rotator-0.2.1-Setup.exe.blockmap`，106,074 bytes；GitHub Release digest SHA-256：`2d445dc490210a5203db0c4ee9a44b8ddb303ca95b71a0ac1751224b5df9700f`。
 - **视觉验收边界：** UI 结构回归测试与 Windows 构建通过；尚未在用户桌面分辨率/显示缩放下人工运行并验收窗口视觉布局。用户安装后仍需确认滚动区、提示词聚焦与按钮可点击体验。
+
+
+## 2026-11-08 — v0.2.2 修复 GitHub Token 状态同步与轮询可观测性
+
+- **用户现场反馈：** 日志显示 Token 已保存，但 30 秒选项仍灰色、清除 Token 按钮仍禁用、状态仍显示“未设置”；等待日志中长期没有 COMMIT 检查记录。
+- **根因一：** 主进程 Token 保存/清除 IPC 返回 `configured` / `rejected`，渲染层却只读取 `githubTokenConfigured` / `githubTokenRejected`，造成真实配置状态未同步到控件。
+- **修复一：** 保存/清除 IPC 改为与 `browser:status` 相同的状态字段，携带当前轮询间隔；渲染层额外兼容旧的短字段名。保存后 30 秒轮询选项按有效认证状态开放，清除后按钮和状态标签及时更新，轮询恢复到至少 90 秒。
+- **根因二：** 成功查询到相同 SHA 的正常轮询不写日志；代码虽有定时请求，但使用者无法通过运行日志判断轮询是否持续发生。
+- **修复二：** 对每次成功的 unchanged SHA 查询增加“GitHub轮询检查”状态日志，包含 main 短 SHA、GitHub Date 计算的提交年龄、启动基线/候选状态、是否使用 Token 认证以及静默阈值。发现新提交仍用专门的事件日志；不记录 Token、commit message 或正文。
+- **回归测试：** 新增 `tests/github-token-ui.test.cjs`，检查保存/清除状态字段与渲染层契约，并防止成功的 unchanged 查询失去可见心跳或意外包含提交正文。
+- **版本/清单：** 更新版本元数据、GitHub User-Agent、`CHANGELOG.md`、README、测试/发布说明、交接文档和 `SOURCE-MANIFEST.sha256`。
+- **本地验证：** 当前 connector 会话未提供可执行本地工作树；未声称本地 `npm test`、`node --check` 或 `git diff --check` 已运行。Windows Actions 必须验证测试、语法、manifest 和 NSIS 构建。
+- **发布状态：** 此条为应用源码版本 0.2.2 的验证提交，不含 `[release]`；正式发布必须等验证构建成功后另发独立 `[release]` 文档提交，再确认实际 Release 资产。

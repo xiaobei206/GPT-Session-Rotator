@@ -1,3 +1,8 @@
+## 0.2.2 - 2026-11-08
+
+- Fixed GitHub Token UI state synchronization: save/clear IPC responses now expose the same configured/rejected status fields as the initial status query, so the 30-second option, clear button, and status label reflect the saved credential immediately.
+- Added successful unchanged-poll heartbeat logs showing the short main-branch SHA, commit age from GitHub's Date header, monitor state, auth mode, and quiet threshold. Logs never include the Token or commit message/body.
+
 ## 0.2.1 - 2026-11-08
 
 - Redesigned the left settings card: the wait controls and Start/Stop/Reload actions remain in a fixed toolbar while the remaining settings scroll independently.
