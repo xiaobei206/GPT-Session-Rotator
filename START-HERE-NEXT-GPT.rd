@@ -6,6 +6,8 @@
 > 源码版本：`0.1.15`（助手 app-shell 修复提交：`37c4d728f335a194162f341c56a82ab95e110cc4`）
 > 最近正式安装包：`0.1.15`（Release 已正式发布）
 
+> **接手顺序：** 新对话先读根目录 `AI_BOOTSTRAP_PROMPT.md` 获取当前任务与验证边界，再把本文件作为详细规程；本文件后半部分包含历史事故记录，历史状态不能覆盖实时 `main`、Actions 与 Release 结果。
+
 ## 当前状态先看这里
 
 - 应用源码和 `tests/` 已由用户导入并推送到 `main`。源码导入提交：`fc22749d8f35f2ff9464605cbbb73df1098a64a3`。
@@ -18,7 +20,7 @@
 
 ## 每次接手必须做的事
 
-1. 先读完本文件，再读 `README.md`、`VERSION`、`package.json`、`CHANGELOG.md`。
+1. 已先阅读根目录 `AI_BOOTSTRAP_PROMPT.md` 后，再读完本文件及 `README.md`、`VERSION`、`package.json`、`CHANGELOG.md`。
 2. 阅读 `docs/SESSION-HANDOFF.md`、`docs/PROJECT-ARCHITECTURE.md`、`docs/DEVELOPMENT-RULES.md`、`docs/TESTING-AND-RELEASE.md`、`docs/SOURCE-IMPORT-STATUS.md` 和最新的 `docs/DEVELOPMENT-LOG.md`。
 3. `git fetch origin`，检查 `git status --short --branch`、`git log -8 --oneline --decorate` 和远程 `main`。以当前 Git 内容为准，不依赖旧对话中记忆的 SHA。
 4. 在修改代码前，从当前检出目录运行 `npm test`，并执行各 JavaScript/CJS 文件的 `node --check`。如环境、依赖或命令导致无法执行，记录原始错误，不要猜测结果。

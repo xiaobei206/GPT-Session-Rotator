@@ -206,3 +206,10 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **发布：** GitHub Release \`v0.1.15\` 已作为正式版创建（非 Draft、非 Pre-release）：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.15。
 - **安装包：** \`GPT.Session.Rotator-0.1.15-Setup.exe\`，102,028,250 bytes，SHA-256 \`b5e8ba76ae6a2e68399be50a784a3cac69dad9b06a9e061f5777120677be28d4\`；blockmap 106,067 bytes，SHA-256 \`4554b5936156b959a84088dc6d2161878f30677ed910714682da228bd876ae9f\`。
 - **限制：** 安装包未配置 Authenticode 签名；没有在用户真实 Windows/ChatGPT 登录态中端到端测试。因此本次只能确认 CI 和安装包成功，不能宣称用户现场的提前轮换已实测成功。
+
+## 2026-11-08 — 增加单一 AI 接手入口并澄清当前状态
+
+- **原因：** 用户希望新对话只提供仓库链接与“请接手继续开发”即可快速恢复开发。原有详细交接充分，但分布于 README、根目录交接规程、交接状态和长篇历史日志，历史记录可能增加新对话识别当前状态的成本。
+- **变更：** 新增根目录 `AI_BOOTSTRAP_PROMPT.md`，集中规定接手步骤、实时状态核验、隐私边界、当前 v0.1.15 基线与首要待办；README 将其设为第一入口；详细交接规程与当前交接状态标明权威阅读顺序和历史记录优先级。
+- **验证：** 文档-only 更新；未改变应用代码与安装包，因此未重新运行应用测试或 Windows 构建。下一轮接手必须实时检查 `main`、Actions 和 Release。
+- **限制：** v0.1.15 的 CI 与 NSIS 构建成功不等于用户真实 Windows/ChatGPT 登录态端到端行为已验证。

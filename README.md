@@ -10,7 +10,7 @@
 
 ## 开发接手与项目文档
 
-新对话接手开发时，必须先阅读根目录的 [START-HERE-NEXT-GPT.rd](START-HERE-NEXT-GPT.rd)。
+新对话接手开发时，先阅读根目录的 [AI_BOOTSTRAP_PROMPT.md](AI_BOOTSTRAP_PROMPT.md)，再按其中顺序阅读详细交接规程 [START-HERE-NEXT-GPT.rd](START-HERE-NEXT-GPT.rd)。
 
 - [当前交接状态](docs/SESSION-HANDOFF.md)
 - [开发规矩与 Git 工作流](docs/DEVELOPMENT-RULES.md)
