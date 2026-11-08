@@ -1,10 +1,10 @@
 # GPT Session Rotator
 
-**最新正式版：v0.2.0 已于 2026-11-08 发布。可选 GitHub Token 认证与 30 秒轮询已包含在正式安装包中。**
+**当前开发版本：v0.2.1（修复设置区无法滚动、提示词被裁切和操作按钮不可见的问题）。正式版 v0.2.0 仍可下载。**
 
-**Windows x64 安装包：** [下载 GPT Session Rotator 0.2.0](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.0/GPT.Session.Rotator-0.2.0-Setup.exe)
+**最新正式安装包：** [下载 GPT Session Rotator 0.2.0](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.0/GPT.Session.Rotator-0.2.0-Setup.exe)
 
-**[GitHub Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0)**
+**[最新正式 Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0)**
 
 > 安装包由 GitHub Actions 在 Windows Runner 上构建并通过 Release 发布。当前 EXE 未配置 Authenticode 代码签名；请在 Windows 设备上完成安装和启动验证。
 
@@ -21,9 +21,15 @@
 
 ---
 
-# GPT Session Rotator 0.2.0 — User Guide
+# GPT Session Rotator 0.2.1 — User Guide
 
 A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT conversation, optionally selects Think, pastes a fixed prompt, submits it, and starts the next cycle when the configured wait expires or an early-rotation condition is met.
+
+## v0.2.1 设置区布局优化
+
+- 最长等待时间、开始/停止、刷新 GPT 和“提示词”快捷按钮固定在左侧卡片顶部，不随设置内容滚动。
+- 代理、Think、GitHub 监控、结束标记和固定提示词置于独立纵向滚动区；滚动条常驻可见。
+- 固定提示词编辑框默认更高，并可拖动调整高度；点击“提示词”可滚动到编辑框并聚焦。
 
 ## v0.2.0 GitHub Token 可选认证与 30 秒轮询
 

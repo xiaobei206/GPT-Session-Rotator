@@ -31,6 +31,13 @@ The test suite uses Node's built-in test runner and should not need an Electron 
 - Existing SHA at startup is baseline only; new SHA is eligible; GitHub Date is required; failed requests do not trigger; next SHA resets candidate.
 - Settings persist and invalid values are rejected.
 
+## UI layout regression checks
+
+- The Start, Stop, Refresh GPT, and prompt-shortcut controls must remain outside the scrollable settings container.
+- Proxy, Think, GitHub settings, completion marker, and the fixed prompt must remain inside the independent settings scroll region.
+- The settings region must use vertical scrolling with `min-height:0` in its flex layout; the fixed prompt must be resizable and the shortcut must scroll/focus it.
+- Small panel heights must not reduce the prompt below its minimum editable height or hide the fixed action toolbar.
+
 ## Windows installer build
 
 On Windows with network access and npm configured:

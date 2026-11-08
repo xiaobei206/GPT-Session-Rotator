@@ -2,62 +2,71 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GPT Session Rotator 0.2.0</title><link rel="stylesheet" href="style.css">
+<title>GPT Session Rotator 0.2.1</title><link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <div class="brand"><div class="logo">G</div><div><h1>GPT Session Rotator <span>0.2.0</span></h1><p>固定节奏轮换 · GitHub 静默提前轮换 · 对话满载提前轮换</p></div></div>
+  <div class="brand"><div class="logo">G</div><div><h1>GPT Session Rotator <span>0.2.1</span></h1><p>固定节奏轮换 · GitHub 静默提前轮换 · 对话满载提前轮换</p></div></div>
   <div class="status"><span id="statusDot" class="dot"></span><span id="statusText">待机中</span><span class="sep">|</span><span id="sessionCount">本次 0 轮 · 累计 0 轮</span></div>
 </header>
 <main class="dashboard">
   <section class="controls">
-    <div class="row main-actions">
-      <label class="interval">提交后最长等待
-        <select id="interval">
-          <option value="10">10 分钟</option><option value="15">15 分钟</option><option value="20">20 分钟</option>
-          <option value="25">25 分钟</option><option value="30">30 分钟</option><option value="35">35 分钟</option><option value="40">40 分钟</option>
-          <option value="45" selected>45 分钟</option>
-        </select>
-      </label>
-      <label class="custom">自定义 <input id="customInterval" type="number" min="1" max="1440" placeholder="分钟"></label>
-      <button id="startBtn" class="primary">▶ 开始</button><button id="stopBtn" class="danger" disabled>■ 停止</button>
-      <button id="reloadBtn" class="ghost">刷新 GPT</button>
+    <div class="controls-toolbar">
+      <div class="wait-controls">
+        <label class="interval">最长等待
+          <select id="interval">
+            <option value="10">10 分钟</option><option value="15">15 分钟</option><option value="20">20 分钟</option>
+            <option value="25">25 分钟</option><option value="30">30 分钟</option><option value="35">35 分钟</option><option value="40">40 分钟</option>
+            <option value="45" selected>45 分钟</option>
+          </select>
+        </label>
+        <label class="custom">自定义 <input id="customInterval" type="number" min="1" max="1440" placeholder="分钟"></label>
+      </div>
+      <div class="toolbar-actions">
+        <button id="startBtn" class="primary">▶ 开始</button>
+        <button id="stopBtn" class="danger" disabled>■ 停止</button>
+        <button id="reloadBtn" class="ghost">刷新 GPT</button>
+        <button id="promptJumpBtn" class="ghost" title="滚动到固定提示词">✎ 提示词</button>
+      </div>
     </div>
-    <div class="proxy">
-      <label class="check"><input id="proxyEnabled" type="checkbox"> 启用代理</label>
-      <select id="proxyType"><option value="socks5">SOCKS5</option><option value="http">HTTP</option></select>
-      <input id="proxyHost" value="127.0.0.1" aria-label="代理地址" placeholder="代理地址">
-      <span>:</span><input id="proxyPort" value="7890" aria-label="代理端口" placeholder="端口">
-      <button id="applyProxyBtn" class="ghost">应用代理</button>
-      <span class="hint">仅作用于内置浏览器</span>
+    <div class="settings-scroll" id="settingsScroll">
+      <div class="section-intro"><strong>运行设置</strong><span>设置区可上下滚动 · 操作按钮始终固定可用</span></div>
+      <div class="proxy">
+        <label class="check"><input id="proxyEnabled" type="checkbox"> 启用代理</label>
+        <select id="proxyType"><option value="socks5">SOCKS5</option><option value="http">HTTP</option></select>
+        <input id="proxyHost" value="127.0.0.1" aria-label="代理地址" placeholder="代理地址">
+        <span>:</span><input id="proxyPort" value="7890" aria-label="代理端口" placeholder="端口">
+        <button id="applyProxyBtn" class="ghost">应用代理</button>
+        <span class="hint">仅作用于内置浏览器</span>
+      </div>
+      <div class="thinking-row">
+        <label class="check think-check"><input id="thinkingEnabled" type="checkbox" checked> 每轮尝试启用 Think</label>
+        <span class="hint">最多 3 次；首次失败刷新当前新对话并等 30 秒，第二次失败再等 30 秒；仍失败继续。</span>
+      </div>
+      <div class="github-row">
+        <label>API 查询间隔
+          <select id="githubPollInterval" aria-label="GitHub API 查询间隔">
+            <option value="30" disabled>30 秒（需 Token）</option><option value="90" selected>90 秒</option><option value="120">120 秒</option><option value="150">150 秒</option><option value="180">180 秒</option>
+          </select>
+        </label>
+        <label>GitHub 静默阈值 <input id="githubQuietThreshold" type="number" min="1" max="180" step="1" value="15"> 分钟</label>
+        <span class="hint">选择后自动保存；运行中即时调整后续轮询</span>
+      </div>
+      <div class="github-token-row">
+        <label>GitHub Token <input id="githubToken" type="password" maxlength="512" placeholder="粘贴 Fine-grained PAT" autocomplete="off" spellcheck="false" aria-label="GitHub Token"></label>
+        <button id="saveGithubTokenBtn" class="ghost">保存 Token</button>
+        <button id="clearGithubTokenBtn" class="ghost" disabled>清除 Token</button>
+        <span id="githubTokenStatus" class="token-status">未设置</span>
+        <span class="hint">可选；Windows DPAPI 加密保存。仅需目标仓库 Contents: Read 权限</span>
+      </div>
+      <div class="completion-row">
+        <label>助手结束回显 <input id="assistantCompletionMarker" type="text" maxlength="100" value="结束任务简报" aria-label="助手结束回显标记"></label>
+        <span class="hint">本轮新回复出现此标记即识别；生成结束并稳定确认后轮换；留空关闭</span>
+      </div>
+      <label class="prompt-label" for="prompt">固定提示词 <span>每轮在已确认的新对话中粘贴并提交</span></label>
+      <textarea id="prompt" placeholder="把完整提示词粘贴到这里……"></textarea>
+      <div class="footnote">人工等待仍是兜底；结束回显、滚动区域内的中英文红字/红框提示、GitHub 静默条件任一满足即可提前轮换。页面检测失败不影响人工计时。</div>
     </div>
-    <div class="thinking-row">
-      <label class="check think-check"><input id="thinkingEnabled" type="checkbox" checked> 每轮尝试启用 Think</label>
-      <span class="hint">最多 3 次；首次失败刷新当前新对话并等 30 秒，第二次失败再等 30 秒；仍失败继续。</span>
-    </div>
-    <div class="github-row">
-      <label>API 查询间隔
-        <select id="githubPollInterval" aria-label="GitHub API 查询间隔">
-          <option value="30" disabled>30 秒（需 Token）</option><option value="90" selected>90 秒</option><option value="120">120 秒</option><option value="150">150 秒</option><option value="180">180 秒</option>
-        </select>
-      </label>
-      <label>GitHub 静默阈值 <input id="githubQuietThreshold" type="number" min="1" max="180" step="1" value="15"> 分钟</label>
-      <span class="hint">选择后自动保存；运行中即时调整后续轮询</span>
-    </div>
-    <div class="github-token-row">
-      <label>GitHub Token <input id="githubToken" type="password" maxlength="512" placeholder="粘贴 Fine-grained PAT" autocomplete="off" spellcheck="false" aria-label="GitHub Token"></label>
-      <button id="saveGithubTokenBtn" class="ghost">保存 Token</button>
-      <button id="clearGithubTokenBtn" class="ghost" disabled>清除 Token</button>
-      <span id="githubTokenStatus" class="token-status">未设置</span>
-      <span class="hint">可选；Windows DPAPI 加密保存。仅需目标仓库 Contents: Read 权限</span>
-    </div>
-    <div class="completion-row">
-      <label>助手结束回显 <input id="assistantCompletionMarker" type="text" maxlength="100" value="结束任务简报" aria-label="助手结束回显标记"></label>
-      <span class="hint">本轮新回复出现此标记即识别；生成结束并稳定确认后轮换；留空关闭</span>
-    </div>
-    <label class="prompt-label" for="prompt">固定提示词 <span>每轮在已确认的新对话中粘贴并提交</span></label>
-    <textarea id="prompt" placeholder="把完整提示词粘贴到这里……"></textarea>
-    <div class="footnote">人工等待仍是兜底；结束回显、滚动区域内的中英文红字/红框提示、GitHub 静默条件任一满足即可提前轮换。页面检测失败不影响人工计时。</div>
   </section>
   <section class="logs">
     <div class="logs-head"><h2>运行日志</h2><div><span id="nextRun">下次循环：—</span><button id="clearLogs" class="text-btn">清空</button><button id="exportLogs" class="text-btn">导出表格</button></div></div>

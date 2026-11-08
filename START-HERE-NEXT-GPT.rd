@@ -1,6 +1,6 @@
-> **2026-11-08 正式版状态：** v0.2.0 已正式发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0。最终 Actions run `42479071427` completed/success；42/42 测试、11 项语法检查、18 项 manifest、Windows x64 NSIS 构建、工件上传和 Release 发布全部成功。
+> **2026-11-08 当前任务：** 最新正式版 v0.2.0 已发布；本轮目标 v0.2.1 修复左上设置区裁切。已确认根因是 `.controls{overflow:hidden}` + 固定 330px 面板，没有独立滚动容器，提示词框仅 50px。修正为固定操作栏（包含开始/停止/刷新/提示词快捷入口）和独立纵向滚动设置区，提示词框增高且可调整。
 >
-> **功能：** GitHub Token 可选认证；无 Token 时 90/120/150/180 秒，有 Token 时开放 30 秒（约 120 次/小时）。Token 使用 Electron safeStorage 加密；Windows DPAPI。HTTP 401 停用 Token 并退回 90 秒。用户本机真实 DPAPI/PAT 认证尚待安装后验证。读取最新 Actions/Release，不得在正式 Release 成功前宣称交付。
+> **验收标准：** 新增 `tests/ui-layout.test.cjs`；版本所有元数据同步；SHA-256 manifest 校验通过；Windows CI 所有测试、语法检查、NSIS 构建/上传成功；独立 `[release]` 流程正式发布后才交付。
 >
 
 # GPT Session Rotator — 下一轮 GPT 必读交接指令

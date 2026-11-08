@@ -2,10 +2,11 @@
 
 ## Current implementation state
 
-- Current base: GPT Session Rotator v0.1.16. Active work targets v0.2.0: optional GitHub Token authentication and a 30-second API polling option.
-- Without a Token, keep 90/120/150/180-second choices (90-second default). Enable 30 seconds only with a saved Token that has not been rejected. HTTP 401 disables that credential for requests and reverts polling to 90 seconds.
-- Token handling is security-sensitive: accept it via narrow IPC, keep plaintext only in the main process, store only Electron safeStorage ciphertext, and use Windows DPAPI. Never log, return to renderer, test with a real token, or commit the plaintext. If safeStorage is unavailable, fail closed.
-- Check current `main`, Actions and Releases before assuming this work is complete. CI and a formal Release must both succeed before reporting delivery.
+- Latest published baseline: v0.2.0. Active work targets v0.2.1 to fix the left settings panel clipping its lower content and prompt field.
+- Root cause confirmed: `.controls` used `overflow:hidden` in a fixed 330px dashboard panel; the prompt textarea was only 50px high and no inner vertical scroll region existed.
+- Target UI: fixed toolbar for wait settings and Start/Stop/Refresh/Prompt actions; independent vertical scrolling for the remaining settings and prompt; larger resizable prompt editor plus a prompt jump/focus button.
+- Add UI layout regression tests. Keep every button and input ID/IPC behavior stable. Increment all version metadata and update README, CHANGELOG, source SHA-256 manifest and dated development log.
+- Never report a new release until the new Actions run passes manifest validation, all tests, JavaScript syntax checks, Windows x64 NSIS build and artifact upload, followed by the separate `[release]` trigger and successful GitHub Release verification.
 
 # AI Bootstrap Prompt — GPT Session Rotator
 

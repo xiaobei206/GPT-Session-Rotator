@@ -300,3 +300,14 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **安装包：** `GPT.Session.Rotator-0.2.0-Setup.exe`，102,030,846 bytes；GitHub Release API digest SHA-256：`a03ee6c24164c5d6bbc3b359982f7a07681141ee6327e4d346980cc3721f87f5`。
 - **blockmap：** `GPT.Session.Rotator-0.2.0-Setup.exe.blockmap`，106,041 bytes；GitHub Release API digest SHA-256：`3ac8cdc747bf6d14360f95e7aafc1ea240bb5c0d75709835d501f6dfa71e1bea`。
 - **未完成的实机验证：** 未在用户 Windows PC 完成安装、真实 DPAPI 密文重启解密、PAT 认证和 30 秒轮询端到端验证；这些步骤须由用户安装后在本机完成，Token 不得通过聊天提供。
+
+
+## 2026-11-08 — v0.2.1 左侧设置区滚动与固定操作栏
+
+- **用户反馈：** 左上角设置区域内容被裁切，无法稳定输入固定提示词；窗口内容布局也可能把“开始”按钮推到难以点击的位置。
+- **根因：** `src/style.css` 为整个 `.controls` 使用 `overflow:hidden`，但内部多个设置行、结束标记、提示词编辑框按静态布局叠加；面板高度固定 330px，提示词框只有 50px 高，因此超出部分直接被裁切，未提供内部滚动区域。
+- **设计修正：** 把最长等待、自定义时间、开始/停止、刷新 GPT 和“提示词”快捷入口放入固定工具栏；所有其余设置包入 `.settings-scroll`，设定 `overflow-y:auto`、`min-height:0` 和可见滚动条。提示词框默认 140px 高、可竖向调整，添加“提示词”按钮滚动并聚焦编辑框。
+- **回归测试：** 新增 `tests/ui-layout.test.cjs`，验证 Start/Stop 等操作位于滚动容器外，提示词及设置位于滚动容器内、CSS 提供纵向滚动、提示词框支持调整高度且快捷按钮连接正确。
+- **版本 / 元数据：** 更新 `VERSION`、`package.json`、界面和启动日志版本为 0.2.1；更新 README、CHANGELOG、接手文档及源码 SHA-256 清单。
+- **本地验证边界：** 当前 connector 会话未提供可运行的本地工作树，未宣称本地 `npm test`、`node --check` 或 `git diff --check` 已通过。此前 v0.2.0 Windows CI 通过 42/42 测试；本次新增 UI 回归测试和整个项目会由新的 Windows Actions run 验证。
+- **Windows / Release：** 此提交先触发验证构建，不触发正式 Release。只有所有单元测试、11+ JS/CJS 语法检查、manifest、Windows x64 NSIS 构建和工件上传成功后，才创建独立 `[release]` 文档提交。

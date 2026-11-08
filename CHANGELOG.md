@@ -1,3 +1,9 @@
+## 0.2.1 - 2026-11-08
+
+- Redesigned the left settings card: the wait controls and Start/Stop/Reload actions remain in a fixed toolbar while the remaining settings scroll independently.
+- Added a one-click prompt-editor shortcut, increased the prompt editor height, and made it vertically resizable so long prompts remain accessible without hiding the action buttons.
+- Added UI layout regression tests to verify that action controls stay outside the scroll region and the prompt editor lives inside it.
+
 ## 0.2.0 - 2026-11-08
 
 - Added optional GitHub personal access token authentication for the monitored repository's latest-commit request.

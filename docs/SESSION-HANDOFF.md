@@ -2,32 +2,21 @@
 
 更新日期：2026-11-08
 
-> **实时状态：** 最新正式版 v0.2.0 已于 2026-11-08 发布。Release 页面：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0。下一步是用户在 Windows 应用中本地配置 Fine-grained PAT 并验证实际 DPAPI 保存与 API 认证。
+> **当前开发版本：** v0.2.1，正在修复左上设置区被裁切、固定提示词无法方便输入以及 Start/Stop 操作按钮可能不可见的问题。
 >
-> **安全边界：** Token 只在主进程内存中用于请求；本机持久化仅保存 Electron safeStorage 密文。Windows 使用 DPAPI。renderer 只获得“已配置/认证失败”状态，不读取 Token。不得把真实 Token 放进测试、仓库、日志或开发对话。
+> **根因：** 左侧 `.controls` 使用 `overflow:hidden`，内容超出固定 330px 面板高度后被裁切；提示词框仅 50px。
 >
-> **速率与轮询：** 已认证个人账号 REST API 主限额为 5,000 次/小时；30 秒一次约 120 次/小时。额度与该 GitHub 账号其他应用请求共享。无 Token 或 Token 遭 HTTP 401 拒绝时，30 秒选项关闭并回退到 90 秒。
+> **目标布局：** 最长等待和开始/停止/刷新/提示词快捷按钮留在固定工具栏，下面的其余设置（包括提示词）独立纵向滚动；提示词框增高并可调整，快捷按钮可滚动聚焦到提示词。
 >
-> **保留行为：** main SHA 启动基线、GitHub Date 时间计算、提交静默阈值、人工等待兜底、助手结束回显和对话长度检测保持不变。请求错误不能触发提前轮换。
+> **版本流程：** v0.2.0 是当前已发布版；v0.2.1 仅在 UI 回归测试、完整 Windows CI 和正式 Release 全部成功后才能交付。
 
-## 本次 0.2.0 变更
+## 本轮修改文件与验证边界
 
-- 主界面新增可选 GitHub Token 保存/清除控件；Token 不回显、不写日志、不进入源码。
-- Token 采用 Electron safeStorage 加密接口；优先使用可用的异步 API，并兼容当前 Electron 39 的同步 API；Windows 两条路径均使用 DPAPI。加密不可用时拒绝保存，不以明文降级。
-- Fine-grained PAT 建议只选择 `xiaobei206/padavan-4.4-2`，授予 `Contents: Read`。
-- 已配置且未被 HTTP 401 拒绝的 Token 可使用 30/90/120/150/180 秒；未认证仅使用 90/120/150/180 秒。
-- Token 收到 HTTP 401 后保留密文供用户更正，但停止发送该 Token、将间隔改为 90 秒并关闭 30 秒选项；重新保存正确 Token 可恢复。
-- 删除 Token 时清除加密字段，并把 30 秒间隔自动调整为 90 秒。
-
-## 正式发布与验证状态
-
-- **正式 Release：** v0.2.0，2026-11-08 发布，非 draft、非 prerelease。https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0
-- **最终发布 Actions：** run `42479071427`，overall completed/success；Windows build job 与 Publish GitHub Release job 均 completed/success。
-- **自动验证：** 42/42 单元测试通过（含 Electron 39 同步 DPAPI safeStorage 兼容测试）、11 个 JS/CJS 文件 `node --check` 通过、18 项 SHA-256 manifest 通过；Windows x64 NSIS 安装包、blockmap 构建并成功上传。
-- **安装包：** `GPT.Session.Rotator-0.2.0-Setup.exe`，102,030,846 bytes；SHA-256 `a03ee6c24164c5d6bbc3b359982f7a07681141ee6327e4d346980cc3721f87f5`。
-- **blockmap：** `GPT.Session.Rotator-0.2.0-Setup.exe.blockmap`，106,041 bytes；SHA-256 `3ac8cdc747bf6d14360f95e7aafc1ea240bb5c0d75709835d501f6dfa71e1bea`。
-- **用户设备验证边界：** 尚未在用户 Windows 设备安装 v0.2.0、配置真实 PAT、验证 DPAPI 密文重启解密及真实 GitHub API 认证；CI 只验证 Electron 39 safeStorage 接口合约测试和 Windows 构建。不得宣称这些用户实机步骤已完成。
-- 不要求用户在聊天中粘贴 Token；用户只需在桌面应用的密码框内本地粘贴。
+- 应用：`src/index.html`、`src/style.css`、`src/renderer.js`、`src/main.cjs`、`VERSION`、`package.json`、`CHANGELOG.md`、`SOURCE-MANIFEST.sha256`。
+- 测试：新增 `tests/ui-layout.test.cjs`，验证 Start/Stop/Reload/提示词按钮不在滚动容器内，提示词和其他设置在滚动容器内，且有纵向滚动/可调整高度。
+- 文档：README、AI bootstrap、下轮接手文件、测试清单和累计开发日志同步更新。
+- 工具会话没有本地工作树；不要声称本地 Node 测试或本地 Windows 打包已执行。以本轮 GitHub Actions 的实际日志为准。
+- v0.2.0 正式版链接：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0。
 
 --- 历史交接记录（仅作背景；以上状态优先）
 
