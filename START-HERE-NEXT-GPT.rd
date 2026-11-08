@@ -1,6 +1,6 @@
-> **2026-11-08 CI 验证结果：** v0.2.0 的第四轮 Windows run `42478877203` 已成功：42/42 测试、11 项 JS/CJS 语法、18 项 manifest、Electron 39 DPAPI safeStorage 兼容测试、x64 NSIS 安装包和工件上传全部通过。下一步是单独 `[release]` docs-only commit，再核验正式 Release 页面与 EXE 附件。
+> **2026-11-08 正式版状态：** v0.2.0 已正式发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0。最终 Actions run `42479071427` completed/success；42/42 测试、11 项语法检查、18 项 manifest、Windows x64 NSIS 构建、工件上传和 Release 发布全部成功。
 >
-> **2026-11-08 当前开发状态（优先于下方历史交接记录）：** 当前目标版本 v0.2.0，基于已发布 v0.1.16，增加可选 GitHub Token 与 30 秒轮询。无 Token 时仅可选 90/120/150/180 秒；有效 Token 可开放 30 秒（约 120 次/小时）。Token 使用 safeStorage 加密，Windows DPAPI；HTTP 401 禁用 Token 并退回 90 秒。读取最新 Actions/Release，不得在正式 Release 成功前宣称交付。
+> **功能：** GitHub Token 可选认证；无 Token 时 90/120/150/180 秒，有 Token 时开放 30 秒（约 120 次/小时）。Token 使用 Electron safeStorage 加密；Windows DPAPI。HTTP 401 停用 Token 并退回 90 秒。用户本机真实 DPAPI/PAT 认证尚待安装后验证。读取最新 Actions/Release，不得在正式 Release 成功前宣称交付。
 >
 
 # GPT Session Rotator — 下一轮 GPT 必读交接指令
@@ -8,8 +8,8 @@
 > 更新日期：2026-11-08
 > 仓库：https://github.com/xiaobei206/GPT-Session-Rotator
 > 默认分支：`main`
-> 源码版本：`0.1.16`（GitHub API 查询间隔下拉设置；本次 Actions 验证待完成）
-> 最近正式安装包：`0.1.15`（Release 已正式发布）
+> 源码版本：`0.2.0`
+> 最新正式安装包：`0.2.0`（Release 已正式发布）
 
 > **接手顺序：** 新对话先读根目录 `AI_BOOTSTRAP_PROMPT.md` 获取当前任务与验证边界，再把本文件作为详细规程；本文件后半部分包含历史事故记录，历史状态不能覆盖实时 `main`、Actions 与 Release 结果。
 

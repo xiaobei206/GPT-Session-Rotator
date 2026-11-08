@@ -1,6 +1,6 @@
 # GPT Session Rotator
 
-**当前开发版本：v0.2.0（可选 GitHub Token 认证与 30 秒轮询；正式安装包状态以 Release 页面为准）。**
+**最新正式版：v0.2.0 已于 2026-11-08 发布。可选 GitHub Token 认证与 30 秒轮询已包含在正式安装包中。**
 
 **Windows x64 安装包：** [下载 GPT Session Rotator 0.2.0](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.0/GPT.Session.Rotator-0.2.0-Setup.exe)
 

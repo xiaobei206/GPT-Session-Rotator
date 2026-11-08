@@ -289,3 +289,14 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **Actions 工件：** `windows-nsis-installer.zip`，102,138,524 bytes，SHA-256 `a7278dd94f259d853d916d6ee65f68604f199fb51eee512f42f23b8c68f10596`，artifact ID `13616747321`。
 - **Release 状态：** 此验证提交没有 `[release]`，故 Publish GitHub Release job 按设计 skipped；正式发布需要下一条单独 docs-only `[release]` 提交。
 - **实机边界：** CI 证实 Electron 39 API 兼容代码的合约测试通过；未实际在用户电脑配置 PAT、验证本机 DPAPI 密文或进行真实 API 认证端到端测试。
+
+
+## 2026-11-08 — v0.2.0 正式 Release 发布成功
+
+- **正式版本：** `v0.2.0`，Release ID `438225755`，2026-11-08 12:17:48 UTC 发布；`draft=false`、`prerelease=false`。
+- **Release 页面：** https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0
+- **最终 Actions：** run `42479071427`，整体 completed/success；`Test and build Windows installer` 与 `Publish GitHub Release` 两个 job 均 completed/success。
+- **自动验证：** 42/42 tests pass、0 fail；11 个 JS/CJS 文件 `node --check` 全部通过；18 项 `SOURCE-MANIFEST.sha256` 全部通过；Windows x64 NSIS 构建与附件上传成功。
+- **安装包：** `GPT.Session.Rotator-0.2.0-Setup.exe`，102,030,846 bytes；GitHub Release API digest SHA-256：`a03ee6c24164c5d6bbc3b359982f7a07681141ee6327e4d346980cc3721f87f5`。
+- **blockmap：** `GPT.Session.Rotator-0.2.0-Setup.exe.blockmap`，106,041 bytes；GitHub Release API digest SHA-256：`3ac8cdc747bf6d14360f95e7aafc1ea240bb5c0d75709835d501f6dfa71e1bea`。
+- **未完成的实机验证：** 未在用户 Windows PC 完成安装、真实 DPAPI 密文重启解密、PAT 认证和 30 秒轮询端到端验证；这些步骤须由用户安装后在本机完成，Token 不得通过聊天提供。

@@ -2,7 +2,7 @@
 
 更新日期：2026-11-08
 
-> **实时状态：** 当前开发版本为 0.2.0；本轮功能为可选 GitHub Token 认证和仅对已认证请求开放的 30 秒轮询。正式发布状态必须以最新 Actions run 和 Release API 实际结果为准。
+> **实时状态：** 最新正式版 v0.2.0 已于 2026-11-08 发布。Release 页面：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0。下一步是用户在 Windows 应用中本地配置 Fine-grained PAT 并验证实际 DPAPI 保存与 API 认证。
 >
 > **安全边界：** Token 只在主进程内存中用于请求；本机持久化仅保存 Electron safeStorage 密文。Windows 使用 DPAPI。renderer 只获得“已配置/认证失败”状态，不读取 Token。不得把真实 Token 放进测试、仓库、日志或开发对话。
 >
@@ -19,11 +19,14 @@
 - Token 收到 HTTP 401 后保留密文供用户更正，但停止发送该 Token、将间隔改为 90 秒并关闭 30 秒选项；重新保存正确 Token 可恢复。
 - 删除 Token 时清除加密字段，并把 30 秒间隔自动调整为 90 秒。
 
-## 当前验证边界
+## 正式发布与验证状态
 
-- 最新完整 Windows CI：run `42478877203`，42/42 tests、11 syntax checks、18 manifest entries、Windows x64 NSIS build 和 artifact upload 全部成功。正式 Release job 在非 `[release]` 提交中按设计 skipped；当前正准备单独触发正式发布。
-- 第四轮 Actions run `42478877203` 已完整成功：42/42 单元测试（含 Electron 39 同步 DPAPI safeStorage 兼容测试）、11 项 JS/CJS 语法检查、18 项 SHA-256 manifest、Windows x64 NSIS EXE/blockmap 构建与工件上传全部通过。独立 `[release]` docs-only 提交将触发正式发布。
-- 未在用户 Windows 设备安装并配置用户 PAT，不得宣称 DPAPI 存储及真实 API 认证已完成人工端到端测试。
+- **正式 Release：** v0.2.0，2026-11-08 发布，非 draft、非 prerelease。https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0
+- **最终发布 Actions：** run `42479071427`，overall completed/success；Windows build job 与 Publish GitHub Release job 均 completed/success。
+- **自动验证：** 42/42 单元测试通过（含 Electron 39 同步 DPAPI safeStorage 兼容测试）、11 个 JS/CJS 文件 `node --check` 通过、18 项 SHA-256 manifest 通过；Windows x64 NSIS 安装包、blockmap 构建并成功上传。
+- **安装包：** `GPT.Session.Rotator-0.2.0-Setup.exe`，102,030,846 bytes；SHA-256 `a03ee6c24164c5d6bbc3b359982f7a07681141ee6327e4d346980cc3721f87f5`。
+- **blockmap：** `GPT.Session.Rotator-0.2.0-Setup.exe.blockmap`，106,041 bytes；SHA-256 `3ac8cdc747bf6d14360f95e7aafc1ea240bb5c0d75709835d501f6dfa71e1bea`。
+- **用户设备验证边界：** 尚未在用户 Windows 设备安装 v0.2.0、配置真实 PAT、验证 DPAPI 密文重启解密及真实 GitHub API 认证；CI 只验证 Electron 39 safeStorage 接口合约测试和 Windows 构建。不得宣称这些用户实机步骤已完成。
 - 不要求用户在聊天中粘贴 Token；用户只需在桌面应用的密码框内本地粘贴。
 
 --- 历史交接记录（仅作背景；以上状态优先）
