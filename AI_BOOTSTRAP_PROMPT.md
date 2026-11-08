@@ -2,10 +2,10 @@
 
 ## Current implementation state
 
-- Latest published release remains v0.2.2 until v0.2.3 CI validation and the formal release workflow are confirmed.
+- Latest published release is still v0.2.2 while the official v0.2.3 release workflow is running. v0.2.3 validation commit `b3ca80047059368ab6bc3b116a3bd2701c261a86` passed Actions run `42489476190` with 56 tests, 15 JS/CJS syntax checks, 22 manifest entries, Windows x64 NSIS build and upload.
 - v0.2.3 adds a startup gate for queued/active GitHub Actions runs on `xiaobei206/padavan-4.4-2/main`: every 60 seconds, with the configured maximum-wait interval as the hard deadline, Stop cancellation, and fail-open behavior on timeout/API errors.
 - The commit baseline is established only after the startup gate resolves. The gate logs workflow name, Run ID/status and short SHA only; it never logs Token values or commit titles/body.
-- v0.2.2 final Actions run `42487228051` succeeded with 46 tests, 13 JS/CJS syntax checks, 20 manifest entries, Windows x64 NSIS build/upload and official Release publication.
+- v0.2.2 final Actions run `42487228051` succeeded with 46 tests, 13 JS/CJS syntax checks, 20 manifest entries, Windows x64 NSIS build/upload and official Release publication. The v0.2.3 final source validation run `42489476190` also succeeded with 56 tests, 15 syntax checks and 22 manifest entries; the official release job is being re-run from a dedicated `[release]` commit.
 - v0.2.3 Actions, Windows packaging and formal release must be confirmed live. Real Windows DPAPI/PAT and signed-in ChatGPT end-to-end checks remain manual.
 
 # AI Bootstrap Prompt — GPT Session Rotator

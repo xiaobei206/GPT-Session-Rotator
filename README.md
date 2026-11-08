@@ -1,6 +1,6 @@
 # GPT Session Rotator
 
-**最新正式版：v0.2.2 已于 2026-11-08 发布。当前开发版本 v0.2.3 将在启动前检查目标仓库 Actions，并以最长等待时间作为门禁上限。**
+**最新正式版仍为 v0.2.2。v0.2.3 启动前 GitHub Actions 门禁已通过 Windows CI（56/56 测试、15 项语法检查、22 项源码清单），正在进入正式发布验证。**
 
 **最新正式安装包：** [下载 GPT Session Rotator 0.2.2](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.2/GPT.Session.Rotator-0.2.2-Setup.exe)
 

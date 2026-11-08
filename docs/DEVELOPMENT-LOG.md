@@ -399,3 +399,15 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **修正：** 现在先检查绝对 deadline，确认尚未超时后才发送成功回调；迟到响应只走超时路径。
 - **回归测试：** 扩展“迟到 API 结果不能放行门禁”的测试，额外断言超时结果不会发出成功回调。
 - **验证状态：** 修正前同版本 SHA `30365163734d1395c97ab6f55971e2afaecb2f4b` 的 Actions run `42489179835` 已通过 56/56 测试、15 项语法检查、22 项 manifest 和 Windows x64 NSIS 构建；当前小修须由新的 Actions run 再验证，之后才可以发布。
+
+
+## 2026-11-08 — v0.2.3 最终源代码验证通过，准备正式发布
+
+- **最终源代码提交：** `b3ca80047059368ab6bc3b116a3bd2701c261a86`。
+- **Actions run：** `42489476190`（https://github.com/xiaobei206/GPT-Session-Rotator/actions/runs/42489476190），completed/success；验证分支的 Publish GitHub Release job 按设计 skipped，因为该提交不带 `[release]`。
+- **自动测试：** 56 tests、56 pass、0 fail；覆盖所有启动门禁路径，包括 Token 权限不足时的匿名回退共享预算、门禁 deadline 后迟到响应不得放行/不得发成功回调，以及停止取消。
+- **语法与清单：** 15 个 JS/CJS 文件 `node --check` 全部通过；22 项 `SOURCE-MANIFEST.sha256` 全部通过。
+- **Windows 构建与上传：** x64 NSIS `GPT Session Rotator-0.2.3-Setup.exe` 与 blockmap 构建成功；Actions 工件 `windows-nsis-installer.zip`，102,141,658 bytes，SHA-256 `90aa609c0b42dd8eaf1a1522f792991b91ccffc87eecd2032fd0b78d98b52ed3`，artifact ID `13620902700`。
+- **签名状态：** 未配置 Authenticode 代码签名证书，构建按既有配置跳过签名。
+- **发布状态：** 单独的 `[release]` 文档提交将触发正式 Windows 验证与发布流程；只有 Release tag/资产最终出现后才记录正式安装包 SHA-256 并更新下载链接。
+- **实机边界：** 尚未在用户 Windows PC 验证真正的 GitHub Actions 等待过程、DPAPI/PAT 或 ChatGPT 登录态端到端。该流程的自动化回归测试通过不代表这些手工测试已完成。

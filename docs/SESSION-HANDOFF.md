@@ -2,19 +2,21 @@
 
 更新日期：2026-11-08
 
-> **最新正式版：** v0.2.2 已发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2。当前源码拟升至 v0.2.3，正式发布状态以本次 Windows Actions 和 Release 的实际结果为准。
+> **最新正式版：** v0.2.2：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2。v0.2.3 启动前 Actions 门禁已通过验证提交的 Windows CI；正在由独立 `[release]` 提交触发正式发布验证，Release 资产需以工作流最终结果为准。
 >
-> **v0.2.3 本轮功能：** 点击“开始”后，先检查 `xiaobei206/padavan-4.4-2/main` 的排队/运行中 GitHub Actions；每 60 秒复查，等待上限等于点击开始时选定的最长等待时间。点击停止可取消门禁；超时或持续无法查询时记录警告并继续启动，不会无限等待。GitHub 提交基线只在门禁结束后记录。
+> **v0.2.3 最终验证提交：** `b3ca80047059368ab6bc3b116a3bd2701c261a86`；Actions run `42489476190`（https://github.com/xiaobei206/GPT-Session-Rotator/actions/runs/42489476190），completed/success。
 >
-> **隐私边界：** 启动门禁日志只记录工作流名、Run ID、状态和短 SHA，不记录提交标题/正文或 Token。Token 若缺少 Actions 读取权限，会对公开仓库接口退回匿名查询，不会将其误判为 Token 无效。
+> **自动验证：** 56/56 测试通过，15 个 JS/CJS 文件语法检查通过，22 项 `SOURCE-MANIFEST.sha256` 通过；Windows x64 NSIS 构建与工件上传成功。Actions 工件 ZIP：102,141,658 bytes，SHA-256 `90aa609c0b42dd8eaf1a1522f792991b91ccffc87eecd2032fd0b78d98b52ed3`，artifact ID `13620902700`。
 >
-> **验证状态：** 当前 connector 没有可执行本地工作树；v0.2.3 本地 `npm test`/语法检查未运行。必须等待并记录本轮 Windows Actions 测试、源码清单和 NSIS 构建实际结果后再发布。
+> **v0.2.3 行为：** 点击“开始”先检查 `xiaobei206/padavan-4.4-2/main` 的排队/运行中 Actions，每 60 秒复查；等待上限为开始时选择的最长等待时长。停止可取消；超时/API 持续失败时记录警告并继续启动。Token/匿名回退共用请求时间预算，超时后的迟到响应不会误报“检查通过”。
+>
+> **隐私边界：** 启动门禁日志只记录工作流名、Run ID、状态和短 SHA，不记录提交标题/正文或 Token。Real Windows DPAPI/PAT 和 ChatGPT 登录态端到端仍需手工验证。安装包未配置 Authenticode 签名。
 
 ## 本轮功能和改动
 
 - 固定操作工具栏与设置滚动面板拆分；操作按钮不在滚动容器内部。
 - 独立 `overflow-y:auto` 设置区及可见滚动条，固定提示词区增高至 140px、最小 100px、最大 300px，可垂直调整。
-- 新增提示词快捷按钮与两项 UI 布局测试；版本、README、CHANGELOG、开发日志、测试清单、接手文档和 20 项源码 SHA-256 manifest 已同步；v0.2.2 另修复 Token 状态同步和 GitHub 成功轮询心跳日志。
+- 新增提示词快捷按钮与两项 UI 布局测试；版本、README、CHANGELOG、开发日志、测试清单、接手文档和 22 项源码 SHA-256 manifest 已同步；v0.2.2 另修复 Token 状态同步和 GitHub 成功轮询心跳日志。
 
 --- 历史交接记录（仅作背景；以上状态优先）
 
