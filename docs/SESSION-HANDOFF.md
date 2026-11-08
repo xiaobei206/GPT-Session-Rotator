@@ -13,7 +13,7 @@
 ## 本次 0.2.0 变更
 
 - 主界面新增可选 GitHub Token 保存/清除控件；Token 不回显、不写日志、不进入源码。
-- Token 采用 Electron safeStorage 加密接口；在 Windows 使用 DPAPI。加密不可用时拒绝保存，不以明文降级。
+- Token 采用 Electron safeStorage 加密接口；优先使用可用的异步 API，并兼容当前 Electron 39 的同步 API；Windows 两条路径均使用 DPAPI。加密不可用时拒绝保存，不以明文降级。
 - Fine-grained PAT 建议只选择 `xiaobei206/padavan-4.4-2`，授予 `Contents: Read`。
 - 已配置且未被 HTTP 401 拒绝的 Token 可使用 30/90/120/150/180 秒；未认证仅使用 90/120/150/180 秒。
 - Token 收到 HTTP 401 后保留密文供用户更正，但停止发送该 Token、将间隔改为 90 秒并关闭 30 秒选项；重新保存正确 Token 可恢复。
@@ -21,7 +21,7 @@
 
 ## 当前验证边界
 
-- 最近一次 Actions run `42478156331` 已通过版本校验及 18 项 SHA-256 manifest，但 Electron 安装脚本下载运行时收到 HTTP 504，npm install 失败，故单元测试、`node --check` 和 NSIS 均未执行。Windows workflow 已增加最多 4 次、10/20/40 秒退避的依赖安装重试；必须检查下一轮完整结果。
+- 第三轮 Actions run `42478520107` 的 41 项单元测试、11 项 JS/CJS 语法检查、18 项 SHA-256 manifest、Windows x64 NSIS 构建与工件上传均成功。随后发布前核对 Electron 39 API 时发现 async safeStorage 接口不可用；当前源码正在增加 Electron 39 同步 DPAPI fallback 和对应回归测试，故此前 CI 成功还不能作为最终发布依据。
 - 未在用户 Windows 设备安装并配置用户 PAT，不得宣称 DPAPI 存储及真实 API 认证已完成人工端到端测试。
 - 不要求用户在聊天中粘贴 Token；用户只需在桌面应用的密码框内本地粘贴。
 

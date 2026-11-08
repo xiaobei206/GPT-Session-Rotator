@@ -101,20 +101,33 @@ async function loadGithubToken(settingsPath, safeStorage) {
   const stored = readSettings(settingsPath)[GITHUB_TOKEN_SETTING_KEY];
   if (typeof stored !== 'string' || !stored.startsWith(GITHUB_TOKEN_CIPHER_PREFIX)) return '';
   try {
-    if (!safeStorage ||
-        typeof safeStorage.isAsyncEncryptionAvailable !== 'function' ||
-        typeof safeStorage.decryptStringAsync !== 'function' ||
-        !(await safeStorage.isAsyncEncryptionAvailable())) return '';
     const encoded = stored.slice(GITHUB_TOKEN_CIPHER_PREFIX.length);
     if (!encoded || !/^[A-Za-z0-9+/=]+$/.test(encoded)) return '';
-    const decrypted = await safeStorage.decryptStringAsync(Buffer.from(encoded, 'base64'));
-    const token = normalizeGithubToken(decrypted?.result);
-    if (!token) return '';
-    if (decrypted.shouldReEncrypt === true) {
-      const encrypted = await safeStorage.encryptStringAsync(token);
-      writeSettings(settingsPath, { [GITHUB_TOKEN_SETTING_KEY]:GITHUB_TOKEN_CIPHER_PREFIX + Buffer.from(encrypted).toString('base64') });
+    const encrypted = Buffer.from(encoded, 'base64');
+
+    // Electron 45+ supports the non-blocking async API; the app currently
+    // ships Electron 39, where Windows DPAPI is exposed through the sync API.
+    if (safeStorage &&
+        typeof safeStorage.isAsyncEncryptionAvailable === 'function' &&
+        typeof safeStorage.decryptStringAsync === 'function' &&
+        await safeStorage.isAsyncEncryptionAvailable()) {
+      const decrypted = await safeStorage.decryptStringAsync(encrypted);
+      const token = normalizeGithubToken(decrypted?.result);
+      if (!token) return '';
+      if (decrypted.shouldReEncrypt === true) {
+        const refreshed = await safeStorage.encryptStringAsync(token);
+        writeSettings(settingsPath, { [GITHUB_TOKEN_SETTING_KEY]:GITHUB_TOKEN_CIPHER_PREFIX + Buffer.from(refreshed).toString('base64') });
+      }
+      return token;
     }
-    return token;
+
+    if (safeStorage &&
+        typeof safeStorage.isEncryptionAvailable === 'function' &&
+        typeof safeStorage.decryptString === 'function' &&
+        safeStorage.isEncryptionAvailable()) {
+      return normalizeGithubToken(safeStorage.decryptString(encrypted)) || '';
+    }
+    return '';
   } catch {
     return '';
   }
@@ -123,13 +136,23 @@ async function loadGithubToken(settingsPath, safeStorage) {
 async function saveGithubToken(settingsPath, value, safeStorage) {
   const token = normalizeGithubToken(value);
   if (!token) throw new RangeError('GitHub Token 不能为空，且不能包含空白字符或超过 512 个字符。');
-  if (!safeStorage ||
-      typeof safeStorage.isAsyncEncryptionAvailable !== 'function' ||
-      typeof safeStorage.encryptStringAsync !== 'function' ||
-      !(await safeStorage.isAsyncEncryptionAvailable())) {
+
+  let encrypted;
+  if (safeStorage &&
+      typeof safeStorage.isAsyncEncryptionAvailable === 'function' &&
+      typeof safeStorage.encryptStringAsync === 'function' &&
+      await safeStorage.isAsyncEncryptionAvailable()) {
+    encrypted = Buffer.from(await safeStorage.encryptStringAsync(token));
+  } else if (safeStorage &&
+      typeof safeStorage.isEncryptionAvailable === 'function' &&
+      typeof safeStorage.encryptString === 'function' &&
+      safeStorage.isEncryptionAvailable()) {
+    // Electron 39 compatibility: synchronous safeStorage uses Windows DPAPI.
+    encrypted = Buffer.from(safeStorage.encryptString(token));
+  } else {
     throw new Error('操作系统安全存储不可用，未保存 GitHub Token。');
   }
-  const encrypted = Buffer.from(await safeStorage.encryptStringAsync(token));
+
   if (!encrypted.length) throw new Error('GitHub Token 加密结果为空，未保存。');
   writeSettings(settingsPath, {
     [GITHUB_TOKEN_SETTING_KEY]:GITHUB_TOKEN_CIPHER_PREFIX + encrypted.toString('base64')

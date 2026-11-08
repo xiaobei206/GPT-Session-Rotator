@@ -267,3 +267,12 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **CI-only correction:** replace the single dependency-install attempt with up to four full `npm install --no-audit --no-fund` attempts, with 10/20/40-second backoff. This is bounded retry for transient package/runtime download failures; it does not suppress the final error or make a failed install appear successful.
 - **Application source/version:** unchanged at 0.2.0. No source-manifest entries change because this commit updates only workflow and documentation files.
 - **Next verification:** require one complete subsequent Windows run to pass dependency installation, unit tests, JavaScript syntax checks, x64 NSIS build, and artifact upload before the separate `[release]` commit.
+
+
+## 2026-11-08 — 修正 Electron 39 safeStorage API 兼容性
+
+- **发现方式：** 发布前对照 Electron 官方版本文档核对运行时依赖，发现项目固定依赖 Electron `^39.0.0`，而 `isAsyncEncryptionAvailable/encryptStringAsync/decryptStringAsync` 不属于 Electron 39 的 safeStorage API。上一轮 CI 使用模拟的 async safeStorage 对象，不能证明应用在当前 Electron 39 运行时能保存 Token。
+- **影响范围：** Windows Token 保存与读取会因 API 不存在而失败；普通运行、无 Token 轮询和其它功能不受影响。此前 v0.2.0 仍未发布，未让用户拿到存在此问题的安装包。
+- **修正：** safeStorage 适配器优先使用可用的异步 API；在当前 Electron 39 上回退到现有同步 `isEncryptionAvailable/encryptString/decryptString` API。Windows 两条路径均使用 DPAPI；仍然只持久化密文，禁止明文降级。
+- **测试：** 保留 async API 模拟测试，并新增 Electron 39 同步 API 合约测试，覆盖保存、密文不含明文、读取及清除。
+- **发布前验证：** 完整重跑 Windows Actions；只有当前 Electron 39 兼容路径测试、现有测试、manifest、语法检查和 NSIS 构建全部成功后，才创建正式 Release。

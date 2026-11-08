@@ -128,3 +128,25 @@ test('GitHub Token is not persisted when OS encryption is unavailable', async ()
     fs.rmSync(dir, { recursive:true, force:true });
   }
 });
+
+
+test('GitHub Token supports the Electron 39 synchronous safeStorage DPAPI API', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'gpt-rotator-token-electron39-'));
+  const file = path.join(dir, 'settings.json');
+  const token = 'github_pat_electron39_compat_test_123';
+  const safeStorage = {
+    isEncryptionAvailable:() => true,
+    encryptString:value => Buffer.from([...value].reverse().join(''), 'utf8'),
+    decryptString:bytes => [...Buffer.from(bytes).toString('utf8')].reverse().join('')
+  };
+  try {
+    assert.equal(await saveGithubToken(file, token, safeStorage), true);
+    const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
+    assert.doesNotMatch(JSON.stringify(saved), new RegExp(token));
+    assert.equal(await loadGithubToken(file, safeStorage), token);
+    assert.equal(clearGithubToken(file), true);
+    assert.equal(await loadGithubToken(file, safeStorage), '');
+  } finally {
+    fs.rmSync(dir, { recursive:true, force:true });
+  }
+});
