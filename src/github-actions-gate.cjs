@@ -32,10 +32,15 @@ async function fetchActiveMainWorkflowRuns({
   const normalizedToken = typeof token === 'string' ? token.trim() : '';
   const requestTimeoutMs = Math.max(1, Number.isFinite(Number(timeoutMs))
     ? Number(timeoutMs) : GITHUB_ACTIONS_REQUEST_TIMEOUT_MS);
+  // The authenticated request and any anonymous permission fallback share one
+  // deadline; a fallback must not add a second full timeout to startup.
+  const requestDeadline = Date.now() + requestTimeoutMs;
 
   async function request(authToken) {
+    const remainingMs = requestDeadline - Date.now();
+    if (remainingMs <= 0) throw new Error('GitHub Actions API 请求超时。');
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(new Error('GitHub Actions API 请求超时。')), requestTimeoutMs);
+    const timeout = setTimeout(() => controller.abort(new Error('GitHub Actions API 请求超时。')), remainingMs);
     try {
       const headers = {
         Accept:'application/vnd.github+json',
@@ -73,6 +78,7 @@ async function fetchActiveMainWorkflowRuns({
       // Fine-grained PATs may grant Contents: Read but not Actions: Read.
       // The monitored repository is public, so retry anonymously without invalidating the Token.
       if (![401, 403, 404].includes(error?.status)) throw error;
+      if (requestDeadline - Date.now() <= 0) throw new Error('GitHub Actions API 请求超时。');
       return request('');
     }
   }
@@ -123,6 +129,8 @@ async function waitForMainActionsToFinish({
       lastError = null;
       checks += 1;
       notify({ ok:true });
+      // A late response must not turn an already-expired gate into success.
+      if (now() >= deadline) return timeoutResult();
       if (runs.length === 0) return { status:'clear', ...snapshot() };
     } catch (error) {
       lastError = String(error?.message || error || '未知错误').slice(0, 200);

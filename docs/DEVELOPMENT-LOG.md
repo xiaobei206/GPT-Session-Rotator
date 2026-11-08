@@ -383,3 +383,11 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **回归测试：** 新增 `src/github-actions-gate.cjs` 与 `tests/github-actions-gate.test.cjs`，覆盖活动状态筛选、匿名回退、无活动立即放行、等待至完成、固定超时/API 失败超时和停止取消。
 - **本地验证：** 此 connector 会话没有本地工作树，未声称运行 `npm test`、`node --check` 或 `git diff --check`。需要 Windows Actions 实际验证全套测试、清单和 NSIS。
 - **发布状态：** 应用版本 0.2.3，尚未正式发布；仅在 CI 验证成功后另提交 `[release]` 发布记录并确认最终安装包资产。
+
+
+## 2026-11-08 — v0.2.3 收紧 Actions 门禁的硬超时边界（发布前复核）
+
+- **复核发现：** PAT 请求返回 401/403/404 后，原实现可能把匿名回退请求的 timeout 重新计一次；另外，如果 API 适配器返回迟到的空列表，门禁也需要在处理成功结果时再次核对绝对截止时间。
+- **修正：** Token 与匿名回退请求共用同一个请求时间预算；等待器收到 API 结果后再次检查绝对 deadline，晚到的成功响应不能把已经超时的门禁改判为通过。超时仍记录警告并继续启动，不会死等。
+- **新增测试：** 新增两项边界回归：Token 权限不足且共享请求预算耗尽时不启动第二次匿名请求；API 返回空列表但已超过门禁截止时间时仍返回 timeout。
+- **验证状态：** 修正前的 v0.2.3 源码在 Actions run `42488698932` 中 54/54 测试、15 项语法检查、22 项清单及 Windows NSIS 构建通过；这两项新测试和本次修改尚待 Actions 重新验证，旧 run 不能作为新 SHA 的最终证明。

@@ -54,6 +54,20 @@ test('uses a Token when available but retries anonymously when the PAT lacks Act
   assert.deepEqual(runs.map(run => run.id), [8]);
 });
 
+test('Token permission fallback shares one request-time budget and stops at its deadline', async () => {
+  let calls = 0;
+  await assert.rejects(fetchActiveMainWorkflowRuns({
+    token:'github_pat_dummy',
+    timeoutMs:5,
+    fetchImpl:async () => {
+      calls += 1;
+      await new Promise(resolve => setTimeout(resolve, 12));
+      return response(403, {});
+    }
+  }), /请求超时/);
+  assert.equal(calls, 1, 'an exhausted request budget must not start a second anonymous request');
+});
+
 test('startup gate proceeds immediately when there are no active Actions', async () => {
   let checks = 0;
   const result = await waitForMainActionsToFinish({
@@ -63,6 +77,21 @@ test('startup gate proceeds immediately when there are no active Actions', async
   assert.equal(result.status, 'clear');
   assert.equal(checks, 1);
   assert.equal(result.checks, 1);
+});
+
+test('a late successful API response cannot clear a gate after its deadline', async () => {
+  let clock = 0;
+  const result = await waitForMainActionsToFinish({
+    timeoutMs:100,
+    now:() => clock,
+    sleepImpl:async ms => { clock += ms; },
+    checkActiveRuns:async () => {
+      clock = 150;
+      return [];
+    }
+  });
+  assert.equal(result.status, 'timeout');
+  assert.equal(result.elapsedMs, 150);
 });
 
 test('startup gate waits for Actions to finish and then releases', async () => {
