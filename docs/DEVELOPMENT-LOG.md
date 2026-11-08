@@ -249,3 +249,12 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **测试：** 新增 Bearer header、30 秒认证门控、safeStorage 密文读写、明文不落盘和安全存储不可用时 fail-closed 测试。当前工具执行环境未提供本地工作区，未声称本地 `npm test` / `node --check` / `git diff --check` 已通过；须以随后真实 Actions run 为验证依据。
 - **Windows / 实机：** Windows NSIS 构建待 Actions 验证；用户本地 DPAPI 解密、Token 权限与 HTTP 401/恢复流程仍待 Windows 实机验证。
 - **发布边界：** 功能提交不带 `[release]`；只有测试、源码清单、语法检查和 Windows 安装包构建成功后，再用独立记录提交触发正式 Release。
+
+
+## 2026-11-08 — v0.2.0 首轮 Windows CI 测试回归与修正
+
+- **Actions run：** `42478042621`（https://github.com/xiaobei206/GPT-Session-Rotator/actions/runs/42478042621），测试步骤失败，41 项中 39 项通过、2 项失败；版本校验和 18 项源码 manifest 校验均成功。语法检查与 NSIS 构建因测试失败而跳过。
+- **失败原因一：** 重写 `src/settings.cjs` 时遗漏了既有公开导出 `DEFAULT_ASSISTANT_COMPLETION_MARKER`；缺省助手结束标记测试因此得到 `undefined`。
+- **失败原因二：** 静默阈值校验错误文本从 `1 to 180` 改为 `1 through 180`，破坏了原有测试契约。
+- **修正：** 恢复导出 `DEFAULT_ASSISTANT_COMPLETION_MARKER`，并恢复原有 `1 to 180` 错误文本。Token 加密/解密与明文不落盘两项新测试均已在首轮 CI 通过。
+- **后续：** 重新运行完整测试、语法检查、manifest 校验及 Windows NSIS 构建；当前没有发布 Release。

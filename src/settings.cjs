@@ -76,7 +76,7 @@ function saveGithubPollIntervalSeconds(settingsPath, value, { authenticated = fa
 function saveGithubQuietThresholdMinutes(settingsPath, value) {
   const minutes = normalizeGithubQuietThresholdMinutes(value);
   if (minutes === null) {
-    throw new RangeError('GitHub quiet threshold must be a whole number from 1 through 180 minutes.');
+    throw new RangeError('GitHub quiet threshold must be a whole number from 1 to 180 minutes.');
   }
   writeSettings(settingsPath, { githubQuietThresholdMinutes:minutes });
   return minutes;
@@ -145,6 +145,7 @@ function clearGithubToken(settingsPath) {
 module.exports = {
   DEFAULT_GITHUB_QUIET_THRESHOLD_MINUTES,
   DEFAULT_GITHUB_POLL_INTERVAL_SECONDS,
+  DEFAULT_ASSISTANT_COMPLETION_MARKER,
   GITHUB_TOKEN_SETTING_KEY,
   GITHUB_TOKEN_CIPHER_PREFIX,
   normalizeGithubToken,
