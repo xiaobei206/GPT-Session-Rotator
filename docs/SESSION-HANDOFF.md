@@ -21,7 +21,8 @@
 
 ## 当前验证边界
 
-- 第三轮 Actions run `42478520107` 的 41 项单元测试、11 项 JS/CJS 语法检查、18 项 SHA-256 manifest、Windows x64 NSIS 构建与工件上传均成功。随后发布前核对 Electron 39 API 时发现 async safeStorage 接口不可用；当前源码正在增加 Electron 39 同步 DPAPI fallback 和对应回归测试，故此前 CI 成功还不能作为最终发布依据。
+- 最新完整 Windows CI：run `42478877203`，42/42 tests、11 syntax checks、18 manifest entries、Windows x64 NSIS build 和 artifact upload 全部成功。正式 Release job 在非 `[release]` 提交中按设计 skipped；当前正准备单独触发正式发布。
+- 第四轮 Actions run `42478877203` 已完整成功：42/42 单元测试（含 Electron 39 同步 DPAPI safeStorage 兼容测试）、11 项 JS/CJS 语法检查、18 项 SHA-256 manifest、Windows x64 NSIS EXE/blockmap 构建与工件上传全部通过。独立 `[release]` docs-only 提交将触发正式发布。
 - 未在用户 Windows 设备安装并配置用户 PAT，不得宣称 DPAPI 存储及真实 API 认证已完成人工端到端测试。
 - 不要求用户在聊天中粘贴 Token；用户只需在桌面应用的密码框内本地粘贴。
 

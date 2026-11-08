@@ -1,3 +1,5 @@
+> **2026-11-08 CI 验证结果：** v0.2.0 的第四轮 Windows run `42478877203` 已成功：42/42 测试、11 项 JS/CJS 语法、18 项 manifest、Electron 39 DPAPI safeStorage 兼容测试、x64 NSIS 安装包和工件上传全部通过。下一步是单独 `[release]` docs-only commit，再核验正式 Release 页面与 EXE 附件。
+>
 > **2026-11-08 当前开发状态（优先于下方历史交接记录）：** 当前目标版本 v0.2.0，基于已发布 v0.1.16，增加可选 GitHub Token 与 30 秒轮询。无 Token 时仅可选 90/120/150/180 秒；有效 Token 可开放 30 秒（约 120 次/小时）。Token 使用 safeStorage 加密，Windows DPAPI；HTTP 401 禁用 Token 并退回 90 秒。读取最新 Actions/Release，不得在正式 Release 成功前宣称交付。
 >
 

@@ -276,3 +276,16 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **修正：** safeStorage 适配器优先使用可用的异步 API；在当前 Electron 39 上回退到现有同步 `isEncryptionAvailable/encryptString/decryptString` API。Windows 两条路径均使用 DPAPI；仍然只持久化密文，禁止明文降级。
 - **测试：** 保留 async API 模拟测试，并新增 Electron 39 同步 API 合约测试，覆盖保存、密文不含明文、读取及清除。
 - **发布前验证：** 完整重跑 Windows Actions；只有当前 Electron 39 兼容路径测试、现有测试、manifest、语法检查和 NSIS 构建全部成功后，才创建正式 Release。
+
+
+## 2026-11-08 — v0.2.0 完整 Electron 39 Windows CI 验证通过，准备正式发布
+
+- **Actions run：** `42478877203`（https://github.com/xiaobei206/GPT-Session-Rotator/actions/runs/42478877203），head `ae5c0c20c666580d2e19e30bd61aeada095ba2dc`，build job completed/success。
+- **依赖安装：** retry-enabled `npm install --no-audit --no-fund` 成功。
+- **单元测试：** 42 tests、42 pass、0 fail。包括 async safeStorage 模拟测试及 Electron 39 同步 DPAPI safeStorage 兼容测试。
+- **语法：** 11 个 JS/CJS 文件的 `node --check` 全部通过。
+- **源码完整性：** 18 项 `SOURCE-MANIFEST.sha256` 全部通过。
+- **Windows 构建：** 成功生成 x64 NSIS `GPT Session Rotator-0.2.0-Setup.exe` 和对应 `.blockmap`；无 Authenticode 签名证书，按既有工作流跳过代码签名。
+- **Actions 工件：** `windows-nsis-installer.zip`，102,138,524 bytes，SHA-256 `a7278dd94f259d853d916d6ee65f68604f199fb51eee512f42f23b8c68f10596`，artifact ID `13616747321`。
+- **Release 状态：** 此验证提交没有 `[release]`，故 Publish GitHub Release job 按设计 skipped；正式发布需要下一条单独 docs-only `[release]` 提交。
+- **实机边界：** CI 证实 Electron 39 API 兼容代码的合约测试通过；未实际在用户电脑配置 PAT、验证本机 DPAPI 密文或进行真实 API 认证端到端测试。
