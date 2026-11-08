@@ -226,3 +226,14 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **Windows 包与实机：** 本环境未运行 Windows NSIS 安装包构建；当前 0.1.16 的构建结果须以本次提交触发的 Actions 实际输出为准。真实 Windows + ChatGPT 登录态端到端验证仍未完成。
 - **发布边界：** 本次功能提交不主动申请正式 Release；仅在本次 Actions 测试、源码清单和 Windows 构建成功后再发布 0.1.16。
 - **下一步：** 查看当前提交对应的 Actions jobs、测试统计、语法检查、18 项源码 SHA-256 清单和 NSIS 工件；如果失败，则按新版本规则修正并重新验证。
+
+
+## 2026-11-08 — 0.1.16 Actions 验证成功，准备正式发布
+
+- **验证提交：** `d4644457cf94b82e1022e47a0edb9be7483fa829`；Actions run #17：`42475629231`，最终 workflow conclusion 为 `success`，链接：https://github.com/xiaobei206/GPT-Session-Rotator/actions/runs/42475629231。
+- **自动测试：** `npm test` 输出为 38 tests、38 pass、0 fail。
+- **语法检查：** `node --check` 对 11 个 JavaScript/CJS 文件通过。
+- **源码清单：** Windows Runner 核实 `SOURCE-MANIFEST.sha256` 共 18 项，全部通过。
+- **Windows 构建：** Windows x64 NSIS 构建成功；`windows-nsis-installer` 工件上传成功，artifact ID `13614619034`，Actions 工件压缩包大小 102,136,639 bytes。此数值是 Actions artifact ZIP，不是最终 Setup.exe 本体大小或 SHA-256。
+- **发布状态：** 本次功能提交的 Release Job 因提交未带 `[release]` 而按预期跳过；截至本条记录更新时，正式 Release 仍是 v0.1.15。下面独立的 `[release]` 提交将再次运行验证与 Windows 构建，并在成功后创建 v0.1.16。
+- **实机边界：** 自动测试、CI 和 Windows Runner 构建通过，不代表用户本地安装/升级或真实 ChatGPT 登录态已端到端验证。助手结束回显的人工实测仍待完成。
