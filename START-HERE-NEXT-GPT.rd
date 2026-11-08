@@ -1,6 +1,6 @@
-> **2026-11-08 当前任务：** 最新正式版 v0.2.0 已发布；本轮目标 v0.2.1 修复左上设置区裁切。已确认根因是 `.controls{overflow:hidden}` + 固定 330px 面板，没有独立滚动容器，提示词框仅 50px。修正为固定操作栏（包含开始/停止/刷新/提示词快捷入口）和独立纵向滚动设置区，提示词框增高且可调整。
+> **2026-11-08 正式版：** v0.2.1 已发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.1。最终 Actions run `42483241721` 成功：44/44 测试、12 个 JS/CJS 语法检查、19 项 SHA-256 manifest、Windows x64 NSIS 构建、工件上传和 Release 发布全部成功。
 >
-> **验证状态：** Windows Actions run `42483012468` 已完成并成功：44/44 tests、12 项语法检查、19 项 manifest、NSIS 构建/工件上传全部通过。当前提交将以单独 `[release]` 消息重跑完整 CI 并触发 v0.2.1 正式发布；须核实 Release 资产后交付。
+> **本轮界面修复：** 设置区独立纵向滚动；最长等待、开始/停止、刷新和“提示词”按钮固定在顶部；提示词输入框默认 140px 高且可调整，可通过快捷按钮滚动聚焦。用户实际 DPI/屏幕下的目视验收尚未完成。
 >
 
 # GPT Session Rotator — 下一轮 GPT 必读交接指令
@@ -8,24 +8,17 @@
 > 更新日期：2026-11-08
 > 仓库：https://github.com/xiaobei206/GPT-Session-Rotator
 > 默认分支：`main`
-> 源码版本：`0.2.0`
-> 最新正式安装包：`0.2.0`（Release 已正式发布）
+> 源码版本：`0.2.1`
+> 最新正式安装包：`0.2.1`（Release 已正式发布）
 
-> **接手顺序：** 新对话先读根目录 `AI_BOOTSTRAP_PROMPT.md` 获取当前任务与验证边界，再把本文件作为详细规程；本文件后半部分包含历史事故记录，历史状态不能覆盖实时 `main`、Actions 与 Release 结果。
+> **接手规则：** 先检查远程 `main`、最新 Actions 与 Releases，再读本文件后续历史背景。不要把旧版本交接信息当作实时状态。
 
-## 当前状态先看这里
+## 当前状态
 
-> **当前开发项：** 0.1.16 源码的 Actions run #17（42475629231）已成功：38/38 测试、11 个 JS/CJS 语法检查、18 项 SHA-256 清单以及 Windows NSIS 构建/工件上传均通过。当前正式 Release 仍为 v0.1.15；本次带 `[release]` 的提交会重新验证并触发 v0.1.16 发布。
->
-> **保留待办：** v0.1.15 助手结束回显链路仍未在用户真实 Windows + ChatGPT 登录态中完成人工端到端验证。
-
-- 应用源码和 `tests/` 已由用户导入并推送到 `main`。源码导入提交：`fc22749d8f35f2ff9464605cbbb73df1098a64a3`。
-- 当前交接文档用于修正导入后遗留的状态记录。先前脚本曾留下字面量 `$ExpectedHash` 和无法解析的测试计数；不要把这些占位符当成验证结果。
-- 已发布正式版：`0.1.13`；该版本 Actions run `42392748703` 完整成功：34 项测试、11 个 JS/CJS 语法检查、18 项源码 SHA-256 清单、Windows x64 NSIS 构建及 Release 上传均通过。
-- v0.1.14 应用修复提交 `fa449d80b13af4b6c32435b6d3a78a15a5ca2b2c` 修复了提交前空助手占位节点被复用时漏检的问题；该版本历史验证为 36/36 测试通过。
-- 当前应用版本升级为 `0.1.15`，应用修复提交 `37c4d728f335a194162f341c56a82ab95e110cc4`：兼容新版 ChatGPT app-shell 助手 Markdown 节点和活动时间线根节点，增加 selector hit / visibility 诊断；标记命中后用内存文本签名确认正文停止增长。测试/发布修正提交：`5628c96932cb063fe83a078ce7caf5d4aac320c9`（Windows 清单哈希）和 `dc7184d204ef4233e904fcbfb960cba657788a63`（回归测试断言）。
-- Actions run `42400753265` 最终成功：38/38 测试、11/11 JS/CJS 语法检查、18 项源码 SHA-256 清单、Windows x64 NSIS 构建、工件上传和 Release 发布均通过。正式 Release：`https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.15`。
-- 源码归档的预期 SHA-256：`c6596bebd32ad13124f2dddd8374929bc4c555d248836f2b6d37ac553aab92df`。
+- v0.2.1 已正式发布；Windows build 与 Release job 均成功。
+- 设置面板布局：独立滚动区 + 固定主操作栏；提示词输入框默认 140px 高、可调整，工具栏提供“提示词”快捷按钮。
+- 真实用户桌面分辨率/缩放下的目视验收仍待反馈。
+- 项目规则、源代码和以往事故记录见下方原有接手清单及 `docs/DEVELOPMENT-LOG.md`。
 
 ## 每次接手必须做的事
 

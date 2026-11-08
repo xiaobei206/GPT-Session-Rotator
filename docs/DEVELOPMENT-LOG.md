@@ -322,3 +322,14 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **源码清单：** 19 项 `SOURCE-MANIFEST.sha256` 全部通过。
 - **Windows 构建与上传：** 成功构建 x64 NSIS `GPT Session Rotator-0.2.1-Setup.exe` 及 blockmap，并上传 Actions artifact `windows-nsis-installer.zip`；102,138,790 bytes，ZIP SHA-256 `7f9e795480fd590f251c6bc9e866a607ea98a08c07628009e12667667cb3a96c`，artifact ID `13618491167`。
 - **已知边界：** 本次自动化验证没有覆盖用户电脑上的人工窗口视觉验收；尚未发布 v0.2.1。接下来单独 `[release]` docs-only 提交将触发正式发布流程，发布完成后再核对 EXE 与 blockmap 的实际 Release 资产。
+
+
+## 2026-11-08 — v0.2.1 正式 Release 发布成功
+
+- **正式 Release：** `v0.2.1`，Release ID `438253372`，2026-11-08 13:07:37 UTC 发布；`draft=false`、`prerelease=false`。
+- **Release 页面：** https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.1
+- **最终 Actions：** run `42483241721`，completed/success；`Test and build Windows installer` 与 `Publish GitHub Release` 两个 job 均成功。
+- **自动验证：** 44/44 tests pass、0 fail；12 个 JS/CJS 文件 `node --check` 通过；19 项 `SOURCE-MANIFEST.sha256` 通过；Windows x64 NSIS 构建与上传成功。
+- **安装包：** `GPT.Session.Rotator-0.2.1-Setup.exe`，102,031,179 bytes；GitHub Release digest SHA-256：`ac63d87b015d90407ba2de0d9c59756dab24cfa73d49503e791f19ba32457010`。
+- **blockmap：** `GPT.Session.Rotator-0.2.1-Setup.exe.blockmap`，106,074 bytes；GitHub Release digest SHA-256：`2d445dc490210a5203db0c4ee9a44b8ddb303ca95b71a0ac1751224b5df9700f`。
+- **视觉验收边界：** UI 结构回归测试与 Windows 构建通过；尚未在用户桌面分辨率/显示缩放下人工运行并验收窗口视觉布局。用户安装后仍需确认滚动区、提示词聚焦与按钮可点击体验。

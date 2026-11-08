@@ -2,11 +2,11 @@
 
 ## Current implementation state
 
-- Latest published baseline: v0.2.0. Active work targets v0.2.1 to fix the left settings panel clipping its lower content and prompt field.
-- Root cause confirmed: `.controls` used `overflow:hidden` in a fixed 330px dashboard panel; the prompt textarea was only 50px high and no inner vertical scroll region existed.
-- Target UI: fixed toolbar for wait settings and Start/Stop/Refresh/Prompt actions; independent vertical scrolling for the remaining settings and prompt; larger resizable prompt editor plus a prompt jump/focus button.
-- Add UI layout regression tests. Keep every button and input ID/IPC behavior stable. Increment all version metadata and update README, CHANGELOG, source SHA-256 manifest and dated development log.
-- Never report a new release until the new Actions run passes manifest validation, all tests, JavaScript syntax checks, Windows x64 NSIS build and artifact upload, followed by the separate `[release]` trigger and successful GitHub Release verification.
+- Latest published release: GPT Session Rotator v0.2.1. Release: https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.1.
+- v0.2.1 fixes the clipped settings panel by keeping wait settings and Start/Stop/Refresh/Prompt actions in a fixed toolbar while proxy/Think/GitHub/completion/prompt settings scroll independently.
+- The prompt textarea is 140px high by default, vertically resizable from 100px up to 300px; the fixed “提示词” toolbar button scrolls it into view and focuses it.
+- Latest release Actions run `42483241721`: 44/44 tests, 12 JS/CJS syntax checks, 19 source manifest entries, Windows x64 NSIS build/upload, and Release publication all succeeded.
+- Remaining manual boundary: the user has not yet visually verified the layout on their own screen DPI/window sizing. Do not claim real-device visual verification before user feedback.
 
 # AI Bootstrap Prompt — GPT Session Rotator
 

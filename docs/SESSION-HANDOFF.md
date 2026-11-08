@@ -2,23 +2,21 @@
 
 更新日期：2026-11-08
 
-> **当前开发版本：** v0.2.1，正在修复左上设置区被裁切、固定提示词无法方便输入以及 Start/Stop 操作按钮可能不可见的问题。
+> **最新正式版：** v0.2.1 已发布；Release：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.1。
 >
-> **根因：** 左侧 `.controls` 使用 `overflow:hidden`，内容超出固定 330px 面板高度后被裁切；提示词框仅 50px。
+> **本轮修复：** 左侧设置卡片现由固定操作栏与独立纵向滚动设置区组成。最长等待、开始/停止、刷新 GPT、提示词快捷入口一直留在固定栏；代理、Think、GitHub、结束标记和固定提示词在下方滚动区中。提示词默认高度 140px、可垂直调整，并可通过“提示词”按钮滚动聚焦。
 >
-> **目标布局：** 最长等待和开始/停止/刷新/提示词快捷按钮留在固定工具栏，下面的其余设置（包括提示词）独立纵向滚动；提示词框增高并可调整，快捷按钮可滚动聚焦到提示词。
+> **CI：** 最终 Release run `42483241721` 成功：44/44 测试、12 项 JS/CJS 语法检查、19 项 manifest、Windows x64 NSIS 构建/上传及 Release 发布均通过。
 >
-> **版本流程：** v0.2.0 是当前已发布版；v0.2.1 仅在 UI 回归测试、完整 Windows CI 和正式 Release 全部成功后才能交付。
+> **安装包：** `GPT.Session.Rotator-0.2.1-Setup.exe`，102,031,179 bytes，SHA-256 `ac63d87b015d90407ba2de0d9c59756dab24cfa73d49503e791f19ba32457010`。
+>
+> **待用户设备验证：** 尚未在用户实际屏幕分辨率/Windows 缩放下人工运行并目视确认面板布局。若仍有遮挡，请提供窗口尺寸/DPI 和不含提示词正文的截图或描述；无需提供 Token 或聊天内容。
 
-## 本轮修改文件与验证边界
+## 本轮功能和改动
 
-- 应用：`src/index.html`、`src/style.css`、`src/renderer.js`、`src/main.cjs`、`VERSION`、`package.json`、`CHANGELOG.md`、`SOURCE-MANIFEST.sha256`。
-- 测试：新增 `tests/ui-layout.test.cjs`，验证 Start/Stop/Reload/提示词按钮不在滚动容器内，提示词和其他设置在滚动容器内，且有纵向滚动/可调整高度。
-- 文档：README、AI bootstrap、下轮接手文件、测试清单和累计开发日志同步更新。
-- **最新 CI：** run `42483012468` 已整体成功：44/44 tests、12 个 JS/CJS 语法检查、19 项 SHA-256 manifest、Windows x64 NSIS 构建和 Actions 工件上传均通过。工件 ZIP：102,138,790 bytes，SHA-256 `7f9e795480fd590f251c6bc9e866a607ea98a08c07628009e12667667cb3a96c`。
-- 该提交尚未触发正式 Release；本轮 `[release]` docs-only 提交会重跑完整 CI 并发布 v0.2.1。Release 发布完成后须再核验 tag 与 EXE/blockmap 摘要。
-- 工具会话没有本地工作树；不要声称本地 Node 测试、本地 Windows 打包或用户电脑人工视觉验收已执行。以 Actions 实际日志为准。
-- v0.2.0 正式版链接：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0。
+- 固定操作工具栏与设置滚动面板拆分；操作按钮不在滚动容器内部。
+- 独立 `overflow-y:auto` 设置区及可见滚动条，固定提示词区增高至 140px、最小 100px、最大 300px，可垂直调整。
+- 新增提示词快捷按钮与两项 UI 布局测试；版本、README、CHANGELOG、开发日志、测试清单、接手文档和 19 项源码 SHA-256 manifest 已同步。
 
 --- 历史交接记录（仅作背景；以上状态优先）
 
