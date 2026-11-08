@@ -258,3 +258,12 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **失败原因二：** 静默阈值校验错误文本从 `1 to 180` 改为 `1 through 180`，破坏了原有测试契约。
 - **修正：** 恢复导出 `DEFAULT_ASSISTANT_COMPLETION_MARKER`，并恢复原有 `1 to 180` 错误文本。Token 加密/解密与明文不落盘两项新测试均已在首轮 CI 通过。
 - **后续：** 重新运行完整测试、语法检查、manifest 校验及 Windows NSIS 构建；当前没有发布 Release。
+
+
+## 2026-11-08 — Windows CI transient Electron download timeout and bounded retry
+
+- **Actions run:** `42478156331` (https://github.com/xiaobei206/GPT-Session-Rotator/actions/runs/42478156331). Version metadata and all 18 source-manifest hashes passed. The dependency-install step failed before unit tests or packaging.
+- **Observed failure:** npm ran `node_modules/electron/install.js`, which attempted to download the Electron runtime and received HTTP 504 (Gateway Timeout). npm subsequently printed Windows EPERM cleanup warnings for partially installed directories. No application test, syntax-check, or NSIS result was produced by this run.
+- **CI-only correction:** replace the single dependency-install attempt with up to four full `npm install --no-audit --no-fund` attempts, with 10/20/40-second backoff. This is bounded retry for transient package/runtime download failures; it does not suppress the final error or make a failed install appear successful.
+- **Application source/version:** unchanged at 0.2.0. No source-manifest entries change because this commit updates only workflow and documentation files.
+- **Next verification:** require one complete subsequent Windows run to pass dependency installation, unit tests, JavaScript syntax checks, x64 NSIS build, and artifact upload before the separate `[release]` commit.

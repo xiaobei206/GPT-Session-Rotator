@@ -72,8 +72,25 @@ jobs:
           if ($count -lt 1) { throw 'Source manifest is empty.' }
           Write-Host "Verified $count source files against SOURCE-MANIFEST.sha256."
 
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
+      - name: Install dependencies (retry transient Electron download failures)
+        shell: pwsh
+        run: |
+          $maxAttempts = 4
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            Write-Host "Installing dependencies (attempt $attempt/$maxAttempts)"
+            npm install --no-audit --no-fund
+            $installExitCode = $LASTEXITCODE
+            if ($installExitCode -eq 0) {
+              Write-Host "Dependencies installed successfully."
+              break
+            }
+            if ($attempt -eq $maxAttempts) {
+              throw "npm install failed after $maxAttempts attempts (exit code $installExitCode)."
+            }
+            $delaySeconds = [Math]::Min(60, [int](10 * [Math]::Pow(2, $attempt - 1)))
+            Write-Warning "Dependency installation failed (exit $installExitCode); retrying in $delaySeconds seconds."
+            Start-Sleep -Seconds $delaySeconds
+          }
 
       - name: Run unit tests
         run: npm test

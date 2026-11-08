@@ -21,7 +21,7 @@
 
 ## 当前验证边界
 
-- 代码推送后必须查看 Windows CI 的单元测试、`node --check`、SOURCE-MANIFEST SHA-256 和 NSIS 构建结果。
+- 最近一次 Actions run `42478156331` 已通过版本校验及 18 项 SHA-256 manifest，但 Electron 安装脚本下载运行时收到 HTTP 504，npm install 失败，故单元测试、`node --check` 和 NSIS 均未执行。Windows workflow 已增加最多 4 次、10/20/40 秒退避的依赖安装重试；必须检查下一轮完整结果。
 - 未在用户 Windows 设备安装并配置用户 PAT，不得宣称 DPAPI 存储及真实 API 认证已完成人工端到端测试。
 - 不要求用户在聊天中粘贴 Token；用户只需在桌面应用的密码框内本地粘贴。
 
