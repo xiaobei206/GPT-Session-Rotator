@@ -38,7 +38,8 @@ Keep UI changes minimal and update the displayed version on every formal app rel
 
 - Reads only the latest public commit on `main` of `xiaobei206/padavan-4.4-2`.
 - Uses the embedded Electron session so configured proxy routing applies.
-- Poll interval: configurable via the UI as 90, 120, 150, or 180 seconds (30-second steps); default 90 seconds. The setting persists in `settings.json` and reschedules the active wait's next poll immediately without cancelling an in-flight request.
+- Poll interval: 90/120/150/180 seconds (default 90 seconds) without a token; 30 seconds is enabled only while an optional GitHub token is configured and has not been rejected. The setting persists and reschedules the active wait's next poll immediately without cancelling an in-flight request.
+- Optional token is sent only as a Bearer header on the latest-commit endpoint. Plaintext remains in the main process only. Persistence uses Electron safeStorage ciphertext; Windows uses DPAPI. HTTP 401 marks the token rejected, stops sending it, and returns cadence to 90 seconds.
 - Threshold: 15 minutes by default; normalized to an integer from 1 through 180 minutes.
 - Startup SHA is a baseline, never a trigger. Only a SHA that appears after that baseline can become a candidate.
 - Uses a valid GitHub HTTP `Date` header for time calculation. Missing/bad headers, malformed commits, HTTP errors, and fetch errors cannot trigger early rotation.
@@ -66,7 +67,7 @@ Keep UI changes minimal and update the displayed version on every formal app rel
 
 ### Settings — `src/settings.cjs`
 
-Persist validated application settings to the user's app data path (`settings.json`). Settings writes should be small, atomic where practical, and restricted to the values needed by the app. Do not store cookies, prompts beyond existing explicit app configuration policy, assistant responses, page dumps, or diagnostic traces in the new settings file.
+Persist validated application settings to the user's app data path (`settings.json`). The optional GitHub token is stored only as an Electron safeStorage-encrypted value (Windows DPAPI), never as plaintext. Settings writes should be small, atomic where practical, and restricted to the values needed by the app. Do not store cookies, prompts beyond existing explicit app configuration policy, assistant responses, page dumps, or diagnostic traces in the new settings file.
 
 ## Automation decision order
 

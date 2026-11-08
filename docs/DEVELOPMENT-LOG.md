@@ -237,3 +237,15 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **Windows 构建：** Windows x64 NSIS 构建成功；`windows-nsis-installer` 工件上传成功，artifact ID `13614619034`，Actions 工件压缩包大小 102,136,639 bytes。此数值是 Actions artifact ZIP，不是最终 Setup.exe 本体大小或 SHA-256。
 - **发布状态：** 本次功能提交的 Release Job 因提交未带 `[release]` 而按预期跳过；截至本条记录更新时，正式 Release 仍是 v0.1.15。下面独立的 `[release]` 提交将再次运行验证与 Windows 构建，并在成功后创建 v0.1.16。
 - **实机边界：** 自动测试、CI 和 Windows Runner 构建通过，不代表用户本地安装/升级或真实 ChatGPT 登录态已端到端验证。助手结束回显的人工实测仍待完成。
+
+
+## 2026-11-08 — 可选 GitHub Token 认证与 30 秒轮询（0.2.0；CI 待验证）
+
+- **用户可见效果：** 新增 GitHub Token 保存/清除控件。无 Token 时仍可选 90/120/150/180 秒；配置且未被 GitHub HTTP 401 拒绝的 Token 后，开放 30 秒选项。30 秒约为每小时 120 次 API 请求。
+- **根因与目的：** GitHub REST API 对未认证请求按出口 IP 共享 60 次/小时限额；用户希望在可选认证后提升轮询频率。已认证个人账号主限额为 5,000 次/小时，但与同一账号其他应用请求共享，且仍受次级限流约束。
+- **安全设计：** Token 仅从 renderer 通过窄 IPC 传入主进程；主进程用 Electron safeStorage 加密后写入本机设置。Windows 使用 DPAPI；加密不可用时拒绝保存，不以明文回退。明文仅留在主进程内存供请求使用；只有目标 commit endpoint 附加 Bearer header。UI 只接收 configured/rejected 状态；日志不输出 Token。
+- **降级行为：** 清除 Token 会删除密文并将当前 30 秒间隔降至 90 秒；HTTP 401 会停止发送被拒绝的 Token、标记认证失败、自动降回 90 秒并关闭 30 秒选项。重新保存正确 Token 可以恢复。
+- **实现文件：** `src/github-monitor.cjs`、`src/settings.cjs`、`src/main.cjs`、`src/preload.cjs`、`src/renderer.js`、`src/index.html`、`src/style.css`、`tests/github-monitor.test.cjs`、`tests/settings.test.cjs`、版本元数据、README、CHANGELOG、架构/测试/接手文档及源码 SHA-256 清单。
+- **测试：** 新增 Bearer header、30 秒认证门控、safeStorage 密文读写、明文不落盘和安全存储不可用时 fail-closed 测试。当前工具执行环境未提供本地工作区，未声称本地 `npm test` / `node --check` / `git diff --check` 已通过；须以随后真实 Actions run 为验证依据。
+- **Windows / 实机：** Windows NSIS 构建待 Actions 验证；用户本地 DPAPI 解密、Token 权限与 HTTP 401/恢复流程仍待 Windows 实机验证。
+- **发布边界：** 功能提交不带 `[release]`；只有测试、源码清单、语法检查和 Windows 安装包构建成功后，再用独立记录提交触发正式 Release。

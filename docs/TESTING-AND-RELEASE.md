@@ -25,7 +25,9 @@ The test suite uses Node's built-in test runner and should not need an Electron 
 - Main-area scanning only; content below the viewport does not get rejected by a viewport-only visibility check.
 - Chinese/Traditional Chinese/English conversation-length wording; red text or red frame evidence; no false positives for usage quotas, oversized user prompts, or sidebar controls.
 - Length warning needs five continuous seconds; warning disappearance, changes, and long observation gaps reset the timer.
-- GitHub polling options are exactly 90/120/150/180 seconds; default is 90 seconds, the selected interval persists, invalid options are rejected, and changing the interval reschedules the active poll cadence. Quiet-threshold default/range and immediate re-evaluation are also checked.
+- GitHub polling offers 90/120/150/180 seconds without a token and additionally 30 seconds only when authenticated; default is 90 seconds. Invalid or unauthenticated 30-second choices are rejected.
+- Authenticated commit requests add a Bearer header; unauthenticated requests do not. Token persistence uses safeStorage encryption, never plaintext settings; unavailable encryption fails closed. Token clearing and HTTP 401 fallback return polling to 90 seconds.
+- Changing the poll interval reschedules the active poll cadence. Quiet-threshold default/range and immediate re-evaluation are also checked.
 - Existing SHA at startup is baseline only; new SHA is eligible; GitHub Date is required; failed requests do not trigger; next SHA resets candidate.
 - Settings persist and invalid values are rejected.
 

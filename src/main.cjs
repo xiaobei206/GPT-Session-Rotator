@@ -1,16 +1,16 @@
-const { app, BrowserWindow, BrowserView, ipcMain, session, clipboard } = require('electron');
+const { app, BrowserWindow, BrowserView, ipcMain, session, clipboard, safeStorage } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const { analyzeConversationLimitSnapshot, createConversationLimitConfirmationState, observeConversationLimitEvidence, CONVERSATION_LIMIT_SCAN_SCRIPT } = require('./conversation-limit.cjs');
 const { analyzeAssistantCompletionSnapshot, createAssistantCompletionState, observeAssistantCompletion, ASSISTANT_COMPLETION_SCAN_SCRIPT, normalizeAssistantCompletionMarker } = require('./assistant-completion.cjs');
 const { fetchLatestCommit, createGithubMonitorState, observeGithubCommit, GITHUB_POLL_INTERVAL_MS, GITHUB_DEFAULT_QUIET_THRESHOLD_MS, normalizeGithubPollIntervalSeconds, normalizeGithubQuietThresholdMinutes } = require('./github-monitor.cjs');
-const { loadGithubPollIntervalSeconds, saveGithubPollIntervalSeconds, loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker } = require('./settings.cjs');
+const { loadGithubPollIntervalSeconds, saveGithubPollIntervalSeconds, loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker, normalizeGithubToken, loadGithubToken, saveGithubToken, clearGithubToken } = require('./settings.cjs');
 
-const VERSION = '0.1.16';
+const VERSION = '0.2.0';
 const PARTITION = 'persist:gpt-session-rotator';
 const CHATGPT_HOME = 'https://chatgpt.com/';
 const HEADER_HEIGHT = 54;
-const DASHBOARD_HEIGHT = 300;
+const DASHBOARD_HEIGHT = 330;
 const BROWSER_VIEW_TOP = HEADER_HEIGHT + DASHBOARD_HEIGHT;
 const STEP_DELAY_MS = 20_000;
 const NEW_CHAT_DELAY_MS = 30_000;
@@ -23,6 +23,8 @@ let statsPath;
 let settingsPath;
 let githubQuietThresholdMs = GITHUB_DEFAULT_QUIET_THRESHOLD_MS;
 let githubPollIntervalMs = GITHUB_POLL_INTERVAL_MS;
+let githubToken = '';
+let githubTokenRejected = false;
 let assistantCompletionMarker = '结束任务简报';
 let totalCycles = 0;
 let proxyConfig = { enabled: false, type: 'socks5', host: '127.0.0.1', port: '7890' };
@@ -54,11 +56,13 @@ function loadStats() {
   }
 }
 
-function loadSettings() {
+async function loadSettings() {
   settingsPath = path.join(app.getPath('userData'), 'settings.json');
   const minutes = loadGithubQuietThresholdMinutes(settingsPath);
   githubQuietThresholdMs = minutes * 60_000;
-  githubPollIntervalMs = loadGithubPollIntervalSeconds(settingsPath) * 1000;
+  githubToken = process.platform === 'win32' ? await loadGithubToken(settingsPath, safeStorage) : '';
+  githubTokenRejected = false;
+  githubPollIntervalMs = loadGithubPollIntervalSeconds(settingsPath, { authenticated:Boolean(githubToken) }) * 1000;
   assistantCompletionMarker = loadAssistantCompletionMarker(settingsPath);
 }
 
@@ -113,15 +117,57 @@ function updateGithubQuietThreshold(minutes) {
   return { ok:true, minutes:normalized, persisted };
 }
 
+function hasAuthenticatedGithubToken() {
+  return Boolean(githubToken) && !githubTokenRejected;
+}
+
 function updateGithubPollInterval(seconds) {
-  const normalized = normalizeGithubPollIntervalSeconds(seconds);
-  if (normalized === null) return { ok:false, reason:'GitHub API 查询间隔只能选择 90、120、150 或 180 秒。' };
+  const authenticated = hasAuthenticatedGithubToken();
+  const normalized = normalizeGithubPollIntervalSeconds(seconds, { authenticated });
+  if (normalized === null) {
+    return { ok:false, reason:'30 秒轮询需要已保存且未被 GitHub 拒绝的 Token；否则请选择 90、120、150 或 180 秒。' };
+  }
   githubPollIntervalMs = normalized * 1000;
   let persisted = false;
-  try { if (settingsPath) { saveGithubPollIntervalSeconds(settingsPath, normalized); persisted = true; } } catch {}
+  try {
+    if (settingsPath) {
+      saveGithubPollIntervalSeconds(settingsPath, normalized, { authenticated });
+      persisted = true;
+    }
+  } catch {}
   if (scheduler.running && typeof scheduler.githubPollIntervalChangeHandler === 'function') scheduler.githubPollIntervalChangeHandler();
   emitProgress('GitHub轮询间隔更新', `GitHub API 查询间隔已设为 ${normalized} 秒；${persisted ? '配置已保存' : '当前进程内已应用但未能保存配置'}${scheduler.running ? '，运行中的轮询计划已即时调整' : '，下次运行将使用此间隔'}。`, persisted ? 'success' : 'warning', scheduler.cycle);
   return { ok:true, seconds:normalized, persisted };
+}
+
+async function updateGithubToken(value) {
+  const token = normalizeGithubToken(value);
+  if (!token) return { ok:false, reason:'GitHub Token 不能为空，且不能包含空白字符或超过 512 个字符。' };
+  if (process.platform !== 'win32') {
+    return { ok:false, reason:'GitHub Token 安全保存目前仅支持 Windows DPAPI。' };
+  }
+  try {
+    await saveGithubToken(settingsPath, token, safeStorage);
+  } catch (error) {
+    return { ok:false, reason:error?.message || '无法安全保存 GitHub Token。' };
+  }
+  githubToken = token;
+  githubTokenRejected = false;
+  emitProgress('GitHub Token 已保存', 'Token 已通过 Windows DPAPI 加密保存在本机；30 秒轮询选项已开放。Token 内容不会写入日志。', 'success', scheduler.cycle);
+  return { ok:true, configured:true, rejected:false };
+}
+
+function removeGithubToken() {
+  try {
+    clearGithubToken(settingsPath);
+  } catch (error) {
+    return { ok:false, reason:error?.message || '无法清除已保存的 GitHub Token。' };
+  }
+  githubToken = '';
+  githubTokenRejected = false;
+  if (githubPollIntervalMs < 90_000) updateGithubPollInterval(90);
+  emitProgress('GitHub Token 已清除', '已清除本机加密 Token；GitHub 轮询恢复为未认证模式，30 秒选项已关闭。', 'warning', scheduler.cycle);
+  return { ok:true, configured:false, rejected:false };
 }
 
 function saveStats() {
@@ -168,10 +214,21 @@ const CONVERSATION_LIMIT_CONFIRM_MAX_GAP_MS = 3500;
 
 async function fetchLatestMainCommit() {
   const ses = session.fromPartition(PARTITION);
-  return fetchLatestCommit({
-    fetchImpl:(url, init) => ses.fetch(url, init),
-    timeoutMs:15_000
-  });
+  const token = hasAuthenticatedGithubToken() ? githubToken : '';
+  try {
+    return await fetchLatestCommit({
+      fetchImpl:(url, init) => ses.fetch(url, init),
+      timeoutMs:15_000,
+      token
+    });
+  } catch (error) {
+    if (error?.status === 401 && token && !githubTokenRejected) {
+      githubTokenRejected = true;
+      if (githubPollIntervalMs < 90_000) updateGithubPollInterval(90);
+      emitProgress('GitHub Token 认证失败', 'GitHub API 返回 HTTP 401；已停用该 Token 并将轮询降回 90 秒。请检查 Token 是否过期或重新保存。未认证请求不会使用 30 秒间隔。', 'warning', scheduler.cycle);
+    }
+    throw error;
+  }
 }
 
 async function primeGithubMonitorBaseline(monitorState) {
@@ -920,7 +977,7 @@ ipcMain.handle('automation:start', async (_event, options) => {
   scheduler.pendingGithubRotation = null;
   scheduler.running = true;
   scheduler.nextRunAt = null;
-  emitProgress('启动运行', `0.1.16 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
+  emitProgress('启动运行', `0.2.0 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
   void primeGithubMonitorBaseline(scheduler.githubMonitorState);
   void executeCycle();
   return { ok:true };
@@ -933,6 +990,8 @@ ipcMain.handle('automation:stop', async () => {
 
 ipcMain.handle('settings:github-quiet-threshold', async (_event, minutes) => updateGithubQuietThreshold(minutes));
 ipcMain.handle('settings:github-poll-interval', async (_event, seconds) => updateGithubPollInterval(seconds));
+ipcMain.handle('settings:github-token-save', async (_event, token) => updateGithubToken(token));
+ipcMain.handle('settings:github-token-clear', async () => removeGithubToken());
 ipcMain.handle('settings:assistant-completion-marker', async (_event, marker) => updateAssistantCompletionMarker(marker));
 
 ipcMain.handle('browser:status', async () => ({
@@ -945,12 +1004,14 @@ ipcMain.handle('browser:status', async () => ({
   nextRunAt: scheduler.nextRunAt,
   githubQuietThresholdMinutes: Math.round(githubQuietThresholdMs / 60_000),
   githubPollIntervalSeconds: Math.round(githubPollIntervalMs / 1000),
+  githubTokenConfigured:Boolean(githubToken),
+  githubTokenRejected,
   assistantCompletionMarker
 }));
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   loadStats();
-  loadSettings();
+  await loadSettings();
   createWindow();
 });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });

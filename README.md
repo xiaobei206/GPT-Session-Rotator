@@ -1,10 +1,10 @@
 # GPT Session Rotator
 
-**最新正式版仍为 v0.1.15；main 源码已更新为 0.1.16，待 Actions 验证后发布新安装包。**
+**当前开发版本：v0.2.0（可选 GitHub Token 认证与 30 秒轮询；正式安装包状态以 Release 页面为准）。**
 
-**Windows x64 安装包：** [下载 GPT Session Rotator 0.1.15](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.1.15/GPT.Session.Rotator-0.1.15-Setup.exe)
+**Windows x64 安装包：** [下载 GPT Session Rotator 0.2.0](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.0/GPT.Session.Rotator-0.2.0-Setup.exe)
 
-**[GitHub Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.1.15)**
+**[GitHub Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.0)**
 
 > 安装包由 GitHub Actions 在 Windows Runner 上构建并通过 Release 发布。当前 EXE 未配置 Authenticode 代码签名；请在 Windows 设备上完成安装和启动验证。
 
@@ -21,15 +21,17 @@
 
 ---
 
-# GPT Session Rotator 0.1.16 — User Guide
+# GPT Session Rotator 0.2.0 — User Guide
 
 A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT conversation, optionally selects Think, pastes a fixed prompt, submits it, and starts the next cycle when the configured wait expires or an early-rotation condition is met.
 
-## v0.1.16 GitHub API 查询间隔可配置
+## v0.2.0 GitHub Token 可选认证与 30 秒轮询
 
-- 面板下拉菜单提供 90、120、150、180 秒四档，默认 90 秒，间隔为 30 秒一档。
-- 修改后自动保存；运行过程中即时重排下一次轮询，不需要停止/重启。当前已经发出的请求不会被中断。
-- 选 180 秒可把常规查询频率从约每小时 40 次降低到约 20 次。该设置只能降低请求频率，不能保证消除 GitHub 或代理偶发的 HTTP 502；失败的检查仍不会触发轮换，人工等待计时继续。
+- 不配置 Token 时，保留 90、120、150、180 秒四档，默认 90 秒。
+- 保存 Token 后，额外开放 30 秒档；每小时约 120 次请求，低于个人账号已认证 REST API 的 5,000 次/小时主要限额，但额度仍与该账号其他应用请求共享，并受次级限流约束。
+- Token 只通过 Electron safeStorage 加密保存在本机；Windows 使用 DPAPI。界面不回显 Token，日志和仓库也不会记录 Token。
+- 建议创建 Fine-grained personal access token，只选择监测仓库 `xiaobei206/padavan-4.4-2`，仅授予 `Contents: Read` 权限并设置合理到期时间。
+- 如删除 Token，或 GitHub 返回 HTTP 401，程序会关闭 30 秒档并回退到 90 秒。其余 SHA 基线、静默判断及手动等待兜底保持不变。
 
 ## v0.1.15 助手结束回显修复
 
@@ -41,11 +43,13 @@ A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT con
 
 The manual wait remains the maximum wait. Use the dropdown (10, 15, 20, 25, 30, 35, 40, or 45 minutes) or enter a custom value from 1 to 1440 minutes. The 60-minute preset has been removed; 40 minutes has been added.
 
-When automation starts, the app first reads the current `main` head of `xiaobei206/padavan-4.4-2` and records that SHA as the startup baseline. This pre-existing commit is never eligible for early rotation, regardless of its existing age; this prevents an immediate new conversation right after the first prompt is submitted. During wait windows, the app checks the branch at the selected 90, 120, 150, or 180 second interval (90 seconds by default). Only a SHA that appears after the startup baseline is eligible, and it triggers once its GitHub-server-calculated commit age reaches the configured quiet threshold (15 minutes by default). A newer SHA resets the candidate. If the startup baseline request fails, the first later successful poll only establishes the baseline and cannot trigger rotation.
+When automation starts, the app first reads the current `main` head of `xiaobei206/padavan-4.4-2` and records that SHA as the startup baseline. This pre-existing commit is never eligible for early rotation, regardless of its existing age; this prevents an immediate new conversation right after the first prompt is submitted. During wait windows, the app checks the branch at the selected 90, 120, 150, or 180 second interval (90 seconds by default), or every 30 seconds when an optional GitHub Token is configured. Only a SHA that appears after the startup baseline is eligible, and it triggers once its GitHub-server-calculated commit age reaches the configured quiet threshold (15 minutes by default). A newer SHA resets the candidate. If the startup baseline request fails, the first later successful poll only establishes the baseline and cannot trigger rotation.
 
 Commit age uses the GitHub HTTP `Date` header and the commit's committer timestamp. VPS timezone and local clock settings therefore do not enter the quiet-time calculation. If GitHub cannot be reached, returns an error, or omits a valid `Date` header, GitHub early rotation is skipped for that check and the manual timer continues normally.
 
-GitHub requests use the embedded browser's Electron session, including the proxy configured in the app. No GitHub token is required; the endpoint is public. The monitor does not download source files or inspect commit diffs.
+GitHub requests use the embedded browser's Electron session, including the proxy configured in the app. A Token is optional because the endpoint is public. When configured, it is sent only as a Bearer authorization header for the monitored commit request. The plaintext Token is encrypted by Electron safeStorage before local persistence; on Windows the platform encryption uses DPAPI. The Token is never exposed back to the renderer or written to run logs.
+
+To create a least-privilege credential, use GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens. Select only `xiaobei206/padavan-4.4-2` and grant `Contents: Read`. Paste it into the GitHub Token field and save; the app never displays the stored value. If the saved Token receives HTTP 401, the app disables 30-second polling and returns to 90 seconds until a replacement is saved. The monitor does not download source files or inspect commit diffs.
 
 The Chinese/English conversation-length warning detector checks red-text or red-framed length-limit messages anywhere in the rendered ChatGPT main content DOM, including content below the current scroll viewport. The same warning must be observed continuously for five seconds before early rotation; sidebars, navigation, generic alerts, and out-of-main portals do not qualify.
 
@@ -91,7 +95,7 @@ npm test
 
 - The app's configured manual interval continues to run when GitHub is unreachable. A pre-existing repository head is only a baseline; if no new commit appears during this automation run, GitHub quiet-time monitoring will not shorten the current wait.
 - The GitHub monitor watches only the `main` branch head and does not infer whether a coding task is complete.
-- The GitHub API may be subject to transient upstream or proxy failures as well as unauthenticated rate limits. At 90 seconds the app issues about 40 polls per hour during a wait window; at 180 seconds it issues about 20. HTTP 502 is treated as a failed check and does not trigger rotation.
+- The GitHub API may be subject to transient upstream or proxy failures as well as rate limits. At 30 seconds the app issues about 120 polls per hour; at 90 seconds about 40; at 180 seconds about 20. The authenticated 5,000/hour primary limit is shared with other requests made on behalf of the same GitHub account. HTTP 502 is treated as a failed check and does not trigger rotation.
 - Existing app data such as the lifetime cycle count and embedded-browser session are preserved.
 
 ## 0.1.14 修复

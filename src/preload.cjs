@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld('rotator', {
   getStatus: () => ipcRenderer.invoke('browser:status'),
   setGithubQuietThreshold: minutes => ipcRenderer.invoke('settings:github-quiet-threshold', minutes),
   setGithubPollIntervalSeconds: seconds => ipcRenderer.invoke('settings:github-poll-interval', seconds),
+  setGithubToken: token => ipcRenderer.invoke('settings:github-token-save', token),
+  clearGithubToken: () => ipcRenderer.invoke('settings:github-token-clear'),
   setAssistantCompletionMarker: marker => ipcRenderer.invoke('settings:assistant-completion-marker', marker),
   onProgress: callback => {
     if (typeof callback !== 'function') return () => {};

@@ -1,3 +1,11 @@
+## 0.2.0 - 2026-11-08
+
+- Added optional GitHub personal access token authentication for the monitored repository's latest-commit request.
+- The Token is persisted only as Electron safeStorage ciphertext; Windows uses DPAPI. Plaintext is never returned to the renderer, written to logs, or committed.
+- A 30-second polling option is available only while a Token is configured and not rejected; unauthenticated polling retains 90/120/150/180 seconds and a 90-second default.
+- Removing the Token, or receiving HTTP 401, disables 30-second polling and falls back to 90 seconds. Startup-SHA baseline, GitHub Date-based quiet-time logic, and manual-wait fallback are unchanged.
+- Added regression tests for Bearer headers, authentication-gated intervals, encrypted persistence, and unavailable safe storage.
+
 ## 0.1.16 - 2026-11-08
 
 - Added a persistent GitHub API polling-interval dropdown with 90, 120, 150, and 180 second options (30-second increments; default 90 seconds).

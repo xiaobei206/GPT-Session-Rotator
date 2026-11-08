@@ -28,6 +28,19 @@ function setRunning(value) {
   $('startBtn').disabled = value;
   $('stopBtn').disabled = !value;
 }
+function syncGithubAuthControls(status = {}) {
+  const configured = status.githubTokenConfigured === true;
+  const rejected = status.githubTokenRejected === true;
+  const fastOption = $('githubPollInterval').querySelector('option[value="30"]');
+  if (fastOption) fastOption.disabled = !configured || rejected;
+  $('clearGithubTokenBtn').disabled = !configured;
+  $('githubTokenStatus').textContent = rejected
+    ? '已保存，但认证失败'
+    : configured ? '已加密保存' : '未设置';
+  if ((!configured || rejected) && $('githubPollInterval').value === '30') {
+    $('githubPollInterval').value = String(status.githubPollIntervalSeconds || 90);
+  }
+}
 function progress(payload) {
   if (!payload?.message) return;
   if (Number.isInteger(payload.cycle)) runCycle = payload.cycle;
@@ -38,6 +51,9 @@ function progress(payload) {
   updateNext();
   const kind = payload.level === 'warning' ? 'event-warn' : payload.level === 'success' ? 'event-ok' : '';
   const number = payload.cycle ? `#${payload.cycle} / ${payload.totalCycles ?? totalCycles}` : '—';
+  if (payload.event === 'GitHub Token 认证失败') {
+    window.rotator.getStatus().then(syncGithubAuthControls).catch(() => {});
+  }
   log(payload.event || '运行进度', payload.message, kind, number);
   if (payload.event === '启动运行') {
     setRunning(true);
@@ -103,7 +119,8 @@ $('githubPollInterval').addEventListener('change', async () => {
     if (!result.persisted) log('GitHub 轮询间隔未能持久化', '当前进程内已应用，但设置文件写入失败；重启后将恢复上次保存值。', 'event-warn');
   } catch (error) {
     const status = await window.rotator.getStatus().catch(() => null);
-    if ([90,120,150,180].includes(status?.githubPollIntervalSeconds)) $('githubPollInterval').value = String(status.githubPollIntervalSeconds);
+    if ([30,90,120,150,180].includes(status?.githubPollIntervalSeconds)) $('githubPollInterval').value = String(status.githubPollIntervalSeconds);
+    if (status) syncGithubAuthControls(status);
     log('GitHub 轮询间隔设置失败', error.message || String(error), 'event-error');
   }
 });
@@ -121,6 +138,37 @@ $('githubQuietThreshold').addEventListener('change', async () => {
       $('githubQuietThreshold').value = String(status.githubQuietThresholdMinutes);
     }
     log('GitHub阈值设置失败', error.message || String(error), 'event-error');
+  }
+});
+
+$('saveGithubTokenBtn').addEventListener('click', async () => {
+  const token = $('githubToken').value;
+  if (!token.trim()) {
+    log('GitHub Token 未填写', '请粘贴 Token 后再保存；留空不会更改当前凭据。', 'event-warn');
+    return;
+  }
+  try {
+    const result = await window.rotator.setGithubToken(token);
+    if (!result?.ok) throw new Error(result?.reason || 'Token 未能安全保存。');
+    $('githubToken').value = '';
+    syncGithubAuthControls(result);
+    log('GitHub Token 已安全保存', 'Token 已加密保存在本机；可选择 30 秒轮询。密钥内容不会显示或写入日志。', 'event-ok');
+  } catch (error) {
+    $('githubToken').value = '';
+    log('GitHub Token 保存失败', error.message || String(error), 'event-error');
+  }
+});
+
+$('clearGithubTokenBtn').addEventListener('click', async () => {
+  try {
+    const result = await window.rotator.clearGithubToken();
+    if (!result?.ok) throw new Error(result?.reason || 'Token 未能清除。');
+    $('githubToken').value = '';
+    syncGithubAuthControls(result);
+    $('githubPollInterval').value = '90';
+    log('GitHub Token 已清除', '已恢复未认证模式，轮询间隔至少为 90 秒。', 'event-warn');
+  } catch (error) {
+    log('GitHub Token 清除失败', error.message || String(error), 'event-error');
   }
 });
 
@@ -156,7 +204,8 @@ $('exportLogs').addEventListener('click', () => {
 window.rotator.getStatus().then(status => {
   if (status) {
     if (Number.isInteger(status.githubQuietThresholdMinutes)) $('githubQuietThreshold').value = String(status.githubQuietThresholdMinutes);
-    if ([90,120,150,180].includes(status.githubPollIntervalSeconds)) $('githubPollInterval').value = String(status.githubPollIntervalSeconds);
+    if ([30,90,120,150,180].includes(status.githubPollIntervalSeconds)) $('githubPollInterval').value = String(status.githubPollIntervalSeconds);
+    syncGithubAuthControls(status);
     if (typeof status.assistantCompletionMarker === 'string') $('assistantCompletionMarker').value = status.assistantCompletionMarker;
     runCycle = Number(status.cycle || 0);
     totalCycles = Number(status.totalCycles || 0);
@@ -170,4 +219,4 @@ window.rotator.getStatus().then(status => {
   }
 }).catch(() => {});
 
-log('程序就绪', `0.1.16：轻量模式；GitHub API 查询间隔可选 ${$('githubPollInterval').value} 秒，运行中即时生效；GitHub 静默阈值可配置。助手新回复结束标记（默认“结束任务简报”）需生成完成并稳定确认；红字/红框扫描覆盖主内容区全部滚动位置，连续确认5秒。不会保存网页回复正文或采集API正文。`);
+log('程序就绪', `0.2.0：轻量模式；GitHub API 查询间隔可选 ${$('githubPollInterval').value} 秒；配置 Token 可开放 30 秒档，运行中即时生效；GitHub 静默阈值可配置。助手新回复结束标记（默认“结束任务简报”）需生成完成并稳定确认；红字/红框扫描覆盖主内容区全部滚动位置，连续确认5秒。不会保存网页回复正文或采集API正文。`);

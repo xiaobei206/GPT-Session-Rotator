@@ -3,33 +3,47 @@
 const REPOSITORY = 'xiaobei206/padavan-4.4-2';
 const GITHUB_COMMIT_API = `https://api.github.com/repos/${REPOSITORY}/commits/main`;
 const GITHUB_DEFAULT_POLL_INTERVAL_SECONDS = 90;
-const GITHUB_POLL_INTERVAL_OPTIONS_SECONDS = Object.freeze([90, 120, 150, 180]);
+const GITHUB_POLL_INTERVAL_OPTIONS_SECONDS = Object.freeze([30, 90, 120, 150, 180]);
+const GITHUB_UNAUTHENTICATED_POLL_INTERVAL_OPTIONS_SECONDS = Object.freeze([90, 120, 150, 180]);
 const GITHUB_POLL_INTERVAL_MS = GITHUB_DEFAULT_POLL_INTERVAL_SECONDS * 1000;
 const GITHUB_DEFAULT_QUIET_THRESHOLD_MS = 15 * 60_000;
 const GITHUB_MIN_QUIET_THRESHOLD_MINUTES = 1;
 const GITHUB_MAX_QUIET_THRESHOLD_MINUTES = 180;
 const REQUEST_TIMEOUT_MS = 15_000;
 
+function normalizeGithubPollIntervalSeconds(value, { authenticated = false } = {}) {
+  const seconds = Number(value);
+  if (seconds === 30) return authenticated ? 30 : null;
+  return GITHUB_UNAUTHENTICATED_POLL_INTERVAL_OPTIONS_SECONDS.includes(seconds) ? seconds : null;
+}
+
 /**
- * Fetch the current main-branch head and calculate commit age using GitHub's
- * HTTP Date header. This deliberately never falls back to the local machine clock.
+ * Fetch the current main-branch head and calculate age using GitHub's Date
+ * response header. The optional token is supplied only by the main process.
  */
-async function fetchLatestCommit({ fetchImpl = globalThis.fetch, timeoutMs = REQUEST_TIMEOUT_MS } = {}) {
+async function fetchLatestCommit({ fetchImpl = globalThis.fetch, timeoutMs = REQUEST_TIMEOUT_MS, token = '' } = {}) {
   if (typeof fetchImpl !== 'function') throw new Error('当前运行环境不支持 fetch。');
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(new Error('GitHub API 请求超时。')), timeoutMs);
   try {
+    const headers = {
+      Accept:'application/vnd.github+json',
+      'X-GitHub-Api-Version':'2022-11-28',
+      'User-Agent':'GPT-Session-Rotator/0.2.0',
+      'Cache-Control':'no-cache',
+      Pragma:'no-cache'
+    };
+    const normalizedToken = typeof token === 'string' ? token.trim() : '';
+    if (normalizedToken) {
+      if (/\s/.test(normalizedToken)) throw new Error('GitHub Token 格式无效。');
+      headers.Authorization = `Bearer ${normalizedToken}`;
+    }
+
     const response = await fetchImpl(GITHUB_COMMIT_API, {
       method:'GET',
       cache:'no-store',
-      headers:{
-        Accept:'application/vnd.github+json',
-        'X-GitHub-Api-Version':'2022-11-28',
-        'User-Agent':'GPT-Session-Rotator/0.1.12',
-        'Cache-Control':'no-cache',
-        Pragma:'no-cache'
-      },
+      headers,
       signal:controller.signal
     });
 
@@ -66,11 +80,6 @@ async function fetchLatestCommit({ fetchImpl = globalThis.fetch, timeoutMs = REQ
   }
 }
 
-/**
- * Create per-automation-run state. The repository head present at startup is
- * a baseline, not a candidate for early rotation. Only a SHA observed after
- * that baseline can become eligible for the configurable quiet-time rule.
- */
 function createGithubMonitorState() {
   return {
     initialized:false,
@@ -81,14 +90,6 @@ function createGithubMonitorState() {
   };
 }
 
-/**
- * Feed one successful API result into the monitor.
- *
- * First observation establishes the baseline and NEVER rotates, regardless
- * of how old that commit is. A later head change starts a candidate. That
- * candidate can rotate once its GitHub-server-calculated age reaches the
- * configured threshold.
- */
 function observeGithubCommit(state, commit, thresholdMs = GITHUB_DEFAULT_QUIET_THRESHOLD_MS) {
   if (!state || !(state.triggeredShas instanceof Set)) {
     throw new TypeError('Invalid GitHub monitor state.');
@@ -124,11 +125,6 @@ function observeGithubCommit(state, commit, thresholdMs = GITHUB_DEFAULT_QUIET_T
   return { status:'quiet-threshold-reached', shouldRotate:true, sha:commit.sha };
 }
 
-function normalizeGithubPollIntervalSeconds(value) {
-  const seconds = Number(value);
-  return GITHUB_POLL_INTERVAL_OPTIONS_SECONDS.includes(seconds) ? seconds : null;
-}
-
 function normalizeGithubQuietThresholdMinutes(value) {
   const minutes = Number(value);
   if (!Number.isInteger(minutes) || minutes < GITHUB_MIN_QUIET_THRESHOLD_MINUTES || minutes > GITHUB_MAX_QUIET_THRESHOLD_MINUTES) {
@@ -143,6 +139,7 @@ module.exports = {
   GITHUB_POLL_INTERVAL_MS,
   GITHUB_DEFAULT_POLL_INTERVAL_SECONDS,
   GITHUB_POLL_INTERVAL_OPTIONS_SECONDS,
+  GITHUB_UNAUTHENTICATED_POLL_INTERVAL_OPTIONS_SECONDS,
   normalizeGithubPollIntervalSeconds,
   GITHUB_DEFAULT_QUIET_THRESHOLD_MS,
   GITHUB_MIN_QUIET_THRESHOLD_MINUTES,

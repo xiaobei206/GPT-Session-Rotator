@@ -7,6 +7,7 @@ const {
   GITHUB_POLL_INTERVAL_MS,
   GITHUB_DEFAULT_POLL_INTERVAL_SECONDS,
   GITHUB_POLL_INTERVAL_OPTIONS_SECONDS,
+  GITHUB_UNAUTHENTICATED_POLL_INTERVAL_OPTIONS_SECONDS,
   normalizeGithubPollIntervalSeconds,
   GITHUB_DEFAULT_QUIET_THRESHOLD_MS,
   GITHUB_MIN_QUIET_THRESHOLD_MINUTES,
@@ -28,12 +29,15 @@ function response({ status = 200, date, payload } = {}) {
 
 function commit(sha, ageMs) { return { sha, ageMs }; }
 
-test('poll interval offers 90/120/150/180 seconds, defaulting to 90 seconds', () => {
+test('30-second polling requires authentication; unauthenticated options remain 90/120/150/180 seconds', () => {
   assert.equal(GITHUB_POLL_INTERVAL_MS, 90_000);
   assert.equal(GITHUB_DEFAULT_POLL_INTERVAL_SECONDS, 90);
-  assert.deepEqual(GITHUB_POLL_INTERVAL_OPTIONS_SECONDS, [90, 120, 150, 180]);
+  assert.deepEqual(GITHUB_POLL_INTERVAL_OPTIONS_SECONDS, [30, 90, 120, 150, 180]);
+  assert.deepEqual(GITHUB_UNAUTHENTICATED_POLL_INTERVAL_OPTIONS_SECONDS, [90, 120, 150, 180]);
+  assert.equal(normalizeGithubPollIntervalSeconds(30), null);
+  assert.equal(normalizeGithubPollIntervalSeconds(30, { authenticated:true }), 30);
   for (const value of [90, 120, 150, 180, '90', '120']) assert.equal(normalizeGithubPollIntervalSeconds(value), Number(value));
-  for (const value of [0, 60, 89, 100, 181, 300, 90.5, 'abc', null]) assert.equal(normalizeGithubPollIntervalSeconds(value), null, String(value));
+  for (const value of [0, 30, 60, 89, 100, 181, 300, 90.5, 'abc', null]) assert.equal(normalizeGithubPollIntervalSeconds(value), null, String(value));
   assert.equal(GITHUB_DEFAULT_QUIET_THRESHOLD_MS, 15 * 60_000);
 });
 
@@ -68,6 +72,33 @@ test('fetches main commit and computes age from GitHub Date, not local clock', a
   assert.equal(result.ageMs, 360_000);
   assert.equal(result.serverTimeMs, Date.parse(serverTime));
   assert.equal(result.sha, 'abcdef0123456789');
+});
+
+test('adds a Bearer header only when an optional token is provided', async () => {
+  let authenticatedInit;
+  await fetchLatestCommit({
+    token:'github_pat_test_secret_value_123456',
+    fetchImpl:async (_url, init) => {
+      authenticatedInit = init;
+      return response({ date:'Fri, 06 Nov 2026 12:00:00 GMT', payload:{
+        sha:'secure-sha',
+        commit:{ committer:{ date:'2026-11-06T11:59:00Z' } }
+      }});
+    }
+  });
+  assert.equal(authenticatedInit.headers.Authorization, 'Bearer github_pat_test_secret_value_123456');
+
+  let publicInit;
+  await fetchLatestCommit({
+    fetchImpl:async (_url, init) => {
+      publicInit = init;
+      return response({ date:'Fri, 06 Nov 2026 12:00:00 GMT', payload:{
+        sha:'public-sha',
+        commit:{ committer:{ date:'2026-11-06T11:59:00Z' } }
+      }});
+    }
+  });
+  assert.equal(Object.hasOwn(publicInit.headers, 'Authorization'), false);
 });
 
 test('refuses to use local time if GitHub Date header is missing', async () => {

@@ -1,3 +1,6 @@
+> **2026-11-08 当前开发状态（优先于下方历史交接记录）：** 当前目标版本 v0.2.0，基于已发布 v0.1.16，增加可选 GitHub Token 与 30 秒轮询。无 Token 时仅可选 90/120/150/180 秒；有效 Token 可开放 30 秒（约 120 次/小时）。Token 使用 safeStorage 加密，Windows DPAPI；HTTP 401 禁用 Token 并退回 90 秒。读取最新 Actions/Release，不得在正式 Release 成功前宣称交付。
+>
+
 # GPT Session Rotator — 下一轮 GPT 必读交接指令
 
 > 更新日期：2026-11-08

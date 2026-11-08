@@ -1,3 +1,12 @@
+<!-- Current project handoff override: 2026-11-08 -->
+
+## Current implementation state
+
+- Current base: GPT Session Rotator v0.1.16. Active work targets v0.2.0: optional GitHub Token authentication and a 30-second API polling option.
+- Without a Token, keep 90/120/150/180-second choices (90-second default). Enable 30 seconds only with a saved Token that has not been rejected. HTTP 401 disables that credential for requests and reverts polling to 90 seconds.
+- Token handling is security-sensitive: accept it via narrow IPC, keep plaintext only in the main process, store only Electron safeStorage ciphertext, and use Windows DPAPI. Never log, return to renderer, test with a real token, or commit the plaintext. If safeStorage is unavailable, fail closed.
+- Check current `main`, Actions and Releases before assuming this work is complete. CI and a formal Release must both succeed before reporting delivery.
+
 # AI Bootstrap Prompt — GPT Session Rotator
 
 > 给新对话的最短接手入口。更新日期：2026-11-08。仓库状态、版本、Actions 和 Release 都必须在接手时重新核实，不要把本文件中的快照当成永远最新。

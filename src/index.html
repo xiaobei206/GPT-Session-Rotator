@@ -2,11 +2,11 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GPT Session Rotator 0.1.16</title><link rel="stylesheet" href="style.css">
+<title>GPT Session Rotator 0.2.0</title><link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <div class="brand"><div class="logo">G</div><div><h1>GPT Session Rotator <span>0.1.16</span></h1><p>固定节奏轮换 · GitHub 静默提前轮换 · 对话满载提前轮换</p></div></div>
+  <div class="brand"><div class="logo">G</div><div><h1>GPT Session Rotator <span>0.2.0</span></h1><p>固定节奏轮换 · GitHub 静默提前轮换 · 对话满载提前轮换</p></div></div>
   <div class="status"><span id="statusDot" class="dot"></span><span id="statusText">待机中</span><span class="sep">|</span><span id="sessionCount">本次 0 轮 · 累计 0 轮</span></div>
 </header>
 <main class="dashboard">
@@ -38,11 +38,18 @@
     <div class="github-row">
       <label>API 查询间隔
         <select id="githubPollInterval" aria-label="GitHub API 查询间隔">
-          <option value="90" selected>90 秒</option><option value="120">120 秒</option><option value="150">150 秒</option><option value="180">180 秒</option>
+          <option value="30" disabled>30 秒（需 Token）</option><option value="90" selected>90 秒</option><option value="120">120 秒</option><option value="150">150 秒</option><option value="180">180 秒</option>
         </select>
       </label>
       <label>GitHub 静默阈值 <input id="githubQuietThreshold" type="number" min="1" max="180" step="1" value="15"> 分钟</label>
       <span class="hint">选择后自动保存；运行中即时调整后续轮询</span>
+    </div>
+    <div class="github-token-row">
+      <label>GitHub Token <input id="githubToken" type="password" maxlength="512" placeholder="粘贴 Fine-grained PAT" autocomplete="off" spellcheck="false" aria-label="GitHub Token"></label>
+      <button id="saveGithubTokenBtn" class="ghost">保存 Token</button>
+      <button id="clearGithubTokenBtn" class="ghost" disabled>清除 Token</button>
+      <span id="githubTokenStatus" class="token-status">未设置</span>
+      <span class="hint">可选；Windows DPAPI 加密保存。仅需目标仓库 Contents: Read 权限</span>
     </div>
     <div class="completion-row">
       <label>助手结束回显 <input id="assistantCompletionMarker" type="text" maxlength="100" value="结束任务简报" aria-label="助手结束回显标记"></label>
