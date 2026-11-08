@@ -358,3 +358,15 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **签名状态：** 当前没有配置 Authenticode 代码签名证书；安装包按既有 CI 流程跳过代码签名。
 - **发布动作：** 本提交标题包含 `[release]`，让 Release job 在重新跑过版本、manifest、测试、语法和 Windows 安装包构建后创建正式 Release；只有该 run 成功并能读到正式资产后，才更新最终下载链接和安装包摘要。
 - **实机边界：** CI 不会验证用户电脑上的 DPAPI 解密、真实 PAT 权限或 ChatGPT 登录态下发现新提交后提前轮换；这些仍需要本机实测。
+
+
+## 2026-11-08 — v0.2.2 正式 Release 发布成功
+
+- **正式 Release：** `v0.2.2`，Release ID `438281311`，2026-11-08 13:57:12 UTC 发布；`draft=false`、`prerelease=false`。
+- **Release 页面：** https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2
+- **最终 Actions：** run `42487228051`，completed/success；`Test and build Windows installer` 与 `Publish GitHub Release` 两个 job 均成功。
+- **自动验证：** 46/46 tests pass、0 fail；13 个 JS/CJS 文件 `node --check` 通过；20 项 `SOURCE-MANIFEST.sha256` 通过；Windows x64 NSIS 构建、工件上传、正式 Release 发布均成功。
+- **安装包：** `GPT.Session.Rotator-0.2.2-Setup.exe`，102,031,538 bytes；GitHub Release digest SHA-256：`4ac5d9887fef82db8fefc70dfdc33b8864d97a4154f799da72ea4ee74881a4c1`。
+- **blockmap：** `GPT.Session.Rotator-0.2.2-Setup.exe.blockmap`，106,062 bytes；GitHub Release digest SHA-256：`8d579a55d4ab17261a8fec412616cac5543fda88b5d23d7990a231c3d6965b32`。
+- **构建与签名：** Release run 的 NSIS 构建和上传全部成功；未配置 Authenticode 代码签名证书，按 CI 设置跳过签名。
+- **实机边界：** 尚未在用户 Windows PC 上验证 Token 的 DPAPI 保存/重启读取、真实 GitHub Token 权限或 ChatGPT 登录态中发现新提交并触发下一轮。用户安装后应验证保存状态、30 秒档、清除状态和按所选间隔出现的“GitHub轮询检查”日志。

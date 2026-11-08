@@ -2,21 +2,23 @@
 
 更新日期：2026-11-08
 
-> **最新正式版：** v0.2.1 已发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.1。v0.2.2 源码修改待本次验证，正式发布状态以实时 Actions 与 Release 为准。
+> **最新正式版：** v0.2.2 已正式发布（Release ID `438281311`）：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2。
 >
-> **v0.2.2 修复内容：** Token 保存/清除 IPC 结果统一返回 `githubTokenConfigured`、`githubTokenRejected` 和轮询间隔，渲染层同时兼容旧结果字段；保存后立即启用 30 秒档、启用清除按钮并显示“已加密保存”，清除后恢复“未设置”且轮询回落到 90 秒。
+> **安装包：** `GPT.Session.Rotator-0.2.2-Setup.exe`，102,031,538 bytes；SHA-256 `4ac5d9887fef82db8fefc70dfdc33b8864d97a4154f799da72ea4ee74881a4c1`。Blockmap：106,062 bytes；SHA-256 `8d579a55d4ab17261a8fec412616cac5543fda88b5d23d7990a231c3d6965b32`。
 >
-> **GitHub 可观测性：** main SHA 未变化的成功查询也写入“GitHub轮询检查”日志，包含短 SHA、基于 GitHub Date 的提交年龄、基线/候选状态、请求认证方式和静默阈值。Token 和 commit message/body 不会写入日志。
+> **最终 Actions：** run `42487228051` completed/success；46/46 测试、13 个 JavaScript/CJS 语法检查、20 项源码清单校验、Windows x64 NSIS 构建与上传、正式 Release job 全部成功。
 >
-> **待本次 Actions 验证：** 新增 Token/UI 字段契约和成功轮询可观测性回归测试；Windows 测试、manifest、语法检查和 NSIS 构建须以实际 Actions 结果为准。
+> **v0.2.2 修复内容：** Token 保存/清除 IPC 统一返回 `githubTokenConfigured`、`githubTokenRejected` 和轮询间隔，渲染层也兼容旧字段。保存后立即启用 30 秒档、启用清除按钮并显示“已加密保存”；清除后显示“未设置”并回到 90 秒。
 >
-> **未完成实机验证：** 尚未在用户 Windows 电脑上实测真实 DPAPI Token 保存/重启读取、真实 GitHub Token 认证及新提交触发整段流程。CI 通过不代表实机端到端完成。
+> **GitHub 可观测性：** main SHA 没变化的成功查询也写入“GitHub轮询检查”日志，包括短 SHA、提交年龄、基线/候选状态、认证方式和静默阈值。不会写入 Token 或 commit message/body。
+>
+> **尚需实机验证：** Windows 本机 DPAPI 保存/重启读取、真实 Token 权限和 ChatGPT 登录态下完整提前轮换尚未由 Actions 覆盖。安装包未配置 Authenticode 签名。
 
 ## 本轮功能和改动
 
 - 固定操作工具栏与设置滚动面板拆分；操作按钮不在滚动容器内部。
 - 独立 `overflow-y:auto` 设置区及可见滚动条，固定提示词区增高至 140px、最小 100px、最大 300px，可垂直调整。
-- 新增提示词快捷按钮与两项 UI 布局测试；版本、README、CHANGELOG、开发日志、测试清单、接手文档和 19 项源码 SHA-256 manifest 已同步。
+- 新增提示词快捷按钮与两项 UI 布局测试；版本、README、CHANGELOG、开发日志、测试清单、接手文档和 20 项源码 SHA-256 manifest 已同步；v0.2.2 另修复 Token 状态同步和 GitHub 成功轮询心跳日志。
 
 --- 历史交接记录（仅作背景；以上状态优先）
 

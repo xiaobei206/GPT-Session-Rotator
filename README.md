@@ -1,10 +1,10 @@
 # GPT Session Rotator
 
-**最新正式版：v0.2.1 已于 2026-11-08 发布。左侧设置区可独立纵向滚动，主要操作按钮固定可用，提示词编辑区增高并可调整。**
+**最新正式版：v0.2.2 已于 2026-11-08 发布。修复 GitHub Token 保存/清除后界面状态不同步，并为成功的未变化 SHA 轮询增加状态日志。**
 
-**最新正式安装包：** [下载 GPT Session Rotator 0.2.1](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.1/GPT.Session.Rotator-0.2.1-Setup.exe)
+**最新正式安装包：** [下载 GPT Session Rotator 0.2.2](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.2/GPT.Session.Rotator-0.2.2-Setup.exe)
 
-**[最新正式 Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.1)**
+**[最新正式 Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2)**
 
 > 安装包由 GitHub Actions 在 Windows Runner 上构建并通过 Release 发布。当前 EXE 未配置 Authenticode 代码签名；请在 Windows 设备上完成安装和启动验证。
 
@@ -21,23 +21,17 @@
 
 ---
 
-# GPT Session Rotator 0.2.1 — User Guide
+# GPT Session Rotator 0.2.2 — User Guide
 
 A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT conversation, optionally selects Think, pastes a fixed prompt, submits it, and starts the next cycle when the configured wait expires or an early-rotation condition is met.
 
 ## v0.2.2 GitHub Token 状态同步与轮询日志
 
-- 保存或清除 Token 后，界面状态会立即与主进程返回的凭据状态同步：30 秒选项、清除按钮和“已加密保存/未设置”标签不再彼此矛盾。
-- 轮询成功但 main SHA 没变化时，也会记录“GitHub轮询检查”，包括短 SHA、提交年龄、是否仍为启动基线/候选提交、请求认证方式和静默阈值。
-- 日志只包含状态与短 SHA，不记录 Token、提交消息或提交正文。
-
+- 修复主进程 Token 保存/清除返回字段与界面读取字段不一致的问题；保存后会立即启用 30 秒轮询选项、启用“清除 Token”按钮并显示“已加密保存”，清除后显示“未设置”并回退至 90 秒。
+- 成功查询到相同 main SHA 时新增“GitHub轮询检查”日志，显示短 SHA、提交年龄、基线/候选状态、Token/匿名认证方式和静默阈值。
+- 日志不会记录 Token、commit message 或提交正文。
 
 ## v0.2.1 设置区布局优化
-## GitHub Token 状态同步与轮询日志
-- 保存或清除 Token 后，界面状态会立即与主进程返回的凭据状态同步：30 秒选项、清除按钮和“已加密保存/未设置”标签不再彼此矛盾。
-- 轮询成功但 main SHA 没变化时，也会记录“GitHub轮询检查”，包括短 SHA、提交年龄、是否仍为启动基线/候选提交、请求认证方式和静默阈值。
-- 日志只包含状态与短 SHA，不记录 Token、提交消息或提交正文。
-
 
 - 最长等待时间、开始/停止、刷新 GPT 和“提示词”快捷按钮固定在左侧卡片顶部，不随设置内容滚动。
 - 代理、Think、GitHub 监控、结束标记和固定提示词置于独立纵向滚动区；滚动条常驻可见。
@@ -61,7 +55,7 @@ A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT con
 
 The manual wait remains the maximum wait. Use the dropdown (10, 15, 20, 25, 30, 35, 40, or 45 minutes) or enter a custom value from 1 to 1440 minutes. The 60-minute preset has been removed; 40 minutes has been added.
 
-When automation starts, the app first reads the current `main` head of `xiaobei206/padavan-4.4-2` and records that SHA as the startup baseline. This pre-existing commit is never eligible for early rotation, regardless of its existing age; this prevents an immediate new conversation right after the first prompt is submitted. During wait windows, the app checks the branch at the selected 90, 120, 150, or 180 second interval (90 seconds by default), or every 30 seconds when an optional GitHub Token is configured. Only a SHA that appears after the startup baseline is eligible, and it triggers once its GitHub-server-calculated commit age reaches the configured quiet threshold (15 minutes by default). A newer SHA resets the candidate. If the startup baseline request fails, the first later successful poll only establishes the baseline and cannot trigger rotation.
+When automation starts, the app first reads the current `main` head of `xiaobei206/padavan-4.4-2` and records that SHA as the startup baseline. This pre-existing commit is never eligible for early rotation, regardless of its existing age; this prevents an immediate new conversation right after the first prompt is submitted. During wait windows, the app checks the branch at the selected 90, 120, 150, or 180 second interval (90 seconds by default), or every 30 seconds when an optional GitHub Token is configured. Each successful poll that sees no SHA change now emits a status-only heartbeat log; errors and unchanged SHAs remain non-triggering. Only a SHA that appears after the startup baseline is eligible, and it triggers once its GitHub-server-calculated commit age reaches the configured quiet threshold (15 minutes by default). A newer SHA resets the candidate. If the startup baseline request fails, the first later successful poll only establishes the baseline and cannot trigger rotation.
 
 Commit age uses the GitHub HTTP `Date` header and the commit's committer timestamp. VPS timezone and local clock settings therefore do not enter the quiet-time calculation. If GitHub cannot be reached, returns an error, or omits a valid `Date` header, GitHub early rotation is skipped for that check and the manual timer continues normally.
 

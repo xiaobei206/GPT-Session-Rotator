@@ -1,9 +1,12 @@
-> **当前开发状态（2026-11-08）：** v0.2.1 仍是最新正式 Release；v0.2.2 源码修复 Token 保存/清除状态字段不匹配，并补充 GitHub main 成功轮询心跳日志。只有 Actions 验证和单独的 `[release]` 发布流程完成后，才能称 v0.2.2 已正式发布。
-
-> **2026-11-08 正式版：** v0.2.1 已发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.1。最终 Actions run `42483241721` 成功：44/44 测试、12 个 JS/CJS 语法检查、19 项 SHA-256 manifest、Windows x64 NSIS 构建、工件上传和 Release 发布全部成功。
+> **当前开发状态（2026-11-08）：** v0.2.2 已正式发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2。
 >
-> **本轮界面修复：** 设置区独立纵向滚动；最长等待、开始/停止、刷新和“提示词”按钮固定在顶部；提示词输入框默认 140px 高且可调整，可通过快捷按钮滚动聚焦。用户实际 DPI/屏幕下的目视验收尚未完成。
+> **最终 Actions：** run `42487228051`，46/46 测试、13 个 JS/CJS 语法检查、20 项源码清单校验、Windows x64 NSIS 构建与上传、正式 Release job 均成功。
 >
+> **安装包：** `GPT.Session.Rotator-0.2.2-Setup.exe`，102,031,538 bytes；SHA-256 `4ac5d9887fef82db8fefc70dfdc33b8864d97a4154f799da72ea4ee74881a4c1`。Blockmap SHA-256：`8d579a55d4ab17261a8fec412616cac5543fda88b5d23d7990a231c3d6965b32`。
+>
+> **本轮功能：** Token 保存/清除后界面状态即时同步；成功轮询但 main SHA 未变化时增加“GitHub轮询检查”日志。日志不含 Token 或提交正文。
+>
+> **实机验证边界：** 安装包未配置 Authenticode 签名；用户 Windows DPAPI、真实 Token 权限和 ChatGPT 登录态端到端仍需人工确认。
 
 # GPT Session Rotator — 下一轮 GPT 必读交接指令
 
@@ -11,13 +14,13 @@
 > 仓库：https://github.com/xiaobei206/GPT-Session-Rotator
 > 默认分支：`main`
 > 源码版本：`0.2.2`
-> 最新正式安装包：`0.2.1`（Release 已正式发布）
+> 最新正式安装包：`0.2.2`（Release 已正式发布）
 
 > **接手规则：** 先检查远程 `main`、最新 Actions 与 Releases，再读本文件后续历史背景。不要把旧版本交接信息当作实时状态。
 
 ## 当前状态
 
-- v0.2.1 已正式发布；Windows build 与 Release job 均成功。
+- v0.2.2 已正式发布；Actions run `42487228051` 的 Windows build 与 Release job 均成功。
 - 设置面板布局：独立滚动区 + 固定主操作栏；提示词输入框默认 140px 高、可调整，工具栏提供“提示词”快捷按钮。
 - 真实用户桌面分辨率/缩放下的目视验收仍待反馈。
 - 项目规则、源代码和以往事故记录见下方原有接手清单及 `docs/DEVELOPMENT-LOG.md`。
@@ -69,7 +72,7 @@
 
 ## 给下一轮 GPT 的首要任务
 
-当前正式安装包见 README 和实时 GitHub Releases。优先核实 v0.2.2 Actions/Release 状态，再让用户在 Windows 设备验证 Token 保存后 30 秒选项启用、清除按钮和状态文字更新、GitHub 心跳日志是否按所选间隔出现；还应在真实 ChatGPT 登录态中验证 `本轮` 标记从新版 app-shell 节点发现、命中、停止生成、正文稳定复核到新建下一轮的完整流程。若仍不触发，保留并提供 `结束回显扫描`、`结束回显节点发现` 或 `结束回显节点诊断` 日志（这些仅含 DOM 结构计数，不含回复正文）。不要把 CI 单元测试或 NSIS 构建成功误认为已完成人工端到端验证。
+当前正式安装包见 README 和 GitHub Release v0.2.2。让用户在 Windows 设备验证 Token 保存后 30 秒选项启用、清除按钮和状态文字更新、GitHub 心跳日志是否按所选间隔出现；还应在真实 ChatGPT 登录态中验证 `本轮` 标记从新版 app-shell 节点发现、命中、停止生成、正文稳定复核到新建下一轮的完整流程。若仍不触发，保留并提供 `结束回显扫描`、`结束回显节点发现` 或 `结束回显节点诊断` 日志（这些仅含 DOM 结构计数，不含回复正文）。不要把 CI 单元测试或 NSIS 构建成功误认为已完成人工端到端验证。
 
 每次接手后先简洁汇报实际确认的分支/提交、版本、测试状态、打包状态和下一项具体工作，然后继续推进，不要重复询问文档中已有答案。
 

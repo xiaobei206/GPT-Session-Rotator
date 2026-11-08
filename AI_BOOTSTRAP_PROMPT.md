@@ -2,11 +2,11 @@
 
 ## Current implementation state
 
-- Latest published release remains v0.2.1 until v0.2.2 validation and the release workflow is confirmed.
+- Latest published release is v0.2.2: https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2.
 - v0.2.2 fixes the Token status contract between main-process save/clear results and renderer state, and adds safe heartbeat logs for successful unchanged GitHub main polls.
 - Heartbeat logs contain short SHA, GitHub-Date-based commit age, baseline/candidate state, auth mode, and threshold; they never contain Token values or commit message/body.
 - v0.2.1 Windows CI/Release run `42483241721` passed 44 tests, 12 JS/CJS syntax checks, 19 source-manifest entries and Windows x64 NSIS publication.
-- Check v0.2.2 Actions and official Release live before claiming success. Real Windows DPAPI/PAT and signed-in ChatGPT end-to-end checks remain manual.
+- v0.2.2 final Actions run `42487228051` succeeded: 46 tests, 13 JS/CJS syntax checks, 20 source-manifest entries, Windows x64 NSIS build/upload and official Release publish. Real Windows DPAPI/PAT and signed-in ChatGPT end-to-end checks remain manual.
 
 # AI Bootstrap Prompt — GPT Session Rotator
 
@@ -24,15 +24,15 @@
 
 ## 当前已知基线（接手时须复核）
 
-- 当前已发布正式版：v0.2.1；当前源码拟升至 v0.2.2，是否正式发布必须实时检查 Release 和 Actions。
-- v0.2.1 最终 Actions run `42483241721` 成功：44/44 测试、12 项 JavaScript/CJS 语法、19 项 SHA-256 manifest、Windows x64 NSIS 构建和正式 Release 全部成功。
+- 当前最新正式版：v0.2.2，Release：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.2。
+- v0.2.2 最终 Actions run `42487228051` 成功：46/46 测试、13 项 JavaScript/CJS 语法、20 项 SHA-256 manifest、Windows x64 NSIS 构建/上传和正式 Release 全部成功。
 - v0.2.2 修复 Token 保存/清除状态同步；GitHub main 成功查询即使 SHA 未变化也须记录短 SHA、提交年龄、基线/候选状态与认证方式，不得将 Token 或 commit body 写入日志。
 - v0.2.2 的 Windows Actions、安装包和 Release 状态必须实时核验；不得宣称本机 DPAPI、真实 PAT 验证或 ChatGPT 登录态端到端已完成。
 
 ## 不可破坏的功能和隐私边界
 
 - 自动化在嵌入式 ChatGPT 页面中新建对话、可选 Think、粘贴固定提示词并提交；手动等待始终是最长等待的兜底。
-- GitHub 提前轮换监控 `xiaobei206/padavan-4.4-2` 的 `main`，轮询间隔可选 90/120/150/180 秒（默认 90 秒，运行中即时生效）。启动时现有 SHA 仅建立基线；静默阈值以当前设置为准。包括 HTTP 502 在内的探测失败不能触发轮换，也不能暂停手动计时。
+- GitHub 提前轮换监控 `xiaobei206/padavan-4.4-2` 的 `main`，未配置 Token 时轮询间隔可选 90/120/150/180 秒，已保存且未被拒绝的 Token 还可选择 30 秒；运行中即时生效。启动时现有 SHA 仅建立基线；静默阈值以当前设置为准。探测失败不能触发轮换，也不能暂停手动计时。每次成功查询会留下不含 Token/commit 正文的状态日志。
 - 助手完成标记只允许检测当前轮提交相关的助手回复；旧的、提交前已有正文的助手消息不能触发。命中之后须确认生成停止且消息正文不再变化。空标记表示禁用该条件。
 - 对话长度警告仅在主对话区域识别，连续确认 5 秒；不得把普通提示、侧栏或无关警报误认为长度警告。
 - 助手回复正文只可在进程内用于标记/稳定性判断，不能写日志、保存或上传。不得恢复 CDP 网络捕获、页面正文存档、API 请求/响应正文、SSE/WebSocket 负载记录或诊断 ZIP。
