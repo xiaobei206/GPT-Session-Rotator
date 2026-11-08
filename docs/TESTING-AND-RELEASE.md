@@ -25,7 +25,7 @@ The test suite uses Node's built-in test runner and should not need an Electron 
 - Main-area scanning only; content below the viewport does not get rejected by a viewport-only visibility check.
 - Chinese/Traditional Chinese/English conversation-length wording; red text or red frame evidence; no false positives for usage quotas, oversized user prompts, or sidebar controls.
 - Length warning needs five continuous seconds; warning disappearance, changes, and long observation gaps reset the timer.
-- GitHub polling remains 90 seconds; threshold default and range are correct; threshold changes are immediate.
+- GitHub polling options are exactly 90/120/150/180 seconds; default is 90 seconds, the selected interval persists, invalid options are rejected, and changing the interval reschedules the active poll cadence. Quiet-threshold default/range and immediate re-evaluation are also checked.
 - Existing SHA at startup is baseline only; new SHA is eligible; GitHub Date is required; failed requests do not trigger; next SHA resets candidate.
 - Settings persist and invalid values are rejected.
 
@@ -39,7 +39,7 @@ npm test
 npm run dist:win
 ```
 
-Expected NSIS output should be in `dist/` with a name similar to `GPT Session Rotator-0.1.14-Setup.exe`. Confirm the actual artifact name from build output; do not assume it exists.
+Expected NSIS output should be in `dist/` with a name matching the current `package.json` version, such as `GPT Session Rotator-0.1.16-Setup.exe`. Confirm the actual artifact name from build output; do not assume it exists.
 
 Perform a clean install/launch test and, for an upgrade test, verify that application user data (including the embedded ChatGPT session and counters) is not inadvertently erased. Do not include user data or settings in the installer package.
 

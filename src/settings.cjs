@@ -4,11 +4,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {
   GITHUB_DEFAULT_QUIET_THRESHOLD_MS,
+  GITHUB_DEFAULT_POLL_INTERVAL_SECONDS,
+  normalizeGithubPollIntervalSeconds,
   normalizeGithubQuietThresholdMinutes
 } = require('./github-monitor.cjs');
 const { DEFAULT_ASSISTANT_COMPLETION_MARKER, normalizeAssistantCompletionMarker } = require('./assistant-completion.cjs');
 
 const DEFAULT_GITHUB_QUIET_THRESHOLD_MINUTES = GITHUB_DEFAULT_QUIET_THRESHOLD_MS / 60_000;
+const DEFAULT_GITHUB_POLL_INTERVAL_SECONDS = GITHUB_DEFAULT_POLL_INTERVAL_SECONDS;
 
 function readSettings(settingsPath) {
   try {
@@ -43,6 +46,18 @@ function loadGithubQuietThresholdMinutes(settingsPath) {
   return normalizeGithubQuietThresholdMinutes(data.githubQuietThresholdMinutes) ?? DEFAULT_GITHUB_QUIET_THRESHOLD_MINUTES;
 }
 
+function loadGithubPollIntervalSeconds(settingsPath) {
+  const data = readSettings(settingsPath);
+  return normalizeGithubPollIntervalSeconds(data.githubPollIntervalSeconds) ?? DEFAULT_GITHUB_POLL_INTERVAL_SECONDS;
+}
+
+function saveGithubPollIntervalSeconds(settingsPath, value) {
+  const seconds = normalizeGithubPollIntervalSeconds(value);
+  if (seconds === null) throw new RangeError('GitHub poll interval must be one of 90, 120, 150, or 180 seconds.');
+  writeSettings(settingsPath, { githubPollIntervalSeconds:seconds });
+  return seconds;
+}
+
 function saveGithubQuietThresholdMinutes(settingsPath, value) {
   const minutes = normalizeGithubQuietThresholdMinutes(value);
   if (minutes === null) {
@@ -69,9 +84,12 @@ function saveAssistantCompletionMarker(settingsPath, value) {
 
 module.exports = {
   DEFAULT_GITHUB_QUIET_THRESHOLD_MINUTES,
+  DEFAULT_GITHUB_POLL_INTERVAL_SECONDS,
   DEFAULT_ASSISTANT_COMPLETION_MARKER,
   loadGithubQuietThresholdMinutes,
   saveGithubQuietThresholdMinutes,
+  loadGithubPollIntervalSeconds,
+  saveGithubPollIntervalSeconds,
   loadAssistantCompletionMarker,
   saveAssistantCompletionMarker
 };

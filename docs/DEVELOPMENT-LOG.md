@@ -213,3 +213,16 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **变更：** 新增根目录 `AI_BOOTSTRAP_PROMPT.md`，集中规定接手步骤、实时状态核验、隐私边界、当前 v0.1.15 基线与首要待办；README 将其设为第一入口；详细交接规程与当前交接状态标明权威阅读顺序和历史记录优先级。
 - **验证：** 文档-only 更新；未改变应用代码与安装包，因此未重新运行应用测试或 Windows 构建。下一轮接手必须实时检查 `main`、Actions 和 Release。
 - **限制：** v0.1.15 的 CI 与 NSIS 构建成功不等于用户真实 Windows/ChatGPT 登录态端到端行为已验证。
+
+
+## 2026-11-08 — GitHub API 查询间隔可配置（0.1.16；当前提交 Actions 验证待完成）
+
+- **用户可见效果：** 主面板新增 GitHub API 查询间隔下拉菜单：90、120、150、180 秒，每 30 秒一档；默认 90 秒。选项保存到用户设置，运行中变更会重排下一次轮询，不需重启。
+- **背景：** 用户报告原 90 秒查询偶发 HTTP 502、随后再次查询又可成功，希望自行调整查询频率。本次只增加频率控制，不把偶发 502 误判为已根因修复；请求失败仍跳过本次静默判定，不触发轮换，也不暂停人工计时。
+- **实现：** 添加允许值规范化、持久化读写、IPC 暴露、面板恢复/变更处理和活动等待周期的重排回调；保留启动 SHA 基线、GitHub Date 时间计算、静默阈值逻辑与现有错误处理。
+- **文件：** `src/github-monitor.cjs`、`src/settings.cjs`、`src/main.cjs`、`src/preload.cjs`、`src/renderer.js`、`src/index.html`、`src/style.css`、`tests/github-monitor.test.cjs`、`tests/settings.test.cjs`、`VERSION`、`package.json`、`CHANGELOG.md`、`README.md`、接手/架构/测试文档和 `SOURCE-MANIFEST.sha256`。
+- **本地测试限制：** 本环境尝试克隆远程仓库执行基线测试，但命令以 `fatal: unable to access 'https://github.com/xiaobei206/GPT-Session-Rotator.git/': Could not resolve host: github.com` 失败。因此本环境未运行修改前/修改后的 `npm test`、`node --check` 或 `git diff --check`，不得宣称这些本地检查通过。
+- **修改前 CI 基线：** 已核实 Actions run `42474591382` 对修改前 `main` 的结论为 `success`；这是基线，不是当前 0.1.16 功能的验证。
+- **Windows 包与实机：** 本环境未运行 Windows NSIS 安装包构建；当前 0.1.16 的构建结果须以本次提交触发的 Actions 实际输出为准。真实 Windows + ChatGPT 登录态端到端验证仍未完成。
+- **发布边界：** 本次功能提交不主动申请正式 Release；仅在本次 Actions 测试、源码清单和 Windows 构建成功后再发布 0.1.16。
+- **下一步：** 查看当前提交对应的 Actions jobs、测试统计、语法检查、18 项源码 SHA-256 清单和 NSIS 工件；如果失败，则按新版本规则修正并重新验证。

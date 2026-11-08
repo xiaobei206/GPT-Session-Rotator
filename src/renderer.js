@@ -72,7 +72,7 @@ $('startBtn').addEventListener('click', async () => {
       log('启动失败', result?.reason || '后台未能启动轮换。', 'event-error');
       return;
     }
-    log('启动请求已接受', `新对话等待30秒；Think最多3次；人工最长等待${minutes}分钟；GitHub main 每90秒检测，新提交静默达到${$('githubQuietThreshold').value}分钟提前轮换；助手回显“${$('assistantCompletionMarker').value || '已关闭'}”且生成结束即提前轮换；主内容区含滚动区域的红字/红框连续5秒确认后提前轮换。`, 'event-ok');
+    log('启动请求已接受', `新对话等待30秒；Think最多3次；人工最长等待${minutes}分钟；GitHub main 每${$('githubPollInterval').value}秒检测，新提交静默达到${$('githubQuietThreshold').value}分钟提前轮换；助手回显“${$('assistantCompletionMarker').value || '已关闭'}”且生成结束即提前轮换；主内容区含滚动区域的红字/红框连续5秒确认后提前轮换。`, 'event-ok');
   } catch (error) {
     setRunning(false);
     setStatus('启动失败', false);
@@ -92,6 +92,20 @@ $('stopBtn').addEventListener('click', async () => {
 $('reloadBtn').addEventListener('click', async () => {
   try { await window.rotator.reloadBrowser(); log('刷新浏览器', '已请求重新打开 ChatGPT。'); }
   catch(error) { log('刷新失败', error.message || String(error), 'event-error'); }
+});
+
+$('githubPollInterval').addEventListener('change', async () => {
+  const requestedSeconds = Number($('githubPollInterval').value);
+  try {
+    const result = await window.rotator.setGithubPollIntervalSeconds(requestedSeconds);
+    if (!result?.ok) throw new Error(result?.reason || '设置未能保存。');
+    $('githubPollInterval').value = String(result.seconds);
+    if (!result.persisted) log('GitHub 轮询间隔未能持久化', '当前进程内已应用，但设置文件写入失败；重启后将恢复上次保存值。', 'event-warn');
+  } catch (error) {
+    const status = await window.rotator.getStatus().catch(() => null);
+    if ([90,120,150,180].includes(status?.githubPollIntervalSeconds)) $('githubPollInterval').value = String(status.githubPollIntervalSeconds);
+    log('GitHub 轮询间隔设置失败', error.message || String(error), 'event-error');
+  }
 });
 
 $('githubQuietThreshold').addEventListener('change', async () => {
@@ -142,6 +156,7 @@ $('exportLogs').addEventListener('click', () => {
 window.rotator.getStatus().then(status => {
   if (status) {
     if (Number.isInteger(status.githubQuietThresholdMinutes)) $('githubQuietThreshold').value = String(status.githubQuietThresholdMinutes);
+    if ([90,120,150,180].includes(status.githubPollIntervalSeconds)) $('githubPollInterval').value = String(status.githubPollIntervalSeconds);
     if (typeof status.assistantCompletionMarker === 'string') $('assistantCompletionMarker').value = status.assistantCompletionMarker;
     runCycle = Number(status.cycle || 0);
     totalCycles = Number(status.totalCycles || 0);
@@ -155,4 +170,4 @@ window.rotator.getStatus().then(status => {
   }
 }).catch(() => {});
 
-log('程序就绪', '0.1.15：轻量模式；支持助手新回复结束标记（默认“结束任务简报”）与生成完成检测；红字/红框扫描覆盖主内容区全部滚动位置，连续确认5秒；GitHub静默阈值可配置。不会保存网页回复正文或采集API正文。');
+log('程序就绪', `0.1.16：轻量模式；GitHub API 查询间隔可选 ${$('githubPollInterval').value} 秒，运行中即时生效；GitHub 静默阈值可配置。助手新回复结束标记（默认“结束任务简报”）需生成完成并稳定确认；红字/红框扫描覆盖主内容区全部滚动位置，连续确认5秒。不会保存网页回复正文或采集API正文。`);

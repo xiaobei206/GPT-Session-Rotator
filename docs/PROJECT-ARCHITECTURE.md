@@ -38,11 +38,11 @@ Keep UI changes minimal and update the displayed version on every formal app rel
 
 - Reads only the latest public commit on `main` of `xiaobei206/padavan-4.4-2`.
 - Uses the embedded Electron session so configured proxy routing applies.
-- Poll interval: 90 seconds.
+- Poll interval: configurable via the UI as 90, 120, 150, or 180 seconds (30-second steps); default 90 seconds. The setting persists in `settings.json` and reschedules the active wait's next poll immediately without cancelling an in-flight request.
 - Threshold: 15 minutes by default; normalized to an integer from 1 through 180 minutes.
 - Startup SHA is a baseline, never a trigger. Only a SHA that appears after that baseline can become a candidate.
 - Uses a valid GitHub HTTP `Date` header for time calculation. Missing/bad headers, malformed commits, HTTP errors, and fetch errors cannot trigger early rotation.
-- A newer SHA resets the quiet-time candidate. Changing the threshold during a run re-evaluates the latest valid observation immediately.
+- A newer SHA resets the quiet-time candidate. Changing the threshold during a run re-evaluates the latest valid observation immediately. Changing the polling interval while running reschedules the next check using the selected cadence; transient HTTP 502 responses remain non-triggering failures.
 - The monitor does not download repository files or inspect diffs.
 
 ### Assistant completion — `src/assistant-completion.cjs`

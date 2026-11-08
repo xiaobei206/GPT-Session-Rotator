@@ -2,7 +2,9 @@
 
 const REPOSITORY = 'xiaobei206/padavan-4.4-2';
 const GITHUB_COMMIT_API = `https://api.github.com/repos/${REPOSITORY}/commits/main`;
-const GITHUB_POLL_INTERVAL_MS = 90_000;
+const GITHUB_DEFAULT_POLL_INTERVAL_SECONDS = 90;
+const GITHUB_POLL_INTERVAL_OPTIONS_SECONDS = Object.freeze([90, 120, 150, 180]);
+const GITHUB_POLL_INTERVAL_MS = GITHUB_DEFAULT_POLL_INTERVAL_SECONDS * 1000;
 const GITHUB_DEFAULT_QUIET_THRESHOLD_MS = 15 * 60_000;
 const GITHUB_MIN_QUIET_THRESHOLD_MINUTES = 1;
 const GITHUB_MAX_QUIET_THRESHOLD_MINUTES = 180;
@@ -122,6 +124,11 @@ function observeGithubCommit(state, commit, thresholdMs = GITHUB_DEFAULT_QUIET_T
   return { status:'quiet-threshold-reached', shouldRotate:true, sha:commit.sha };
 }
 
+function normalizeGithubPollIntervalSeconds(value) {
+  const seconds = Number(value);
+  return GITHUB_POLL_INTERVAL_OPTIONS_SECONDS.includes(seconds) ? seconds : null;
+}
+
 function normalizeGithubQuietThresholdMinutes(value) {
   const minutes = Number(value);
   if (!Number.isInteger(minutes) || minutes < GITHUB_MIN_QUIET_THRESHOLD_MINUTES || minutes > GITHUB_MAX_QUIET_THRESHOLD_MINUTES) {
@@ -134,6 +141,9 @@ module.exports = {
   REPOSITORY,
   GITHUB_COMMIT_API,
   GITHUB_POLL_INTERVAL_MS,
+  GITHUB_DEFAULT_POLL_INTERVAL_SECONDS,
+  GITHUB_POLL_INTERVAL_OPTIONS_SECONDS,
+  normalizeGithubPollIntervalSeconds,
   GITHUB_DEFAULT_QUIET_THRESHOLD_MS,
   GITHUB_MIN_QUIET_THRESHOLD_MINUTES,
   GITHUB_MAX_QUIET_THRESHOLD_MINUTES,

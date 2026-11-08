@@ -1,3 +1,10 @@
+## 0.1.16 - 2026-11-08
+
+- Added a persistent GitHub API polling-interval dropdown with 90, 120, 150, and 180 second options (30-second increments; default 90 seconds).
+- Changing the interval updates the active wait's next polling schedule without restarting automation. The in-flight request is not cancelled; the selected cadence applies to subsequent checks.
+- Preserved GitHub startup-SHA baselining, GitHub-Date-based quiet-time evaluation, and manual-wait fallback. A transient HTTP 502 remains a failed check, not a rotation trigger; a slower cadence reduces request frequency but does not guarantee that upstream or proxy errors disappear.
+- Added regression coverage for allowed interval values, invalid values, defaulting, and settings persistence.
+
 ## 0.1.15 - 2026-11-08
 
 - Fixed assistant completion detection for the newer ChatGPT app-shell DOM. The scanner now supports app timeline/transcript roots, assistant markdown nodes marked with `data-markdown-text-style="assistant-message"`, and stable turn/content-search keys, while retaining legacy message-role selectors.

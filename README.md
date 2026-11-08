@@ -1,6 +1,6 @@
 # GPT Session Rotator
 
-**正式版 v0.1.15 已发布。**
+**最新正式版仍为 v0.1.15；main 源码已更新为 0.1.16，待 Actions 验证后发布新安装包。**
 
 **Windows x64 安装包：** [下载 GPT Session Rotator 0.1.15](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.1.15/GPT.Session.Rotator-0.1.15-Setup.exe)
 
@@ -21,9 +21,15 @@
 
 ---
 
-# GPT Session Rotator 0.1.15 — User Guide
+# GPT Session Rotator 0.1.16 — User Guide
 
 A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT conversation, optionally selects Think, pastes a fixed prompt, submits it, and starts the next cycle when the configured wait expires or an early-rotation condition is met.
+
+## v0.1.16 GitHub API 查询间隔可配置
+
+- 面板下拉菜单提供 90、120、150、180 秒四档，默认 90 秒，间隔为 30 秒一档。
+- 修改后自动保存；运行过程中即时重排下一次轮询，不需要停止/重启。当前已经发出的请求不会被中断。
+- 选 180 秒可把常规查询频率从约每小时 40 次降低到约 20 次。该设置只能降低请求频率，不能保证消除 GitHub 或代理偶发的 HTTP 502；失败的检查仍不会触发轮换，人工等待计时继续。
 
 ## v0.1.15 助手结束回显修复
 
@@ -35,7 +41,7 @@ A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT con
 
 The manual wait remains the maximum wait. Use the dropdown (10, 15, 20, 25, 30, 35, 40, or 45 minutes) or enter a custom value from 1 to 1440 minutes. The 60-minute preset has been removed; 40 minutes has been added.
 
-When automation starts, the app first reads the current `main` head of `xiaobei206/padavan-4.4-2` and records that SHA as the startup baseline. This pre-existing commit is never eligible for early rotation, regardless of its existing age; this prevents an immediate new conversation right after the first prompt is submitted. During wait windows, the app checks the branch every 90 seconds. Only a SHA that appears after the startup baseline is eligible, and it triggers once its GitHub-server-calculated commit age reaches the configured quiet threshold (15 minutes by default). A newer SHA resets the candidate. If the startup baseline request fails, the first later successful poll only establishes the baseline and cannot trigger rotation.
+When automation starts, the app first reads the current `main` head of `xiaobei206/padavan-4.4-2` and records that SHA as the startup baseline. This pre-existing commit is never eligible for early rotation, regardless of its existing age; this prevents an immediate new conversation right after the first prompt is submitted. During wait windows, the app checks the branch at the selected 90, 120, 150, or 180 second interval (90 seconds by default). Only a SHA that appears after the startup baseline is eligible, and it triggers once its GitHub-server-calculated commit age reaches the configured quiet threshold (15 minutes by default). A newer SHA resets the candidate. If the startup baseline request fails, the first later successful poll only establishes the baseline and cannot trigger rotation.
 
 Commit age uses the GitHub HTTP `Date` header and the commit's committer timestamp. VPS timezone and local clock settings therefore do not enter the quiet-time calculation. If GitHub cannot be reached, returns an error, or omits a valid `Date` header, GitHub early rotation is skipped for that check and the manual timer continues normally.
 
@@ -85,7 +91,7 @@ npm test
 
 - The app's configured manual interval continues to run when GitHub is unreachable. A pre-existing repository head is only a baseline; if no new commit appears during this automation run, GitHub quiet-time monitoring will not shorten the current wait.
 - The GitHub monitor watches only the `main` branch head and does not infer whether a coding task is complete.
-- The GitHub API may be subject to unauthenticated rate limits. A 90-second poll interval is approximately 40 requests per hour while a wait window is active.
+- The GitHub API may be subject to transient upstream or proxy failures as well as unauthenticated rate limits. At 90 seconds the app issues about 40 polls per hour during a wait window; at 180 seconds it issues about 20. HTTP 502 is treated as a failed check and does not trigger rotation.
 - Existing app data such as the lifetime cycle count and embedded-browser session are preserved.
 
 ## 0.1.14 修复
@@ -96,7 +102,7 @@ npm test
 
 ## 0.1.13 修复记录与 0.1.12 新增行为
 
-- GitHub main 分支每 90 秒检查一次，静默阈值默认 15 分钟，可在主界面设为 1–180 分钟；配置保存在应用本地设置文件中，运行中修改立即生效。
+- GitHub main 分支查询间隔可在主界面选择 90、120、150 或 180 秒（每 30 秒一档，默认 90 秒），修改后运行中立即调整后续轮询；静默阈值默认 15 分钟，可设为 1–180 分钟。两项配置均保存在应用本地设置文件中。
 - GitHub 仍只对本次自动轮换启动后出现的新 SHA 计时，启动前已有提交不触发轮换。
 - 对话长度提示扫描 ChatGPT 主内容区域全部已渲染 DOM，不受当前滚动位置限制；中英文红字或红框均支持，同一提示连续确认 5 秒后直接开启新对话。
 - 新增助手结束回显标记，默认“结束任务简报”；只检测本轮提交后新增的助手回复，不看用户提示词和旧回复。助手出现标记且生成结束后立即开启新对话。标记可在界面编辑、自动保存、运行中即时生效，留空可关闭。

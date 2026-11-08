@@ -3,10 +3,10 @@ const path = require('node:path');
 const fs = require('node:fs');
 const { analyzeConversationLimitSnapshot, createConversationLimitConfirmationState, observeConversationLimitEvidence, CONVERSATION_LIMIT_SCAN_SCRIPT } = require('./conversation-limit.cjs');
 const { analyzeAssistantCompletionSnapshot, createAssistantCompletionState, observeAssistantCompletion, ASSISTANT_COMPLETION_SCAN_SCRIPT, normalizeAssistantCompletionMarker } = require('./assistant-completion.cjs');
-const { fetchLatestCommit, createGithubMonitorState, observeGithubCommit, GITHUB_POLL_INTERVAL_MS, GITHUB_DEFAULT_QUIET_THRESHOLD_MS, normalizeGithubQuietThresholdMinutes } = require('./github-monitor.cjs');
-const { loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker } = require('./settings.cjs');
+const { fetchLatestCommit, createGithubMonitorState, observeGithubCommit, GITHUB_POLL_INTERVAL_MS, GITHUB_DEFAULT_QUIET_THRESHOLD_MS, normalizeGithubPollIntervalSeconds, normalizeGithubQuietThresholdMinutes } = require('./github-monitor.cjs');
+const { loadGithubPollIntervalSeconds, saveGithubPollIntervalSeconds, loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker } = require('./settings.cjs');
 
-const VERSION = '0.1.15';
+const VERSION = '0.1.16';
 const PARTITION = 'persist:gpt-session-rotator';
 const CHATGPT_HOME = 'https://chatgpt.com/';
 const HEADER_HEIGHT = 54;
@@ -22,6 +22,7 @@ let view;
 let statsPath;
 let settingsPath;
 let githubQuietThresholdMs = GITHUB_DEFAULT_QUIET_THRESHOLD_MS;
+let githubPollIntervalMs = GITHUB_POLL_INTERVAL_MS;
 let assistantCompletionMarker = '结束任务简报';
 let totalCycles = 0;
 let proxyConfig = { enabled: false, type: 'socks5', host: '127.0.0.1', port: '7890' };
@@ -37,7 +38,8 @@ const scheduler = {
   githubMonitorState: createGithubMonitorState(),
   githubBaselinePending: false,
   lastGithubCommit: null,
-  pendingGithubRotation: null
+  pendingGithubRotation: null,
+  githubPollIntervalChangeHandler: null
 };
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -56,6 +58,7 @@ function loadSettings() {
   settingsPath = path.join(app.getPath('userData'), 'settings.json');
   const minutes = loadGithubQuietThresholdMinutes(settingsPath);
   githubQuietThresholdMs = minutes * 60_000;
+  githubPollIntervalMs = loadGithubPollIntervalSeconds(settingsPath) * 1000;
   assistantCompletionMarker = loadAssistantCompletionMarker(settingsPath);
 }
 
@@ -108,6 +111,17 @@ function updateGithubQuietThreshold(minutes) {
 
   emitProgress('GitHub静默阈值更新', `GitHub main 分支静默阈值已设为 ${normalized} 分钟；${persisted ? '配置已保存' : '本次运行已生效但未能保存配置'}${scheduler.running ? '，运行中的轮换立即应用' : ''}。`, persisted ? 'success' : 'warning', scheduler.cycle);
   return { ok:true, minutes:normalized, persisted };
+}
+
+function updateGithubPollInterval(seconds) {
+  const normalized = normalizeGithubPollIntervalSeconds(seconds);
+  if (normalized === null) return { ok:false, reason:'GitHub API 查询间隔只能选择 90、120、150 或 180 秒。' };
+  githubPollIntervalMs = normalized * 1000;
+  let persisted = false;
+  try { if (settingsPath) { saveGithubPollIntervalSeconds(settingsPath, normalized); persisted = true; } } catch {}
+  if (scheduler.running && typeof scheduler.githubPollIntervalChangeHandler === 'function') scheduler.githubPollIntervalChangeHandler();
+  emitProgress('GitHub轮询间隔更新', `GitHub API 查询间隔已设为 ${normalized} 秒；${persisted ? '配置已保存' : '当前进程内已应用但未能保存配置'}${scheduler.running ? '，运行中的轮询计划已即时调整' : '，下次运行将使用此间隔'}。`, persisted ? 'success' : 'warning', scheduler.cycle);
+  return { ok:true, seconds:normalized, persisted };
 }
 
 function saveStats() {
@@ -215,12 +229,13 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
   let assistantFirstProbeLogged = false;
   let assistantNodesDiscoveredLogged = false;
   let assistantNoNodeDiagnosticLogged = false;
+  scheduler.githubPollIntervalChangeHandler = () => { nextGithubProbeAt = Date.now() + githubPollIntervalMs; };
 
   const startGithubProbe = () => {
     if (githubRequestInFlight) return;
     // Schedule from request start, and keep the network operation off the
     // automation loop so a slow API cannot delay manual timing or UI scans.
-    nextGithubProbeAt = Date.now() + GITHUB_POLL_INTERVAL_MS;
+    nextGithubProbeAt = Date.now() + githubPollIntervalMs;
     githubRequestInFlight = true;
     fetchLatestMainCommit().then(
       commit => { githubResult = { ok:true, commit }; },
@@ -244,7 +259,7 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
         const commit = result.commit;
         scheduler.lastGithubCommit = commit;
         if (githubFailures > 0) {
-          emitProgress('GitHub检测恢复', 'GitHub API 已恢复，继续按 90 秒间隔监测 main 分支。', 'success', run.cycle);
+          emitProgress('GitHub检测恢复', `GitHub API 已恢复，继续按 ${Math.round(githubPollIntervalMs / 1000)} 秒间隔监测 main 分支。`, 'success', run.cycle);
         }
         githubFailures = 0;
 
@@ -822,7 +837,7 @@ async function executeCycle() {
 
   scheduler.nextRunAt = Date.now() + scheduler.intervalMs;
   const minutes = Math.round(scheduler.intervalMs / 60000);
-  emitProgress('等待下一轮', `本轮操作结束。最长人工等待 ${minutes} 分钟；GitHub main 每 90 秒检查（新提交静默满 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟提前轮换）；助手新回复出现“${assistantCompletionMarker || '（已关闭）'}”且生成结束后提前轮换；主内容区域红字/红框提示连续确认 5 秒（包括滚动区域内的提示）。`, 'success', run.cycle);
+  emitProgress('等待下一轮', `本轮操作结束。最长人工等待 ${minutes} 分钟；GitHub main 每 ${Math.round(githubPollIntervalMs / 1000)} 秒检查（新提交静默满 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟提前轮换）；助手新回复出现“${assistantCompletionMarker || '（已关闭）'}”且生成结束后提前轮换；主内容区域红字/红框提示连续确认 5 秒（包括滚动区域内的提示）。`, 'success', run.cycle);
 
   let waitResult = { reason:'interval-elapsed' };
   try {
@@ -832,7 +847,9 @@ async function executeCycle() {
       scheduler.intervalMs,
       { checkConversationLimit:submitAttempted, checkAssistantCompletion:submitAttempted }
     );
+    scheduler.githubPollIntervalChangeHandler = null;
   } catch (error) {
+    scheduler.githubPollIntervalChangeHandler = null;
     if (error.code === 'RUN_CANCELLED') {
       if (scheduler.activeRun === run) scheduler.activeRun = null;
       return;
@@ -868,6 +885,7 @@ async function executeCycle() {
 
 function stopScheduler(reason = '用户停止') {
   scheduler.running = false;
+  scheduler.githubPollIntervalChangeHandler = null;
   scheduler.nextRunAt = null;
   if (scheduler.timer) clearTimeout(scheduler.timer);
   scheduler.timer = null;
@@ -902,7 +920,7 @@ ipcMain.handle('automation:start', async (_event, options) => {
   scheduler.pendingGithubRotation = null;
   scheduler.running = true;
   scheduler.nextRunAt = null;
-  emitProgress('启动运行', `0.1.15 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每90秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
+  emitProgress('启动运行', `0.1.16 固定流程：新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，本次运行新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成完成后提前轮换）。`, 'success', 0);
   void primeGithubMonitorBaseline(scheduler.githubMonitorState);
   void executeCycle();
   return { ok:true };
@@ -914,6 +932,7 @@ ipcMain.handle('automation:stop', async () => {
 });
 
 ipcMain.handle('settings:github-quiet-threshold', async (_event, minutes) => updateGithubQuietThreshold(minutes));
+ipcMain.handle('settings:github-poll-interval', async (_event, seconds) => updateGithubPollInterval(seconds));
 ipcMain.handle('settings:assistant-completion-marker', async (_event, marker) => updateAssistantCompletionMarker(marker));
 
 ipcMain.handle('browser:status', async () => ({
@@ -925,6 +944,7 @@ ipcMain.handle('browser:status', async () => ({
   totalCycles,
   nextRunAt: scheduler.nextRunAt,
   githubQuietThresholdMinutes: Math.round(githubQuietThresholdMs / 60_000),
+  githubPollIntervalSeconds: Math.round(githubPollIntervalMs / 1000),
   assistantCompletionMarker
 }));
 

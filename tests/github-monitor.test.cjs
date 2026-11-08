@@ -5,6 +5,9 @@ const assert = require('node:assert/strict');
 const {
   GITHUB_COMMIT_API,
   GITHUB_POLL_INTERVAL_MS,
+  GITHUB_DEFAULT_POLL_INTERVAL_SECONDS,
+  GITHUB_POLL_INTERVAL_OPTIONS_SECONDS,
+  normalizeGithubPollIntervalSeconds,
   GITHUB_DEFAULT_QUIET_THRESHOLD_MS,
   GITHUB_MIN_QUIET_THRESHOLD_MINUTES,
   GITHUB_MAX_QUIET_THRESHOLD_MINUTES,
@@ -25,8 +28,12 @@ function response({ status = 200, date, payload } = {}) {
 
 function commit(sha, ageMs) { return { sha, ageMs }; }
 
-test('poll schedule remains 90 seconds and default quiet threshold is 15 minutes', () => {
+test('poll interval offers 90/120/150/180 seconds, defaulting to 90 seconds', () => {
   assert.equal(GITHUB_POLL_INTERVAL_MS, 90_000);
+  assert.equal(GITHUB_DEFAULT_POLL_INTERVAL_SECONDS, 90);
+  assert.deepEqual(GITHUB_POLL_INTERVAL_OPTIONS_SECONDS, [90, 120, 150, 180]);
+  for (const value of [90, 120, 150, 180, '90', '120']) assert.equal(normalizeGithubPollIntervalSeconds(value), Number(value));
+  for (const value of [0, 60, 89, 100, 181, 300, 90.5, 'abc', null]) assert.equal(normalizeGithubPollIntervalSeconds(value), null, String(value));
   assert.equal(GITHUB_DEFAULT_QUIET_THRESHOLD_MS, 15 * 60_000);
 });
 
