@@ -79,12 +79,14 @@ test('startup gate proceeds immediately when there are no active Actions', async
   assert.equal(result.checks, 1);
 });
 
-test('a late successful API response cannot clear a gate after its deadline', async () => {
+test('a late successful API response cannot clear a gate or emit a false success event', async () => {
   let clock = 0;
+  const events = [];
   const result = await waitForMainActionsToFinish({
     timeoutMs:100,
     now:() => clock,
     sleepImpl:async ms => { clock += ms; },
+    onCheck:event => events.push(event),
     checkActiveRuns:async () => {
       clock = 150;
       return [];
@@ -92,6 +94,7 @@ test('a late successful API response cannot clear a gate after its deadline', as
   });
   assert.equal(result.status, 'timeout');
   assert.equal(result.elapsedMs, 150);
+  assert.equal(events.some(event => event.ok === true), false);
 });
 
 test('startup gate waits for Actions to finish and then releases', async () => {

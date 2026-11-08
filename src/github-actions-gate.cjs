@@ -128,9 +128,10 @@ async function waitForMainActionsToFinish({
       lastActiveRuns = runs;
       lastError = null;
       checks += 1;
-      notify({ ok:true });
-      // A late response must not turn an already-expired gate into success.
+      // A late response must not turn an already-expired gate into success or
+      // emit a misleading "clear" status event.
       if (now() >= deadline) return timeoutResult();
+      notify({ ok:true });
       if (runs.length === 0) return { status:'clear', ...snapshot() };
     } catch (error) {
       lastError = String(error?.message || error || '未知错误').slice(0, 200);
