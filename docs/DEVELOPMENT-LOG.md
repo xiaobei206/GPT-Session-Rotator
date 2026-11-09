@@ -432,7 +432,7 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - Behavior: accept owner/repo or a GitHub repository URL, including a /commits/main/ link; default to Arlene206/padavan-4.4-2. Enter or leaving the field validates, persists and applies the setting without restarting.
 - Live-switch safety: changing targets during a run resets the SHA monitor and pending rotation, requests a fresh baseline for the new target, and discards in-flight results tagged with the previous repository revision. If switched during the startup Actions gate, checks retry against the latest target and the baseline is established only after that gate resolves.
 - Files: monitor and Actions-gate URL construction, settings persistence, main/preload IPC, repository field/status UI, regression tests, version metadata, changelog and source manifest.
-- Tests / syntax / Windows package: pending GitHub Actions verification for this source commit. This operation has no local checkout, so local npm test, node --check, git diff --check and Windows NSIS build are not claimed.
+- Tests / syntax / Windows package: GitHub Actions run `42548998085` passed all 60/60 tests, JavaScript syntax checks, source-manifest validation, Windows x64 NSIS packaging and installer artifact upload. No local checkout was used, so local npm test, node --check and git diff --check are not claimed. Actual Windows user-machine and ChatGPT login-state E2E still require manual verification.
 - Manual boundary: actual Windows installation and authenticated ChatGPT end-to-end behavior remain unverified until tested on the user's machine.
 
 
@@ -446,3 +446,11 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 
 - Changed the new UI regression assertion to use a literal substring check so the repository path slash cannot terminate a JavaScript regular-expression literal.
 - Refreshed the UI test's SHA-256 manifest entry; verify the complete suite in GitHub Actions before creating the formal Release.
+
+
+## 2026-11-09 — v0.2.4 pre-release CI passed
+
+- Validated source commit: `7bf0c211c70c9901fc255f24d491d86b9c4e88c4`.
+- GitHub Actions run: `42548998085` — success. Version metadata check and all 22 source-manifest entries passed; 60/60 unit tests passed; JavaScript syntax validation passed; Windows x64 NSIS build and artifact upload passed.
+- This confirms the Windows package can be built by the CI environment. It does not certify runtime behavior on the user's own Windows installation or their logged-in ChatGPT session.
+- The next commit intentionally contains `[release]` to trigger official v0.2.4 Release publication; verify the actual tag and attached installer before declaring the release complete.

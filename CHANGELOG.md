@@ -3,7 +3,7 @@
 - Added an editable GitHub monitoring repository setting. It accepts owner/repo or a GitHub repository URL, including a /commits/main/ page; the default target is Arlene206/padavan-4.4-2.
 - Enter or leaving the field validates, saves and applies the target without restarting. The normal commit poller and startup Actions gate share this target.
 - Repository switching during a run resets the SHA baseline and ignores late results from the old target, preventing false early rotations.
-- Windows CI and formal Release verification are pending for this source commit; use the live Actions result before treating a v0.2.4 installer as published.
+- GitHub Actions run `42548998085` succeeded: version metadata, source manifest, 60/60 unit tests, JavaScript syntax checks, Windows x64 NSIS build and installer artifact upload all passed. The formal v0.2.4 Release is now being triggered separately; final release URL and asset SHA-256 must be verified after the Release job finishes.
 
 ## 0.2.3 - 2026-11-08
 

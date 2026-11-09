@@ -8,7 +8,7 @@
 >
 > **生效规则：** 输入完成后按 Enter 或移开焦点即验证、保存并应用，无需重启。常规 main 提交轮询与启动前 Actions 门禁共用同一目标；运行中切换会重建目标 SHA 基线并丢弃旧仓库的过期请求结果。
 >
-> **发布状态：** 不能把 v0.2.3 的安装包当作本次 v0.2.4。必须检查本次源码提交的 Windows CI、测试、NSIS 构建及 Release job；真实 Windows DPAPI / ChatGPT 登录态 E2E 仍需手工验证。
+> **发布状态：** pre-release CI run `42548998085` 已通过 60/60 测试、源码清单、JS 语法和 Windows x64 NSIS 构建/上传。当前 `[release]` 提交会触发正式发布，仍须核实实际 Release 资产；真实 Windows DPAPI / ChatGPT 登录态 E2E 仍需手工验证。
 
 ## 当前功能
 

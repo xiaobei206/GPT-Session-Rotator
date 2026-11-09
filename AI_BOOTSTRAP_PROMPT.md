@@ -2,10 +2,10 @@
 
 ## Current implementation state
 
-- Latest previously published release is v0.2.3: https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.3. Source version is being updated to v0.2.4; verify its live CI and Release status before describing the installer as published.
+- Previously published release: v0.2.3. Source v0.2.4 passed GitHub Actions run `42548998085` (60/60 tests, syntax, manifest, Windows NSIS build and artifact upload); this next `[release]` commit triggers the official release. Verify the resulting Release and assets before declaring publication complete.
 - v0.2.3 added a startup gate for queued/active GitHub Actions runs; v0.2.4 makes the monitored repository editable and shares that target between startup Actions checks and normal commit polling. Default: `Arlene206/padavan-4.4-2/main`. Repository changes apply when the field is committed with Enter or focus leaves it; no restart is required.
 - The commit baseline is established only after the startup gate resolves. Switching repositories while running re-baselines the new target and ignores stale in-flight results from the old target. The gate logs workflow name, Run ID/status and short SHA only; it never logs Token values or commit titles/body.
-- v0.2.3 final Actions run `42489779743` succeeded (historical baseline); v0.2.4 test/build/Release status must be checked live. Do not reuse the v0.2.3 installer digest for v0.2.4.
+- v0.2.3 final Actions run `42489779743` succeeded (historical baseline); v0.2.4 pre-release CI run `42548998085` succeeded. Do not reuse the v0.2.3 installer digest for v0.2.4; retrieve its SHA-256 from the actual v0.2.4 Release asset after publication.
 - v0.2.3 Actions, Windows packaging and formal release must be confirmed live. Real Windows DPAPI/PAT and signed-in ChatGPT end-to-end checks remain manual.
 
 # AI Bootstrap Prompt — GPT Session Rotator
