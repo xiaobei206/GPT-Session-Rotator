@@ -440,3 +440,9 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 
 - Corrected literal repository placeholders in two new tests so they assert the normalized default `Arlene206/padavan-4.4-2`, not the placeholder text.
 - Updated the source manifest for the corrected tests. CI is responsible for the executable test and Windows build result; do not infer success from this edit.
+
+
+## 2026-11-09 — v0.2.4 UI test regex portability correction
+
+- Changed the new UI regression assertion to use a literal substring check so the repository path slash cannot terminate a JavaScript regular-expression literal.
+- Refreshed the UI test's SHA-256 manifest entry; verify the complete suite in GitHub Actions before creating the formal Release.

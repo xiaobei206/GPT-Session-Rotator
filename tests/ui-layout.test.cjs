@@ -34,7 +34,7 @@ test('start/stop controls stay outside the independently scrollable settings reg
 });
 
 test('GitHub repository can be edited and applied without restarting the app', () => {
-  assert.match(html, /id="githubRepository"[^>]*value="Arlene206/padavan-4.4-2"/);
+  assert.ok(html.includes('id="githubRepository" type="text" maxlength="2048" value="Arlene206/padavan-4.4-2"'), 'the input should default to the current monitored repository');
   assert.match(html, /按 Enter 或移开焦点立即保存并生效/);
   assert.match(renderer, /\$\('githubRepository'\)\.addEventListener\('change'/);
   assert.match(renderer, /window\.rotator\.setGithubRepository\(requested\)/);
