@@ -31,6 +31,8 @@ The test suite uses Node's built-in test runner and should not need an Electron 
 - Unchanged successful polls emit a `GitHub轮询检查` heartbeat with short SHA, GitHub-Date-based commit age, monitor state, auth mode, and threshold; neither Token nor commit body may enter the log.
 - Changing the poll interval reschedules the active poll cadence. Quiet-threshold default/range and immediate re-evaluation are also checked.
 - Existing SHA at startup is baseline only; new SHA is eligible; GitHub Date is required; failed requests do not trigger; next SHA resets candidate.
+- Repository setting accepts `owner/repo`, full GitHub URLs, and `/commits/main` page URLs; invalid/non-GitHub URLs are rejected and the setting persists across launches.
+- The normal commit poller and startup Actions gate both construct API URLs from the same repository setting. A live repository change resets the new target's SHA baseline and stale results from an old request cannot rotate the session.
 - Settings persist and invalid values are rejected.
 
 ## UI layout regression checks

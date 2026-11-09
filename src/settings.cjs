@@ -9,6 +9,7 @@ const {
   normalizeGithubQuietThresholdMinutes
 } = require('./github-monitor.cjs');
 const { DEFAULT_ASSISTANT_COMPLETION_MARKER, normalizeAssistantCompletionMarker } = require('./assistant-completion.cjs');
+const { DEFAULT_GITHUB_REPOSITORY, normalizeGithubRepository } = require('./github-monitor.cjs');
 
 const DEFAULT_GITHUB_QUIET_THRESHOLD_MINUTES = GITHUB_DEFAULT_QUIET_THRESHOLD_MS / 60_000;
 const DEFAULT_GITHUB_POLL_INTERVAL_SECONDS = GITHUB_DEFAULT_POLL_INTERVAL_SECONDS;
@@ -50,6 +51,16 @@ function normalizeGithubToken(value) {
   return token;
 }
 
+function loadGithubRepository(settingsPath) {
+  const data = readSettings(settingsPath);
+  return normalizeGithubRepository(data.githubRepository) || DEFAULT_GITHUB_REPOSITORY;
+}
+function saveGithubRepository(settingsPath, value) {
+  const repository = normalizeGithubRepository(value);
+  if (!repository) throw new RangeError('GitHub 仓库必须是 owner/repo 或 GitHub 仓库 URL，例如 https://github.com/owner/repo。');
+  writeSettings(settingsPath, { githubRepository:repository });
+  return repository;
+}
 function loadGithubQuietThresholdMinutes(settingsPath) {
   const data = readSettings(settingsPath);
   return normalizeGithubQuietThresholdMinutes(data.githubQuietThresholdMinutes) ?? DEFAULT_GITHUB_QUIET_THRESHOLD_MINUTES;
@@ -172,6 +183,8 @@ module.exports = {
   GITHUB_TOKEN_SETTING_KEY,
   GITHUB_TOKEN_CIPHER_PREFIX,
   normalizeGithubToken,
+  loadGithubRepository,
+  saveGithubRepository,
   loadGithubToken,
   saveGithubToken,
   clearGithubToken,

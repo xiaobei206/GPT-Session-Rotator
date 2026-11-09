@@ -423,3 +423,14 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **blockmap：** `GPT.Session.Rotator-0.2.3-Setup.exe.blockmap`，106,096 bytes；GitHub Release digest SHA-256：`bd5721ef9993efef0130a361cc1deed475721093b42a4409c9119918bdc734e4`。
 - **构建与签名：** Release run 的 NSIS 构建和上传均成功；未配置 Authenticode 代码签名证书，构建跳过签名。
 - **实机边界：** 用户 Windows PC 上的真实 Actions 等待、DPAPI/PAT 和 ChatGPT 登录态端到端仍待人工验证；需确认 Stop 取消立即生效、活动 Actions 结束放行、最长等待时间到达后放行。
+
+
+## 2026-11-09 — v0.2.4 configurable GitHub monitoring repository
+
+- App version: 0.2.4; normal commit polling and startup Actions gate now share a user-editable repository target.
+- Root cause: both paths hard-coded xiaobei206/padavan-4.4-2. The user's active fork Arlene206/padavan-4.4-2 advanced while the app continued polling the unchanged upstream HEAD.
+- Behavior: accept owner/repo or a GitHub repository URL, including a /commits/main/ link; default to Arlene206/padavan-4.4-2. Enter or leaving the field validates, persists and applies the setting without restarting.
+- Live-switch safety: changing targets during a run resets the SHA monitor and pending rotation, requests a fresh baseline for the new target, and discards in-flight results tagged with the previous repository revision. If switched during the startup Actions gate, checks retry against the latest target and the baseline is established only after that gate resolves.
+- Files: monitor and Actions-gate URL construction, settings persistence, main/preload IPC, repository field/status UI, regression tests, version metadata, changelog and source manifest.
+- Tests / syntax / Windows package: pending GitHub Actions verification for this source commit. This operation has no local checkout, so local npm test, node --check, git diff --check and Windows NSIS build are not claimed.
+- Manual boundary: actual Windows installation and authenticated ChatGPT end-to-end behavior remain unverified until tested on the user's machine.

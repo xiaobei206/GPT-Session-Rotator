@@ -2,11 +2,11 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GPT Session Rotator 0.2.3</title><link rel="stylesheet" href="style.css">
+<title>GPT Session Rotator 0.2.4</title><link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <div class="brand"><div class="logo">G</div><div><h1>GPT Session Rotator <span>0.2.3</span></h1><p>固定节奏轮换 · GitHub 静默提前轮换 · 对话满载提前轮换</p></div></div>
+  <div class="brand"><div class="logo">G</div><div><h1>GPT Session Rotator <span>0.2.4</span></h1><p>固定节奏轮换 · GitHub 静默提前轮换 · 对话满载提前轮换</p></div></div>
   <div class="status"><span id="statusDot" class="dot"></span><span id="statusText">待机中</span><span class="sep">|</span><span id="sessionCount">本次 0 轮 · 累计 0 轮</span></div>
 </header>
 <main class="dashboard">
@@ -42,6 +42,13 @@
       <div class="thinking-row">
         <label class="check think-check"><input id="thinkingEnabled" type="checkbox" checked> 每轮尝试启用 Think</label>
         <span class="hint">最多 3 次；首次失败刷新当前新对话并等 30 秒，第二次失败再等 30 秒；仍失败继续。</span>
+      </div>
+      <div class="github-repository-row">
+        <label>GitHub 监控仓库
+          <input id="githubRepository" type="text" maxlength="2048" value="Arlene206/padavan-4.4-2" placeholder="owner/repo 或 GitHub 仓库 URL" autocomplete="off" spellcheck="false" aria-label="GitHub 监控仓库">
+        </label>
+        <span id="githubRepositoryStatus" class="token-status">已保存</span>
+        <span class="hint">监控 main；输入后按 Enter 或移开焦点立即保存并生效，无需重启</span>
       </div>
       <div class="github-row">
         <label>API 查询间隔

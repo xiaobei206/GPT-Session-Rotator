@@ -1,11 +1,11 @@
-<!-- Current project handoff override: 2026-11-08 -->
+<!-- Current project handoff override: 2026-11-09 -->
 
 ## Current implementation state
 
-- Latest published release is v0.2.3: https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.3. Final Release Actions run `42489779743` succeeded with 56 tests, 15 JS/CJS syntax checks, 22 manifest entries, Windows x64 NSIS build/upload and release publication.
-- v0.2.3 adds a startup gate for queued/active GitHub Actions runs on `xiaobei206/padavan-4.4-2/main`: every 60 seconds, with the configured maximum-wait interval as the hard deadline, Stop cancellation, and fail-open behavior on timeout/API errors.
-- The commit baseline is established only after the startup gate resolves. The gate logs workflow name, Run ID/status and short SHA only; it never logs Token values or commit titles/body.
-- v0.2.3 final Actions run `42489779743` succeeded: 56 tests, 15 JS/CJS syntax checks, 22 source-manifest entries, Windows x64 NSIS build/upload and official Release publication. Installer SHA-256: `c2222fe20e6b82267fd37843f002ad209fd67c5d64c25d891bbf79bc19741d24`.
+- Latest previously published release is v0.2.3: https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.3. Source version is being updated to v0.2.4; verify its live CI and Release status before describing the installer as published.
+- v0.2.3 added a startup gate for queued/active GitHub Actions runs; v0.2.4 makes the monitored repository editable and shares that target between startup Actions checks and normal commit polling. Default: `Arlene206/padavan-4.4-2/main`. Repository changes apply when the field is committed with Enter or focus leaves it; no restart is required.
+- The commit baseline is established only after the startup gate resolves. Switching repositories while running re-baselines the new target and ignores stale in-flight results from the old target. The gate logs workflow name, Run ID/status and short SHA only; it never logs Token values or commit titles/body.
+- v0.2.3 final Actions run `42489779743` succeeded (historical baseline); v0.2.4 test/build/Release status must be checked live. Do not reuse the v0.2.3 installer digest for v0.2.4.
 - v0.2.3 Actions, Windows packaging and formal release must be confirmed live. Real Windows DPAPI/PAT and signed-in ChatGPT end-to-end checks remain manual.
 
 # AI Bootstrap Prompt — GPT Session Rotator
@@ -32,7 +32,7 @@
 ## 不可破坏的功能和隐私边界
 
 - 自动化在嵌入式 ChatGPT 页面中新建对话、可选 Think、粘贴固定提示词并提交；手动等待始终是最长等待的兜底。
-- GitHub 提前轮换监控 `xiaobei206/padavan-4.4-2` 的 `main`，未配置 Token 时轮询间隔可选 90/120/150/180 秒，已保存且未被拒绝的 Token 还可选择 30 秒；运行中即时生效。启动时现有 SHA 仅建立基线；静默阈值以当前设置为准。探测失败不能触发轮换，也不能暂停手动计时。每次成功查询会留下不含 Token/commit 正文的状态日志。
+- GitHub 提前轮换监控界面中配置的仓库 `main`（默认 `Arlene206/padavan-4.4-2`），未配置 Token 时轮询间隔可选 90/120/150/180 秒，已保存且未被拒绝的 Token 还可选择 30 秒；仓库更改和轮询间隔均在运行中即时生效。启动时和切换仓库后的 SHA 只建立基线；静默阈值以当前设置为准。探测失败不能触发轮换，也不能暂停手动计时。每次成功查询会留下不含 Token/commit 正文的状态日志。
 - 助手完成标记只允许检测当前轮提交相关的助手回复；旧的、提交前已有正文的助手消息不能触发。命中之后须确认生成停止且消息正文不再变化。空标记表示禁用该条件。
 - 对话长度警告仅在主对话区域识别，连续确认 5 秒；不得把普通提示、侧栏或无关警报误认为长度警告。
 - 助手回复正文只可在进程内用于标记/稳定性判断，不能写日志、保存或上传。不得恢复 CDP 网络捕获、页面正文存档、API 请求/响应正文、SSE/WebSocket 负载记录或诊断 ZIP。

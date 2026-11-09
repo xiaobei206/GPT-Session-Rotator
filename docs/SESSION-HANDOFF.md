@@ -1,22 +1,21 @@
 # 当前会话交接状态
 
-更新日期：2026-11-08
+更新日期：2026-11-09
 
-> **最新正式版：** v0.2.3 已正式发布（Release ID `438298327`）：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.3。
+> **源码版本：** v0.2.4（本次功能变更推送后的 CI / Release 状态须实时核验）。
 >
-> **正式安装包：** `GPT.Session.Rotator-0.2.3-Setup.exe`，102,033,908 bytes；SHA-256 `c2222fe20e6b82267fd37843f002ad209fd67c5d64c25d891bbf79bc19741d24`。Blockmap：106,096 bytes；SHA-256 `bd5721ef9993efef0130a361cc1deed475721093b42a4409c9119918bdc734e4`。
+> **目标默认值：** `Arlene206/padavan-4.4-2`，支持填写 `owner/repo` 或 GitHub 仓库 URL，例如 `https://github.com/Arlene206/padavan-4.4-2/commits/main/`。
 >
-> **最终 Actions：** run `42489779743` completed/success；`Test and build Windows installer` 与 `Publish GitHub Release` 两个 job 均成功。自动测试 56/56 通过，15 个 JS/CJS 文件语法检查通过，22 项源码清单通过，Windows x64 NSIS 构建、工件上传及正式 Release 创建全部成功。
+> **生效规则：** 输入完成后按 Enter 或移开焦点即验证、保存并应用，无需重启。常规 main 提交轮询与启动前 Actions 门禁共用同一目标；运行中切换会重建目标 SHA 基线并丢弃旧仓库的过期请求结果。
 >
-> **v0.2.3 门禁行为：** 点击“开始”先检查 `xiaobei206/padavan-4.4-2/main` 的排队/运行中 Actions，每 60 秒复查；最长等待采用启动时选择的人工最长等待时长。点击“停止”可取消；API 查询失败或达到上限仍未完成会记录警告并继续启动。Token/匿名回退共用同一请求时间预算；截止时间后的迟到响应不会放行，也不会生成误导性的成功日志。
->
-> **实机边界：** CI 不等于用户 Windows 的 DPAPI/PAT 或 ChatGPT 登录态端到端已验证。安装包未配置 Authenticode 签名，真实设备上的启动门禁仍需人工确认。
+> **发布状态：** 不能把 v0.2.3 的安装包当作本次 v0.2.4。必须检查本次源码提交的 Windows CI、测试、NSIS 构建及 Release job；真实 Windows DPAPI / ChatGPT 登录态 E2E 仍需手工验证。
 
-## 本轮功能和改动
+## 当前功能
 
-- 固定操作工具栏与设置滚动面板拆分；操作按钮不在滚动容器内部。
-- 独立 `overflow-y:auto` 设置区及可见滚动条，固定提示词区增高至 140px、最小 100px、最大 300px，可垂直调整。
-- 新增提示词快捷按钮与两项 UI 布局测试；版本、README、CHANGELOG、开发日志、测试清单、接手文档和 22 项源码 SHA-256 manifest 已同步；v0.2.2 另修复 Token 状态同步和 GitHub 成功轮询心跳日志。
+- 左侧操作工具栏与可滚动设置区域分离，提示词输入框可调整大小。
+- GitHub 监控仓库可编辑，默认 `Arlene206/padavan-4.4-2`；同一设置控制 Actions 启动门禁和提交静默轮询。
+- Token 通过 Electron safeStorage 加密保存；未设置 Token 时轮询最低为 90 秒，已配置且未被拒绝时可选 30 秒。
+- 助手结束回显与对话长度提示的既有隔离、稳定性确认和轻量隐私边界不变。
 
 --- 历史交接记录（仅作背景；以上状态优先）
 

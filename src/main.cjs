@@ -3,11 +3,11 @@ const path = require('node:path');
 const fs = require('node:fs');
 const { analyzeConversationLimitSnapshot, createConversationLimitConfirmationState, observeConversationLimitEvidence, CONVERSATION_LIMIT_SCAN_SCRIPT } = require('./conversation-limit.cjs');
 const { analyzeAssistantCompletionSnapshot, createAssistantCompletionState, observeAssistantCompletion, ASSISTANT_COMPLETION_SCAN_SCRIPT, normalizeAssistantCompletionMarker } = require('./assistant-completion.cjs');
-const { fetchLatestCommit, createGithubMonitorState, observeGithubCommit, GITHUB_POLL_INTERVAL_MS, GITHUB_DEFAULT_QUIET_THRESHOLD_MS, normalizeGithubPollIntervalSeconds, normalizeGithubQuietThresholdMinutes } = require('./github-monitor.cjs');
-const { fetchActiveMainWorkflowRuns, waitForMainActionsToFinish, GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS, REPOSITORY: GITHUB_ACTIONS_REPOSITORY } = require('./github-actions-gate.cjs');
-const { loadGithubPollIntervalSeconds, saveGithubPollIntervalSeconds, loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker, normalizeGithubToken, loadGithubToken, saveGithubToken, clearGithubToken } = require('./settings.cjs');
+const { fetchLatestCommit, createGithubMonitorState, observeGithubCommit, DEFAULT_GITHUB_REPOSITORY, normalizeGithubRepository, GITHUB_POLL_INTERVAL_MS, GITHUB_DEFAULT_QUIET_THRESHOLD_MS, normalizeGithubPollIntervalSeconds, normalizeGithubQuietThresholdMinutes } = require('./github-monitor.cjs');
+const { fetchActiveMainWorkflowRuns, waitForMainActionsToFinish, GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS } = require('./github-actions-gate.cjs');
+const { loadGithubRepository, saveGithubRepository, loadGithubPollIntervalSeconds, saveGithubPollIntervalSeconds, loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker, normalizeGithubToken, loadGithubToken, saveGithubToken, clearGithubToken } = require('./settings.cjs');
 
-const VERSION = '0.2.3';
+const VERSION = '0.2.4';
 const PARTITION = 'persist:gpt-session-rotator';
 const CHATGPT_HOME = 'https://chatgpt.com/';
 const HEADER_HEIGHT = 54;
@@ -22,6 +22,8 @@ let win;
 let view;
 let statsPath;
 let settingsPath;
+let githubRepository = DEFAULT_GITHUB_REPOSITORY;
+let githubRepositoryRevision = 0;
 let githubQuietThresholdMs = GITHUB_DEFAULT_QUIET_THRESHOLD_MS;
 let githubPollIntervalMs = GITHUB_POLL_INTERVAL_MS;
 let githubToken = '';
@@ -43,7 +45,8 @@ const scheduler = {
   githubBaselinePending: false,
   lastGithubCommit: null,
   pendingGithubRotation: null,
-  githubPollIntervalChangeHandler: null
+  githubPollIntervalChangeHandler: null,
+  githubRepositoryChangeHandler: null
 };
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -60,6 +63,7 @@ function loadStats() {
 
 async function loadSettings() {
   settingsPath = path.join(app.getPath('userData'), 'settings.json');
+  githubRepository = loadGithubRepository(settingsPath);
   const minutes = loadGithubQuietThresholdMinutes(settingsPath);
   githubQuietThresholdMs = minutes * 60_000;
   githubToken = process.platform === 'win32' ? await loadGithubToken(settingsPath, safeStorage) : '';
@@ -140,6 +144,29 @@ function updateGithubPollInterval(seconds) {
   if (scheduler.running && typeof scheduler.githubPollIntervalChangeHandler === 'function') scheduler.githubPollIntervalChangeHandler();
   emitProgress('GitHub轮询间隔更新', `GitHub API 查询间隔已设为 ${normalized} 秒；${persisted ? '配置已保存' : '当前进程内已应用但未能保存配置'}${scheduler.running ? '，运行中的轮询计划已即时调整' : '，下次运行将使用此间隔'}。`, persisted ? 'success' : 'warning', scheduler.cycle);
   return { ok:true, seconds:normalized, persisted };
+}
+
+function updateGithubRepository(value) {
+  const normalized = normalizeGithubRepository(value);
+  if (!normalized) return { ok:false, reason:'请输入 owner/repo 或有效 GitHub 仓库 URL，例如 https://github.com/Arlene206/padavan-4.4-2/commits/main/。' };
+  if (normalized === githubRepository) return { ok:true, repository:githubRepository, changed:false, persisted:true };
+  const previousRepository = githubRepository;
+  githubRepository = normalized;
+  githubRepositoryRevision += 1;
+  let persisted = false;
+  try { if (settingsPath) { saveGithubRepository(settingsPath, normalized); persisted = true; } } catch {}
+  scheduler.pendingGithubRotation = null;
+  scheduler.lastGithubCommit = null;
+  if (scheduler.running) {
+    scheduler.githubMonitorState = createGithubMonitorState();
+    scheduler.githubBaselinePending = true;
+    if (typeof scheduler.githubRepositoryChangeHandler === 'function') scheduler.githubRepositoryChangeHandler();
+    if (!scheduler.startupActionsGate) void primeGithubMonitorBaseline(scheduler.githubMonitorState);
+  }
+  emitProgress('GitHub监控仓库已更新',
+    `监控目标已从 ${previousRepository} 切换为 ${githubRepository}；提交轮询和启动前 Actions 检查立即使用新仓库。SHA 基线已重置，不会因新仓库已有旧提交而误触发；${persisted ? '设置已保存' : '本进程已生效但未能保存设置'}。`,
+    persisted ? 'success' : 'warning', scheduler.cycle);
+  return { ok:true, repository:githubRepository, changed:true, persisted };
 }
 
 async function updateGithubToken(value) {
@@ -227,12 +254,11 @@ const CONVERSATION_LIMIT_CONFIRM_MAX_GAP_MS = 3500;
 async function fetchLatestMainCommit() {
   const ses = session.fromPartition(PARTITION);
   const token = hasAuthenticatedGithubToken() ? githubToken : '';
+  const repository = githubRepository;
+  const repositoryRevision = githubRepositoryRevision;
   try {
-    return await fetchLatestCommit({
-      fetchImpl:(url, init) => ses.fetch(url, init),
-      timeoutMs:15_000,
-      token
-    });
+    const commit = await fetchLatestCommit({ fetchImpl:(url, init) => ses.fetch(url, init), timeoutMs:15_000, token, repository });
+    return { ...commit, monitoredRepository:repository, repositoryRevision };
   } catch (error) {
     if (error?.status === 401 && token && !githubTokenRejected) {
       githubTokenRejected = true;
@@ -243,14 +269,10 @@ async function fetchLatestMainCommit() {
   }
 }
 
-async function fetchActiveMainActions(timeoutMs) {
+async function fetchActiveMainActions(timeoutMs, repository = githubRepository) {
   const ses = session.fromPartition(PARTITION);
   const token = hasAuthenticatedGithubToken() ? githubToken : '';
-  return fetchActiveMainWorkflowRuns({
-    fetchImpl:(url, init) => ses.fetch(url, init),
-    token,
-    timeoutMs
-  });
+  return fetchActiveMainWorkflowRuns({ fetchImpl:(url, init) => ses.fetch(url, init), token, timeoutMs, repository });
 }
 
 function startAutomationAfterActionsGate(monitorState, maxWaitMs) {
@@ -259,7 +281,7 @@ function startAutomationAfterActionsGate(monitorState, maxWaitMs) {
   const maxWaitMinutes = Math.max(1, Math.round(maxWaitMs / 60_000));
   emitProgress(
     'GitHub Actions启动门禁',
-    `正在检查 ${GITHUB_ACTIONS_REPOSITORY} 的 main 分支是否有排队或运行中的 Actions；每 ${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)} 秒复查，最多等待 ${maxWaitMinutes} 分钟。可随时点击停止取消等待。`,
+    `正在检查 ${githubRepository}/main 是否有排队或运行中的 Actions；每 ${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)} 秒复查，最多等待 ${maxWaitMinutes} 分钟。可随时点击停止取消等待。`,
     'info',
     0
   );
@@ -282,14 +304,24 @@ function startAutomationAfterActionsGate(monitorState, maxWaitMs) {
     } else if (result?.status !== 'clear') {
       emitProgress('GitHub Actions门禁异常', '启动前门禁发生意外异常；为避免卡死，已跳过门禁并按原计划继续启动。', 'warning', 0);
     }
-    // Establish the commit baseline only after the gate; commits whose Actions
-    // finished during the gate remain pre-existing commits for this run.
-    void primeGithubMonitorBaseline(monitorState);
+    // The configured repository may change while the gate waits; baseline the latest target.
+    void primeGithubMonitorBaseline(scheduler.githubMonitorState || monitorState);
     void executeCycle();
   };
 
   void waitForMainActionsToFinish({
-    checkActiveRuns:timeoutMs => fetchActiveMainActions(timeoutMs),
+    checkActiveRuns:async timeoutMs => {
+      while (!gate.cancelled && scheduler.running) {
+        const repository = githubRepository, revision = githubRepositoryRevision;
+        try {
+          const runs = await fetchActiveMainActions(timeoutMs, repository);
+          if (revision === githubRepositoryRevision) return runs;
+        } catch (error) {
+          if (revision === githubRepositoryRevision) throw error;
+        }
+      }
+      return [];
+    },
     timeoutMs:maxWaitMs,
     pollIntervalMs:GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS,
     isCancelled:() => gate.cancelled || !scheduler.running,
@@ -298,7 +330,7 @@ function startAutomationAfterActionsGate(monitorState, maxWaitMs) {
       if (check.ok && check.activeRuns.length === 0) {
         emitProgress(
           'GitHub Actions检查通过',
-          `GitHub main 当前没有排队或运行中的 Actions；启动门禁在约 ${Math.floor(check.elapsedMs / 1000)} 秒后放行，开始第 1 轮。`,
+          `${githubRepository}/main 当前没有排队或运行中的 Actions；启动门禁在约 ${Math.floor(check.elapsedMs / 1000)} 秒后放行，开始第 1 轮。`,
           'success',
           0
         );
@@ -312,7 +344,7 @@ function startAutomationAfterActionsGate(monitorState, maxWaitMs) {
         const extra = check.activeRuns.length > 3 ? `；另有 ${check.activeRuns.length - 3} 条` : '';
         emitProgress(
           'GitHub Actions仍在运行',
-          `main 上有 ${check.activeRuns.length} 条 Actions 正在排队或运行：${summaries}${extra}。已等待 ${Math.floor(check.elapsedMs / 1000)} 秒；每 ${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)} 秒复查，最长 ${maxWaitMinutes} 分钟。`,
+          `${githubRepository}/main 上有 ${check.activeRuns.length} 条 Actions 正在排队或运行：${summaries}${extra}。已等待 ${Math.floor(check.elapsedMs / 1000)} 秒；每 ${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)} 秒复查，最长 ${maxWaitMinutes} 分钟。`,
           'info',
           0
         );
@@ -330,20 +362,21 @@ function startAutomationAfterActionsGate(monitorState, maxWaitMs) {
 
 async function primeGithubMonitorBaseline(monitorState) {
   scheduler.githubBaselinePending = true;
+  const repositoryRevision = githubRepositoryRevision;
   try {
     const commit = await fetchLatestMainCommit();
-    if (scheduler.githubMonitorState !== monitorState || !scheduler.running) return;
+    if (scheduler.githubMonitorState !== monitorState || !scheduler.running || repositoryRevision !== githubRepositoryRevision || commit.repositoryRevision !== repositoryRevision) return;
     scheduler.lastGithubCommit = commit;
     const observation = observeGithubCommit(monitorState, commit, githubQuietThresholdMs);
     if (observation.status === 'baseline') {
-      emitProgress('GitHub启动基线', `已在自动轮换启动时记录 main 分支基线 ${commit.sha.slice(0, 7)}。旧提交不会触发提前轮换；只监测启动后出现的新提交。`, 'info', scheduler.cycle);
+      emitProgress('GitHub启动基线', `已在 ${githubRepository}/main 记录基线 ${commit.sha.slice(0, 7)}。旧提交不会触发提前轮换；只监测本次运行期间新出现的提交。`, 'info', scheduler.cycle);
     }
   } catch (error) {
     if (scheduler.githubMonitorState === monitorState && scheduler.running) {
       emitProgress('GitHub基线暂不可用', `启动时暂时无法读取 GitHub main 分支：${error.message || error}。不会触发提前轮换；首次成功读取只建立基线。`, 'warning', scheduler.cycle);
     }
   } finally {
-    if (scheduler.githubMonitorState === monitorState) scheduler.githubBaselinePending = false;
+    if (scheduler.githubMonitorState === monitorState && repositoryRevision === githubRepositoryRevision) scheduler.githubBaselinePending = false;
   }
 }
 
@@ -384,6 +417,7 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
   let assistantNodesDiscoveredLogged = false;
   let assistantNoNodeDiagnosticLogged = false;
   scheduler.githubPollIntervalChangeHandler = () => { nextGithubProbeAt = Date.now() + githubPollIntervalMs; };
+  scheduler.githubRepositoryChangeHandler = () => { nextGithubProbeAt = Date.now(); };
 
   const startGithubProbe = () => {
     if (githubRequestInFlight) return;
@@ -391,9 +425,10 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
     // automation loop so a slow API cannot delay manual timing or UI scans.
     nextGithubProbeAt = Date.now() + githubPollIntervalMs;
     githubRequestInFlight = true;
+    const requestRevision = githubRepositoryRevision;
     fetchLatestMainCommit().then(
-      commit => { githubResult = { ok:true, commit }; },
-      error => { githubResult = { ok:false, error }; }
+      commit => { githubResult = { ok:true, commit, repositoryRevision:commit.repositoryRevision }; },
+      error => { githubResult = { ok:false, error, repositoryRevision:requestRevision }; }
     ).finally(() => { githubRequestInFlight = false; });
   };
 
@@ -409,6 +444,7 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
     if (githubResult) {
       const result = githubResult;
       githubResult = null;
+      if (result.repositoryRevision !== githubRepositoryRevision) { nextGithubProbeAt = Date.now(); continue; }
       if (result.ok) {
         const commit = result.commit;
         scheduler.lastGithubCommit = commit;
@@ -428,7 +464,7 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
               : '当前 SHA 未变化';
           emitProgress(
             'GitHub轮询检查',
-            `main 查询成功；最新 SHA ${commit.sha.slice(0, 7)}；提交年龄约 ${Math.floor(commit.ageMs / 60_000)} 分钟；${stateDetail}；请求认证=${hasAuthenticatedGithubToken() ? 'Token' : '匿名'}；静默阈值 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟。`,
+            `${githubRepository}/main 查询成功；最新 SHA ${commit.sha.slice(0, 7)}；提交年龄约 ${Math.floor(commit.ageMs / 60_000)} 分钟；${stateDetail}；请求认证=${hasAuthenticatedGithubToken() ? 'Token' : '匿名'}；静默阈值 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟。`,
             'info',
             run.cycle
           );
@@ -436,20 +472,20 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
         if (observation.status === 'baseline') {
           emitProgress('GitHub启动基线', `已记录启动时 main 分支的基线提交 ${commit.sha.slice(0, 7)}。此提交早于本次运行，不会触发立即轮换；只有运行期间出现新提交，且之后静默满 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟，才会提前轮换。`, 'info', run.cycle);
         } else if (observation.status === 'new-commit') {
-          emitProgress('GitHub检测到新提交', `main 分支出现本次运行启动后的新提交 ${commit.sha.slice(0, 7)}；提交年龄约 ${Math.floor(commit.ageMs / 60_000)} 分钟；请求认证=${hasAuthenticatedGithubToken() ? 'Token' : '匿名'}；静默阈值 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟。`, 'info', run.cycle);
+          emitProgress('GitHub检测到新提交', `${githubRepository}/main 出现本次运行启动后的新提交 ${commit.sha.slice(0, 7)}；提交年龄约 ${Math.floor(commit.ageMs / 60_000)} 分钟；请求认证=${hasAuthenticatedGithubToken() ? 'Token' : '匿名'}；静默阈值 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟。`, 'info', run.cycle);
         } else if (observation.status === 'baseline-restored') {
           emitProgress('GitHub提交回退', `main 分支回到启动基线 ${commit.sha.slice(0, 7)}；清除未触发的候选提交，不提前轮换。`, 'info', run.cycle);
         }
 
         if (observation.shouldRotate) {
-          emitProgress('GitHub静默触发', `本次运行期间出现的 main 分支提交 ${commit.sha.slice(0, 7)} 已静默满 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟，提前结束等待并立即开启下一轮。`, 'success', run.cycle, { earlyRotation:true, trigger:'github-quiet', commitSha:commit.sha });
+          emitProgress('GitHub静默触发', `${githubRepository}/main 的新提交 ${commit.sha.slice(0, 7)} 已静默满 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟，提前结束等待并立即开启下一轮。`, 'success', run.cycle, { earlyRotation:true, trigger:'github-quiet', commitSha:commit.sha });
           return { reason:'github-quiet', commit };
         }
       } else {
         githubFailures += 1;
         const error = result.error;
         if (githubFailures === 1 || githubFailures % 10 === 0) {
-          emitProgress('GitHub检测暂不可用', `暂时无法读取 main 分支最新提交：${error?.message || String(error)}。不会影响原人工计时，稍后继续重试。`, 'warning', run.cycle);
+          emitProgress('GitHub检测暂不可用', `暂时无法读取 ${githubRepository}/main 最新提交：${error?.message || String(error)}。不会影响原人工计时，稍后继续重试。`, 'warning', run.cycle);
         }
       }
     }
@@ -1055,6 +1091,7 @@ async function executeCycle() {
 function stopScheduler(reason = '用户停止') {
   scheduler.running = false;
   scheduler.githubPollIntervalChangeHandler = null;
+  scheduler.githubRepositoryChangeHandler = null;
   scheduler.nextRunAt = null;
   if (scheduler.timer) clearTimeout(scheduler.timer);
   scheduler.timer = null;
@@ -1093,7 +1130,7 @@ ipcMain.handle('automation:start', async (_event, options) => {
   scheduler.pendingGithubRotation = null;
   scheduler.running = true;
   scheduler.nextRunAt = null;
-  emitProgress('启动运行', `0.2.3 固定流程：先检查 GitHub main 分支是否有排队/运行中的 Actions（每${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)}秒复查，最多等待${Math.round(scheduler.intervalMs / 60000)}分钟，停止按钮可取消，超时后继续）；门禁放行后新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成结束后提前轮换）。`, 'success', 0);
+  emitProgress('启动运行', `0.2.4 固定流程：先检查 ${githubRepository}/main 是否有排队/运行中的 Actions（每${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)}秒复查，最多等待${Math.round(scheduler.intervalMs / 60000)}分钟，停止按钮可取消，超时后继续）；门禁放行后新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成结束后提前轮换）。`, 'success', 0);
   startAutomationAfterActionsGate(scheduler.githubMonitorState, scheduler.intervalMs);
   return { ok:true };
 });
@@ -1103,6 +1140,7 @@ ipcMain.handle('automation:stop', async () => {
   return { ok:true };
 });
 
+ipcMain.handle('settings:github-repository', async (_event, repository) => updateGithubRepository(repository));
 ipcMain.handle('settings:github-quiet-threshold', async (_event, minutes) => updateGithubQuietThreshold(minutes));
 ipcMain.handle('settings:github-poll-interval', async (_event, seconds) => updateGithubPollInterval(seconds));
 ipcMain.handle('settings:github-token-save', async (_event, token) => updateGithubToken(token));
@@ -1117,6 +1155,7 @@ ipcMain.handle('browser:status', async () => ({
   cycle: scheduler.cycle,
   totalCycles,
   nextRunAt: scheduler.nextRunAt,
+  githubRepository,
   githubQuietThresholdMinutes: Math.round(githubQuietThresholdMs / 60_000),
   githubPollIntervalSeconds: Math.round(githubPollIntervalMs / 1000),
   githubTokenConfigured:Boolean(githubToken),

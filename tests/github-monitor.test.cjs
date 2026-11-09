@@ -3,7 +3,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
+  DEFAULT_GITHUB_REPOSITORY,
   GITHUB_COMMIT_API,
+  normalizeGithubRepository,
+  createGithubCommitApiUrl,
   GITHUB_POLL_INTERVAL_MS,
   GITHUB_DEFAULT_POLL_INTERVAL_SECONDS,
   GITHUB_POLL_INTERVAL_OPTIONS_SECONDS,
@@ -28,6 +31,35 @@ function response({ status = 200, date, payload } = {}) {
 }
 
 function commit(sha, ageMs) { return { sha, ageMs }; }
+
+test('normalizes repository slugs and GitHub URLs including commits/main links', () => {
+  assert.equal(DEFAULT_GITHUB_REPOSITORY, 'Arlene206/padavan-4.4-2');
+  for (const value of ['Arlene206/padavan-4.4-2', 'https://github.com/Arlene206/padavan-4.4-2', 'https://github.com/Arlene206/padavan-4.4-2/commits/main/', 'github.com/Arlene206/padavan-4.4-2/commits/main', 'Arlene206/padavan-4.4-2.git']) {
+    assert.equal(normalizeGithubRepository(value), 'Arlene206/padavan-4.4-2', value);
+  }
+  for (const value of ['', 'owner', 'https://example.com/owner/repo', 'https://github.com/owner', 'owner/repo name', '../repo', null]) {
+    assert.equal(normalizeGithubRepository(value), null, String(value));
+  }
+  assert.equal(createGithubCommitApiUrl('Arlene206/padavan-4.4-2'), 'https://api.github.com/repos/Arlene206/padavan-4.4-2/commits/main');
+  assert.throws(() => createGithubCommitApiUrl('not a repo'), /GitHub 仓库/);
+});
+
+test('the latest-commit API follows the selected repository', async () => {
+  let calledUrl = '';
+  const result = await fetchLatestCommit({
+    repository:'https://github.com/Arlene206/padavan-4.4-2/commits/main/',
+    fetchImpl:async url => {
+      calledUrl = url;
+      return response({ date:'Mon, 09 Nov 2026 02:00:00 GMT', payload:{
+        sha:'selected-repo-sha',
+        html_url:'https://github.com/Arlene206/padavan-4.4-2/commit/selected-repo-sha',
+        commit:{ committer:{ date:'2026-11-09T01:59:00Z' } }
+      }});
+    }
+  });
+  assert.equal(calledUrl, 'https://api.github.com/repos/Arlene206/padavan-4.4-2/commits/main');
+  assert.equal(result.repository, 'Arlene206/padavan-4.4-2');
+});
 
 test('30-second polling requires authentication; unauthenticated options remain 90/120/150/180 seconds', () => {
   assert.equal(GITHUB_POLL_INTERVAL_MS, 90_000);

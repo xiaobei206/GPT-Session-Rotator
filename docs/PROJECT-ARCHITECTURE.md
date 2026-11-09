@@ -36,12 +36,12 @@ Keep UI changes minimal and update the displayed version on every formal app rel
 
 ### GitHub monitor — `src/github-monitor.cjs`
 
-- Reads only the latest public commit on `main` of `xiaobei206/padavan-4.4-2`.
+- Reads only the latest public commit on `main` of the configured repository (default `Arlene206/padavan-4.4-2`); supports a repository slug or GitHub URL and applies changes without a restart.
 - Uses the embedded Electron session so configured proxy routing applies.
 - Poll interval: 90/120/150/180 seconds (default 90 seconds) without a token; 30 seconds is enabled only while an optional GitHub token is configured and has not been rejected. The setting persists and reschedules the active wait's next poll immediately without cancelling an in-flight request.
 - Optional token is sent only as a Bearer header on the latest-commit endpoint. Plaintext remains in the main process only. Persistence uses Electron safeStorage ciphertext; Windows uses DPAPI. HTTP 401 marks the token rejected, stops sending it, and returns cadence to 90 seconds.
 - Threshold: 15 minutes by default; normalized to an integer from 1 through 180 minutes.
-- Startup SHA is a baseline, never a trigger. Only a SHA that appears after that baseline can become a candidate.
+- Startup SHA is a baseline, never a trigger. Only a SHA that appears after that baseline can become a candidate. Repository changes during a run reset the baseline and discard late responses from the previous target. The startup Actions gate uses the same configured repository.
 - Uses a valid GitHub HTTP `Date` header for time calculation. Missing/bad headers, malformed commits, HTTP errors, and fetch errors cannot trigger early rotation.
 - A newer SHA resets the quiet-time candidate. Changing the threshold during a run re-evaluates the latest valid observation immediately. Changing the polling interval while running reschedules the next check using the selected cadence; transient HTTP 502 responses remain non-triggering failures.
 - The monitor does not download repository files or inspect diffs.

@@ -1,7 +1,13 @@
 'use strict';
 
-const REPOSITORY = 'xiaobei206/padavan-4.4-2';
+const { DEFAULT_GITHUB_REPOSITORY, normalizeGithubRepository } = require('./github-monitor.cjs');
+const REPOSITORY = DEFAULT_GITHUB_REPOSITORY;
 const GITHUB_ACTIONS_RUNS_API = `https://api.github.com/repos/${REPOSITORY}/actions/runs?branch=main&per_page=100`;
+function createGithubActionsRunsApi(repository = DEFAULT_GITHUB_REPOSITORY) {
+  const normalized = normalizeGithubRepository(repository);
+  if (!normalized) throw new RangeError('GitHub 仓库必须是 owner/repo 或 GitHub 仓库 URL。');
+  return `https://api.github.com/repos/${normalized}/actions/runs?branch=main&per_page=100`;
+}
 const GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS = 60_000;
 const GITHUB_ACTIONS_REQUEST_TIMEOUT_MS = 15_000;
 const ACTIVE_WORKFLOW_STATUSES = new Set(['queued', 'in_progress', 'waiting', 'pending', 'requested']);
@@ -26,9 +32,11 @@ function extractActiveMainWorkflowRuns(payload) {
 async function fetchActiveMainWorkflowRuns({
   fetchImpl = globalThis.fetch,
   token = '',
-  timeoutMs = GITHUB_ACTIONS_REQUEST_TIMEOUT_MS
+  timeoutMs = GITHUB_ACTIONS_REQUEST_TIMEOUT_MS,
+  repository = DEFAULT_GITHUB_REPOSITORY
 } = {}) {
   if (typeof fetchImpl !== 'function') throw new Error('当前运行环境不支持 fetch。');
+  const apiUrl = createGithubActionsRunsApi(repository);
   const normalizedToken = typeof token === 'string' ? token.trim() : '';
   const requestTimeoutMs = Math.max(1, Number.isFinite(Number(timeoutMs))
     ? Number(timeoutMs) : GITHUB_ACTIONS_REQUEST_TIMEOUT_MS);
@@ -45,14 +53,14 @@ async function fetchActiveMainWorkflowRuns({
       const headers = {
         Accept:'application/vnd.github+json',
         'X-GitHub-Api-Version':'2022-11-28',
-        'User-Agent':'GPT-Session-Rotator/0.2.3',
+        'User-Agent':'GPT-Session-Rotator/0.2.4',
         'Cache-Control':'no-cache',
         Pragma:'no-cache'
       };
       if (authToken) headers.Authorization = `Bearer ${authToken}`;
       let response;
       try {
-        response = await fetchImpl(GITHUB_ACTIONS_RUNS_API, {
+        response = await fetchImpl(apiUrl, {
           method:'GET', cache:'no-store', headers, signal:controller.signal
         });
       } catch (error) {
@@ -151,7 +159,7 @@ async function waitForMainActionsToFinish({
 }
 
 module.exports = {
-  REPOSITORY, GITHUB_ACTIONS_RUNS_API, GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS,
+  REPOSITORY, GITHUB_ACTIONS_RUNS_API, createGithubActionsRunsApi, GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS,
   GITHUB_ACTIONS_REQUEST_TIMEOUT_MS, ACTIVE_WORKFLOW_STATUSES,
   extractActiveMainWorkflowRuns, fetchActiveMainWorkflowRuns, waitForMainActionsToFinish
 };

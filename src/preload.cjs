@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld('rotator', {
   startLoop: options => ipcRenderer.invoke('automation:start', options),
   stopLoop: () => ipcRenderer.invoke('automation:stop'),
   getStatus: () => ipcRenderer.invoke('browser:status'),
+  setGithubRepository: repository => ipcRenderer.invoke('settings:github-repository', repository),
   setGithubQuietThreshold: minutes => ipcRenderer.invoke('settings:github-quiet-threshold', minutes),
   setGithubPollIntervalSeconds: seconds => ipcRenderer.invoke('settings:github-poll-interval', seconds),
   setGithubToken: token => ipcRenderer.invoke('settings:github-token-save', token),

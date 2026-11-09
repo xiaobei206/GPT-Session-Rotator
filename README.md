@@ -1,6 +1,6 @@
 # GPT Session Rotator
 
-**最新正式版：v0.2.3 已于 2026-11-08 正式发布。** 启动前会检查目标仓库 main 的排队/运行中 Actions；每 60 秒复查，超时或查询失败后继续启动，不会无限等待。
+**当前源码版本：v0.2.4。** 本版本新增可编辑的 GitHub 监控仓库，默认示例为 `Arlene206/padavan-4.4-2`；v0.2.4 正式安装包是否已发布，以 GitHub Actions 与 Releases 的实时状态为准。v0.2.3 是此前最近的正式版。 启动前会检查目标仓库 main 的排队/运行中 Actions；每 60 秒复查，超时或查询失败后继续启动，不会无限等待。
 
 **最新正式安装包：** [下载 GPT Session Rotator 0.2.3](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.3/GPT.Session.Rotator-0.2.3-Setup.exe)
 
@@ -21,9 +21,15 @@
 
 ---
 
-# GPT Session Rotator 0.2.3 — User Guide
+# GPT Session Rotator 0.2.4 — User Guide
 
 A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT conversation, optionally selects Think, pastes a fixed prompt, submits it, and starts the next cycle when the configured wait expires or an early-rotation condition is met.
+
+## v0.2.4 可编辑 GitHub 监控仓库
+
+- 在“GitHub 监控仓库”字段输入 `owner/repo`，或粘贴 GitHub 仓库链接；例如 `Arlene206/padavan-4.4-2` 或 `https://github.com/Arlene206/padavan-4.4-2/commits/main/`。
+- 按 Enter 或移开输入框焦点后，程序会验证并自动保存。更改立即应用到提交轮询与启动前 Actions 门禁，无需重启应用。
+- 运行中切换仓库时会为新仓库建立 SHA 基线，旧仓库已经发出的请求结果会被丢弃；不会把目标仓库已有的旧提交当成新提交。当前监控固定针对目标仓库的 `main` 分支。
 
 ## v0.2.3 启动前等待 GitHub Actions
 
@@ -62,13 +68,13 @@ A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT con
 
 The manual wait remains the maximum wait. Use the dropdown (10, 15, 20, 25, 30, 35, 40, or 45 minutes) or enter a custom value from 1 to 1440 minutes. The 60-minute preset has been removed; 40 minutes has been added.
 
-When automation starts, the app first reads the current `main` head of `xiaobei206/padavan-4.4-2` and records that SHA as the startup baseline. This pre-existing commit is never eligible for early rotation, regardless of its existing age; this prevents an immediate new conversation right after the first prompt is submitted. During wait windows, the app checks the branch at the selected 90, 120, 150, or 180 second interval (90 seconds by default), or every 30 seconds when an optional GitHub Token is configured. Each successful poll that sees no SHA change now emits a status-only heartbeat log; errors and unchanged SHAs remain non-triggering. Only a SHA that appears after the startup baseline is eligible, and it triggers once its GitHub-server-calculated commit age reaches the configured quiet threshold (15 minutes by default). A newer SHA resets the candidate. If the startup baseline request fails, the first later successful poll only establishes the baseline and cannot trigger rotation.
+When automation starts, the app first reads the current `main` head of the repository shown in the “GitHub 监控仓库” setting (default `Arlene206/padavan-4.4-2`) and records that SHA as the startup baseline. This pre-existing commit is never eligible for early rotation, regardless of its existing age; this prevents an immediate new conversation right after the first prompt is submitted. During wait windows, the app checks the branch at the selected 90, 120, 150, or 180 second interval (90 seconds by default), or every 30 seconds when an optional GitHub Token is configured. Each successful poll that sees no SHA change now emits a status-only heartbeat log; errors and unchanged SHAs remain non-triggering. Only a SHA that appears after the startup baseline is eligible, and it triggers once its GitHub-server-calculated commit age reaches the configured quiet threshold (15 minutes by default). A newer SHA resets the candidate. If the startup baseline request fails, the first later successful poll only establishes the baseline and cannot trigger rotation.
 
 Commit age uses the GitHub HTTP `Date` header and the commit's committer timestamp. VPS timezone and local clock settings therefore do not enter the quiet-time calculation. If GitHub cannot be reached, returns an error, or omits a valid `Date` header, GitHub early rotation is skipped for that check and the manual timer continues normally.
 
 GitHub requests use the embedded browser's Electron session, including the proxy configured in the app. A Token is optional because the endpoint is public. When configured, it is sent only as a Bearer authorization header for the monitored commit request. The plaintext Token is encrypted by Electron safeStorage before local persistence; on Windows the platform encryption uses DPAPI. The Token is never exposed back to the renderer or written to run logs.
 
-To create a least-privilege credential, use GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens. Select only `xiaobei206/padavan-4.4-2` and grant `Contents: Read`. Paste it into the GitHub Token field and save; the app never displays the stored value. If the saved Token receives HTTP 401, the app disables 30-second polling and returns to 90 seconds until a replacement is saved. The monitor does not download source files or inspect commit diffs.
+To create a least-privilege credential, use GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens. Select the repository configured in the app and grant `Contents: Read`. Paste it into the GitHub Token field and save; the app never displays the stored value. If the saved Token receives HTTP 401, the app disables 30-second polling and returns to 90 seconds until a replacement is saved. The monitor does not download source files or inspect commit diffs.
 
 The Chinese/English conversation-length warning detector checks red-text or red-framed length-limit messages anywhere in the rendered ChatGPT main content DOM, including content below the current scroll viewport. The same warning must be observed continuously for five seconds before early rotation; sidebars, navigation, generic alerts, and out-of-main portals do not qualify.
 

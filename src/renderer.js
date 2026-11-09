@@ -1,6 +1,8 @@
 const $ = id => document.getElementById(id);
 const promptBox = $('prompt'), logBody = $('logBody');
 let running = false, runCycle = 0, totalCycles = 0, nextAt = null, logs = [];
+let lastAppliedGithubRepository = '';
+let repositoryApplySequence = 0;
 
 function timestamp(d = new Date()) {
   return new Intl.DateTimeFormat('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d);
@@ -41,6 +43,32 @@ function syncGithubAuthControls(status = {}) {
     $('githubPollInterval').value = String(status.githubPollIntervalSeconds || 90);
   }
 }
+async function applyGithubRepository() {
+  const requested = $('githubRepository').value.trim();
+  if (!requested || requested === lastAppliedGithubRepository) return;
+  const sequence = ++repositoryApplySequence;
+  $('githubRepositoryStatus').textContent = '正在应用…';
+  try {
+    const result = await window.rotator.setGithubRepository(requested);
+    if (sequence !== repositoryApplySequence) return;
+    if (!result?.ok) throw new Error(result?.reason || '仓库设置无效，未更改当前监控目标。');
+    lastAppliedGithubRepository = result.repository;
+    $('githubRepository').value = result.repository;
+    $('githubRepositoryStatus').textContent = result.persisted ? '已保存并生效' : '已生效（未保存）';
+    if (result.changed) log('GitHub监控仓库已更新', `${result.repository}/main 已成为监控目标；运行中的提交轮询立即切换，SHA 重新建立基线，不会因旧提交误触发。${result.persisted ? '' : ' 当前进程已生效，但设置文件保存失败。'}`, result.persisted ? 'event-ok' : 'event-warn');
+  } catch (error) {
+    if (sequence !== repositoryApplySequence) return;
+    $('githubRepositoryStatus').textContent = '设置失败';
+    const status = await window.rotator.getStatus().catch(() => null);
+    if (sequence !== repositoryApplySequence) return;
+    if (typeof status?.githubRepository === 'string') { $('githubRepository').value = status.githubRepository; lastAppliedGithubRepository = status.githubRepository; }
+    log('GitHub监控仓库设置失败', error.message || String(error), 'event-error');
+  }
+}
+$('githubRepository').addEventListener('input', () => { $('githubRepositoryStatus').textContent = '编辑中…'; });
+$('githubRepository').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur(); } });
+$('githubRepository').addEventListener('change', () => { void applyGithubRepository(); });
+
 function progress(payload) {
   if (!payload?.message) return;
   if (Number.isInteger(payload.cycle)) runCycle = payload.cycle;
@@ -93,7 +121,7 @@ $('startBtn').addEventListener('click', async () => {
       log('启动失败', result?.reason || '后台未能启动轮换。', 'event-error');
       return;
     }
-    log('启动请求已接受', `新对话等待30秒；Think最多3次；人工最长等待${minutes}分钟；GitHub main 每${$('githubPollInterval').value}秒检测，新提交静默达到${$('githubQuietThreshold').value}分钟提前轮换；助手回显“${$('assistantCompletionMarker').value || '已关闭'}”且生成结束即提前轮换；主内容区含滚动区域的红字/红框连续5秒确认后提前轮换。`, 'event-ok');
+    log('启动请求已接受', `新对话等待30秒；Think最多3次；人工最长等待${minutes}分钟；监控 ${$('githubRepository').value} 的 main 每${$('githubPollInterval').value}秒检测，新提交静默达到${$('githubQuietThreshold').value}分钟提前轮换；助手回显“${$('assistantCompletionMarker').value || '已关闭'}”且生成结束即提前轮换；主内容区含滚动区域的红字/红框连续5秒确认后提前轮换。`, 'event-ok');
   } catch (error) {
     setRunning(false);
     setStatus('启动失败', false);
@@ -208,6 +236,7 @@ $('exportLogs').addEventListener('click', () => {
 
 window.rotator.getStatus().then(status => {
   if (status) {
+    if (typeof status.githubRepository === 'string') { $('githubRepository').value = status.githubRepository; lastAppliedGithubRepository = status.githubRepository; $('githubRepositoryStatus').textContent = '已保存并生效'; }
     if (Number.isInteger(status.githubQuietThresholdMinutes)) $('githubQuietThreshold').value = String(status.githubQuietThresholdMinutes);
     if ([30,90,120,150,180].includes(status.githubPollIntervalSeconds)) $('githubPollInterval').value = String(status.githubPollIntervalSeconds);
     syncGithubAuthControls(status);
@@ -224,4 +253,4 @@ window.rotator.getStatus().then(status => {
   }
 }).catch(() => {});
 
-log('程序就绪', `0.2.3：轻量模式；GitHub API 查询间隔可选 ${$('githubPollInterval').value} 秒；配置 Token 可开放 30 秒档，运行中即时生效；GitHub 静默阈值可配置。助手新回复结束标记（默认“结束任务简报”）需生成完成并稳定确认；红字/红框扫描覆盖主内容区全部滚动位置，连续确认5秒。不会保存网页回复正文或采集API正文。`);
+log('程序就绪', `0.2.4：轻量模式；GitHub 监控仓库可编辑，Enter/失焦后立即保存并热切换；API 查询间隔可选 ${$('githubPollInterval').value} 秒；配置 Token 可开放 30 秒档，运行中即时生效；GitHub 静默阈值可配置。助手新回复结束标记（默认“结束任务简报”）需生成完成并稳定确认；红字/红框扫描覆盖主内容区全部滚动位置，连续确认5秒。不会保存网页回复正文或采集API正文。`);
