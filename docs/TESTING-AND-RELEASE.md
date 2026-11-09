@@ -79,3 +79,11 @@ Perform a clean install/launch test and, for an upgrade test, verify that applic
 - Stop cancels the gate. A stopped gate must not launch the first cycle, even if its previous API request completes later.
 - Each Actions API request has a 15-second timeout. If an optional PAT lacks Actions permission, retry the public repository request without authentication rather than treating the PAT as invalid.
 - Test the no-active-runs fast path, active-run filtering by main branch/status, active-to-completed release, hard deadline on stuck runs/API errors, and Stop cancellation. Logs may include workflow name, run ID/status and short SHA only; never include commit titles/bodies, tokens, or response payloads.
+
+
+## Verified v0.2.4 release record
+
+- Release `v0.2.4`: https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.4 (Release ID `438674136`, published 2026-11-09).
+- Final Actions run `42549434934`: success for both Windows build and Release jobs; 60/60 tests; 22 manifest entries; JavaScript syntax checks; x64 NSIS installer and artifact upload.
+- Installer SHA-256: `f1b1367ddd2e707590f5694995a064ba26f8913bc0beae4534e4fc06adc5967f`; blockmap SHA-256: `f54ec2a97ead4febe4173b30e994cfff2732b710e5598f9c658e95f4a9b68df4`.
+- Remaining manual gate: install/upgrade on the user's Windows device, preserve existing `settings.json` and embedded ChatGPT session, verify DPAPI Token persistence, then test repository hot switching during polling and during the startup Actions gate.

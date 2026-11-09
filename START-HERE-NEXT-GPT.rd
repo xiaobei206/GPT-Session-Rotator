@@ -1,4 +1,4 @@
-> **当前开发状态（2026-11-09）：** v0.2.4 源码通过 CI run `42548998085`：60/60 测试、语法、源码清单、Windows x64 NSIS 构建和上传均成功。当前提交带 `[release]`，正在触发正式发布；需再核实 v0.2.4 Release 资产，不能沿用 v0.2.3 安装包。
+> **当前开发状态（2026-11-09）：** v0.2.4 已正式发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.4。最终 Actions run `42549434934` 两个 job 均成功，60/60 测试通过、22 项源码清单、JS 语法、Windows x64 NSIS 构建、工件上传与 Release 均完成。安装包 SHA-256：`f1b1367ddd2e707590f5694995a064ba26f8913bc0beae4534e4fc06adc5967f`.
 
 # GPT Session Rotator v0.2.4 — 下一轮 GPT 必读交接指令
 
@@ -6,13 +6,13 @@
 > 仓库：https://github.com/xiaobei206/GPT-Session-Rotator
 > 默认分支：`main`
 > 源码版本：`0.2.4`
-> 最新已确认正式安装包：`0.2.3`；v0.2.4 正在等待本轮 CI / Release 验证
+> 最新已确认正式安装包：`0.2.4`（Release `438674136` 已正式发布）
 
 > **接手规则：** 先检查远程 `main`、最新 Actions 与 Releases，再读本文件后续历史背景。不要把旧版本交接信息当作实时状态。
 
 ## 当前状态
 
-- v0.2.4 新增可编辑的 GitHub 监控仓库；pre-release CI 已通过，正式安装包仍以 `v0.2.4` Release job 和实际资产为准。
+- v0.2.4 已正式发布。可编辑仓库默认 `Arlene206/padavan-4.4-2`；Enter/失焦即验证、持久化和热切换。CI run `42549434934` 的 Release job 成功；资产摘要见 README、CHANGELOG 和开发日志。
 - 设置面板布局：独立滚动区 + 固定主操作栏；提示词输入框默认 140px 高、可调整，工具栏提供“提示词”快捷按钮。
 - 真实用户桌面分辨率/缩放下的目视验收仍待反馈。
 - 项目规则、源代码和以往事故记录见下方原有接手清单及 `docs/DEVELOPMENT-LOG.md`。

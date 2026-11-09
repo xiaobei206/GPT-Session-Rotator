@@ -3,7 +3,11 @@
 - Added an editable GitHub monitoring repository setting. It accepts owner/repo or a GitHub repository URL, including a /commits/main/ page; the default target is Arlene206/padavan-4.4-2.
 - Enter or leaving the field validates, saves and applies the target without restarting. The normal commit poller and startup Actions gate share this target.
 - Repository switching during a run resets the SHA baseline and ignores late results from the old target, preventing false early rotations.
-- GitHub Actions run `42548998085` succeeded: version metadata, source manifest, 60/60 unit tests, JavaScript syntax checks, Windows x64 NSIS build and installer artifact upload all passed. The formal v0.2.4 Release is now being triggered separately; final release URL and asset SHA-256 must be verified after the Release job finishes.
+- Official Release: [v0.2.4](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.4), Release ID `438674136`, published 2026-11-09; non-draft and non-prerelease.
+- Final GitHub Actions run `42549434934` succeeded: version metadata, all 22 source-manifest entries, 60/60 unit tests, JavaScript syntax checks, Windows x64 NSIS build, installer artifact upload and Release publication.
+- Installer `GPT.Session.Rotator-0.2.4-Setup.exe`: 102,035,627 bytes; SHA-256 `f1b1367ddd2e707590f5694995a064ba26f8913bc0beae4534e4fc06adc5967f`.
+- Blockmap `GPT.Session.Rotator-0.2.4-Setup.exe.blockmap`: 106,025 bytes; SHA-256 `f54ec2a97ead4febe4173b30e994cfff2732b710e5598f9c658e95f4a9b68df4`.
+- The app has no Authenticode signing certificate configured. Real Windows user-machine and signed-in ChatGPT end-to-end behavior remains a manual verification step.
 
 ## 0.2.3 - 2026-11-08
 

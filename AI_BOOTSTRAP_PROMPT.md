@@ -2,10 +2,10 @@
 
 ## Current implementation state
 
-- Previously published release: v0.2.3. Source v0.2.4 passed GitHub Actions run `42548998085` (60/60 tests, syntax, manifest, Windows NSIS build and artifact upload); this next `[release]` commit triggers the official release. Verify the resulting Release and assets before declaring publication complete.
+- Latest official release: v0.2.4, Release ID `438674136`: https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.4. Final Actions run `42549434934` succeeded (60/60 tests, 22 manifest entries, syntax, Windows x64 NSIS build/upload and Release job). Installer SHA-256: `f1b1367ddd2e707590f5694995a064ba26f8913bc0beae4534e4fc06adc5967f`; blockmap SHA-256: `f54ec2a97ead4febe4173b30e994cfff2732b710e5598f9c658e95f4a9b68df4`.
 - v0.2.3 added a startup gate for queued/active GitHub Actions runs; v0.2.4 makes the monitored repository editable and shares that target between startup Actions checks and normal commit polling. Default: `Arlene206/padavan-4.4-2/main`. Repository changes apply when the field is committed with Enter or focus leaves it; no restart is required.
 - The commit baseline is established only after the startup gate resolves. Switching repositories while running re-baselines the new target and ignores stale in-flight results from the old target. The gate logs workflow name, Run ID/status and short SHA only; it never logs Token values or commit titles/body.
-- v0.2.3 final Actions run `42489779743` succeeded (historical baseline); v0.2.4 pre-release CI run `42548998085` succeeded. Do not reuse the v0.2.3 installer digest for v0.2.4; retrieve its SHA-256 from the actual v0.2.4 Release asset after publication.
+- v0.2.4 final Actions run `42549434934` succeeded; the published installer is `GPT.Session.Rotator-0.2.4-Setup.exe` (102,035,627 bytes), digest `f1b1367ddd2e707590f5694995a064ba26f8913bc0beae4534e4fc06adc5967f`. The `.blockmap` digest is `f54ec2a97ead4febe4173b30e994cfff2732b710e5598f9c658e95f4a9b68df4.
 - v0.2.3 Actions, Windows packaging and formal release must be confirmed live. Real Windows DPAPI/PAT and signed-in ChatGPT end-to-end checks remain manual.
 
 # AI Bootstrap Prompt — GPT Session Rotator
@@ -26,7 +26,7 @@
 
 - 最新正式版本为 v0.2.3，已正式发布；v0.2.2 及更早版本的测试数字仅属历史。
 - v0.2.3 最终 Actions run `42489779743` 成功：56/56 测试、15 项 JavaScript/CJS 语法、22 项 SHA-256 manifest、Windows x64 NSIS 构建与正式 Release 全部成功。
-- v0.2.3 的启动门禁必须在 Start 时检查 `xiaobei206/padavan-4.4-2/main` 上排队/运行中的 Actions，60 秒复查，停止可取消，超时等于当前设置的最长等待时间；超时或请求失败要继续启动，不得无限等待。
+- 启动门禁在 Start 时检查设置字段中当前仓库的 `main` 分支上排队/运行中的 Actions，60 秒复查，停止可取消，超时等于当前设置的最长等待时间；超时或请求失败要继续启动，不得无限等待。当前默认仓库为 `Arlene206/padavan-4.4-2`。
 - v0.2.3 的 Windows Actions、安装包和正式 Release 状态必须实时核验；不得宣称本机 DPAPI、真实 PAT 权限或 ChatGPT 登录态端到端验证已完成。
 
 ## 不可破坏的功能和隐私边界

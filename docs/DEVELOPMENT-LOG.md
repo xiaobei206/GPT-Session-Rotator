@@ -454,3 +454,14 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - GitHub Actions run: `42548998085` — success. Version metadata check and all 22 source-manifest entries passed; 60/60 unit tests passed; JavaScript syntax validation passed; Windows x64 NSIS build and artifact upload passed.
 - This confirms the Windows package can be built by the CI environment. It does not certify runtime behavior on the user's own Windows installation or their logged-in ChatGPT session.
 - The next commit intentionally contains `[release]` to trigger official v0.2.4 Release publication; verify the actual tag and attached installer before declaring the release complete.
+
+
+## 2026-11-09 — v0.2.4 official Release published
+
+- **Official Release:** [v0.2.4](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.4), Release ID `438674136`; `draft=false`, `prerelease=false`.
+- **Final Actions:** run `42549434934`, completed/success; both `Test and build Windows installer` and `Publish GitHub Release` jobs succeeded.
+- **Automated checks:** version metadata passed; 22/22 source-manifest entries passed; 60/60 unit tests passed with 0 failures; JavaScript syntax checks passed; Windows x64 NSIS build and artifact upload succeeded.
+- **Installer:** `GPT.Session.Rotator-0.2.4-Setup.exe`, 102,035,627 bytes; GitHub asset SHA-256 `f1b1367ddd2e707590f5694995a064ba26f8913bc0beae4534e4fc06adc5967f`.
+- **Blockmap:** `GPT.Session.Rotator-0.2.4-Setup.exe.blockmap`, 106,025 bytes; GitHub asset SHA-256 `f54ec2a97ead4febe4173b30e994cfff2732b710e5598f9c658e95f4a9b68df4`.
+- **Signature/build boundary:** No Authenticode signing certificate was configured. CI verifies the package build, not the user's actual installed app or logged-in ChatGPT session.
+- **Feature summary:** configurable GitHub repository setting defaults to `Arlene206/padavan-4.4-2`; Enter/focus loss validates, persists and applies without restart; startup Actions gate and normal commit poller use the same selected repository; live switching resets the SHA baseline and ignores in-flight results from the previous target.

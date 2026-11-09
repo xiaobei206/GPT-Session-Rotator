@@ -1,10 +1,10 @@
 # GPT Session Rotator
 
-**当前源码版本：v0.2.4。** 本版本新增可编辑的 GitHub 监控仓库，默认示例为 `Arlene206/padavan-4.4-2`；v0.2.4 正式安装包是否已发布，以 GitHub Actions 与 Releases 的实时状态为准。v0.2.3 是此前最近的正式版。 启动前会检查目标仓库 main 的排队/运行中 Actions；每 60 秒复查，超时或查询失败后继续启动，不会无限等待。
+**最新正式版：v0.2.4，已于 2026-11-09 发布。** 新增可编辑的 GitHub 监控仓库，默认示例为 `Arlene206/padavan-4.4-2`；保存后立即生效，无需重启。启动前会检查所配置仓库 `main` 的排队/运行中 Actions；每 60 秒复查，超时或查询失败后继续启动，不会无限等待。
 
-**最新正式安装包：** [下载 GPT Session Rotator 0.2.3](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.3/GPT.Session.Rotator-0.2.3-Setup.exe)
+**最新正式安装包：** [下载 GPT Session Rotator 0.2.4](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.4/GPT.Session.Rotator-0.2.4-Setup.exe)
 
-**[最新正式 Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.3)**
+**[最新正式 Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.4)**
 
 > 安装包由 GitHub Actions 在 Windows Runner 上构建并通过 Release 发布。当前 EXE 未配置 Authenticode 代码签名；请在 Windows 设备上完成安装和启动验证。
 

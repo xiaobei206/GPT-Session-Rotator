@@ -8,7 +8,7 @@
 >
 > **生效规则：** 输入完成后按 Enter 或移开焦点即验证、保存并应用，无需重启。常规 main 提交轮询与启动前 Actions 门禁共用同一目标；运行中切换会重建目标 SHA 基线并丢弃旧仓库的过期请求结果。
 >
-> **发布状态：** pre-release CI run `42548998085` 已通过 60/60 测试、源码清单、JS 语法和 Windows x64 NSIS 构建/上传。当前 `[release]` 提交会触发正式发布，仍须核实实际 Release 资产；真实 Windows DPAPI / ChatGPT 登录态 E2E 仍需手工验证。
+> **发布状态：** v0.2.4 已正式发布，Release ID `438674136`：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.4。最终 Actions run `42549434934` 全部成功（60/60 测试、22 项清单、JS 语法、Windows x64 NSIS 构建/上传和 Release）。安装包 SHA-256：`f1b1367ddd2e707590f5694995a064ba26f8913bc0beae4534e4fc06adc5967f`；真实 Windows DPAPI / ChatGPT 登录态 E2E 仍需手工验证。
 
 ## 当前功能
 
