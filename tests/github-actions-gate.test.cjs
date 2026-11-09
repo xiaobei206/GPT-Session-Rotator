@@ -21,9 +21,9 @@ const active = (id, status='in_progress', branch='main') => ({
 });
 
 test('queries the monitored public repository main branch with a bounded active-run list', () => {
-  assert.equal(REPOSITORY, '${target}');
+  assert.equal(REPOSITORY, 'Arlene206/padavan-4.4-2');
   assert.match(GITHUB_ACTIONS_RUNS_API, /actions\/runs\?branch=main&per_page=100$/);
-  assert.equal(createGithubActionsRunsApi('https://github.com/${target}/commits/main/'), GITHUB_ACTIONS_RUNS_API);
+  assert.equal(createGithubActionsRunsApi('https://github.com/Arlene206/padavan-4.4-2/commits/main/'), GITHUB_ACTIONS_RUNS_API);
   assert.throws(() => createGithubActionsRunsApi('not a repo'), /GitHub 仓库/);
   assert.equal(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS, 60_000);
 });

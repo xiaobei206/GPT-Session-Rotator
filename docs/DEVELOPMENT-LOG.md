@@ -434,3 +434,9 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - Files: monitor and Actions-gate URL construction, settings persistence, main/preload IPC, repository field/status UI, regression tests, version metadata, changelog and source manifest.
 - Tests / syntax / Windows package: pending GitHub Actions verification for this source commit. This operation has no local checkout, so local npm test, node --check, git diff --check and Windows NSIS build are not claimed.
 - Manual boundary: actual Windows installation and authenticated ChatGPT end-to-end behavior remain unverified until tested on the user's machine.
+
+
+## 2026-11-09 — v0.2.4 test fixture correction
+
+- Corrected literal repository placeholders in two new tests so they assert the normalized default `Arlene206/padavan-4.4-2`, not the placeholder text.
+- Updated the source manifest for the corrected tests. CI is responsible for the executable test and Windows build result; do not infer success from this edit.
