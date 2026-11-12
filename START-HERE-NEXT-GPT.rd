@@ -12,9 +12,9 @@
 
 ## 当前状态
 
-- v0.3.0 多工作区实现已加入：顶部可以新建/重新打开命名工作区；每个工作区运行独立进程并隔离 ChatGPT 持久化 session、userData、GitHub 仓库、加密 Token、统计和轮换调度器。
+- v0.3.0 多工作区实现已正式发布：顶部可以新建/重新打开命名工作区；每个工作区运行独立进程并隔离 ChatGPT 持久化 session、userData、GitHub 仓库、加密 Token、统计和轮换调度器。
 - 默认工作区沿用原有 data 路径与 browser partition，以保留旧登录状态；新建工作区需另行登录 ChatGPT。
-- 本版 CI、Windows 安装包和双工作区人工 E2E 必须实时验证，不得根据提交推断成功。
+- v0.3.0 已正式发布；Actions run 43278607026 成功，67/67 测试通过，17 个 JS/CJS 文件语法检查通过，NSIS 安装包已挂载 Release。双账号/双仓库人工 E2E 仍需在 Windows 实机确认。
 
 ## 当前状态
 

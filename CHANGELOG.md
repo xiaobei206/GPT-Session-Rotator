@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.3.0] - 2026-11-13 (CI validated; official Release pending)
+## [0.3.0] - 2026-11-13 (official Release published)
 
 ### Added
 - Add named workspaces that open as independent application processes.
@@ -11,7 +11,10 @@
 ### Automated validation
 - GitHub Actions run 43278012957 completed successfully on commit 33498d8dd4b9380c2fdc9ce4026dd1009b6dd65e.
 - All 24 source-manifest entries passed; 67/67 unit tests passed; node --check passed for 17 JavaScript/CJS files.
-- Windows x64 NSIS installer and blockmap built successfully and were uploaded as artifact 13971826861 (windows-nsis-installer, 102,145,654 bytes). The workflow's formal Release job was skipped for this feature commit; the next [release] commit triggers official publication.
+- Windows x64 NSIS installer and blockmap built successfully and were uploaded as artifact 13971826861 (windows-nsis-installer, 102,145,654 bytes). Formal GitHub Release published successfully in Actions run 43278607026: Release ID 443346731, tag v0.3.0, draft=false, prerelease=false.
+
+### Manual verification boundary
+- The CI build does not sign in to real ChatGPT accounts. Two separate workspace accounts, distinct GitHub repositories/tokens, simultaneous loops, and independent close behavior still require a real Windows acceptance test.
 
 ### Security and compatibility
 - New workspaces start with clean browser storage and require a separate ChatGPT sign-in.

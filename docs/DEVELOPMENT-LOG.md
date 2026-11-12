@@ -487,3 +487,13 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **Windows packaging:** Windows x64 NSIS installer GPT Session Rotator-0.3.0-Setup.exe and blockmap built successfully. Artifact windows-nsis-installer, ID 13971826861, 102,145,654 bytes; artifact ZIP SHA-256 is c04e510064af6438526cf620a6f8a7764f383f4a0863628c24a00540e15e5df4.
 - **Release status:** The validation run correctly skipped the Release job because the feature commit did not include [release]. The following documentation-only [release] commit will trigger a fresh verification build and official v0.3.0 Release.
 - **Manual verification remains:** CI has not signed in to the user's ChatGPT accounts. Install on Windows, create two workspace profiles, sign in to separate accounts, configure distinct GitHub repos/tokens, run both loops concurrently, and close one process to confirm the other continues.
+
+
+## 2026-11-13 — v0.3.0 official GitHub Release published
+
+- **Official Release:** [v0.3.0](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.3.0), Release ID 443346731; draft=false; prerelease=false.
+- **Final GitHub Actions run:** 43278607026 — both Test/build and Publish GitHub Release jobs completed successfully.
+- **Validation:** all 24 source-manifest entries passed; 67/67 unit tests passed; syntax checks passed for 17 JavaScript/CJS files.
+- **Installer:** GPT.Session.Rotator-0.3.0-Setup.exe, 102,037,969 bytes; SHA-256 636ae58257d5ca0df8b0c757333ac2332a5c7b56908f681b06bd1fce09fe6971.
+- **Blockmap:** GPT.Session.Rotator-0.3.0-Setup.exe.blockmap, 106,133 bytes; SHA-256 c7eaf3c2036d03cd3e98b2a0afe35ea7b506d2ec546876183fcedbf7edbfca84.
+- **Manual acceptance remains:** real Windows dual-ChatGPT-account and dual-GitHub-workspace simultaneous execution has not been performed by CI and must still be verified on the user's Windows machine.

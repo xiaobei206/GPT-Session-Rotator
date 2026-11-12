@@ -1,10 +1,10 @@
 # GPT Session Rotator
 
-**最新正式版：v0.2.4，已于 2026-11-09 发布。** v0.3.0 正在验证多工作区功能：每个工作区独立保存 ChatGPT 登录态、GitHub 仓库、加密 Token 和轮换任务；验证通过后再发布新版安装包。 新增可编辑的 GitHub 监控仓库，默认示例为 `Arlene206/padavan-4.4-2`；保存后立即生效，无需重启。启动前会检查所配置仓库 `main` 的排队/运行中 Actions；每 60 秒复查，超时或查询失败后继续启动，不会无限等待。
+**最新正式版：v0.3.0，已于 2026-11-13 发布。** 新增多工作区并行开发：每个工作区可登录不同 ChatGPT 账号、配置不同 GitHub 仓库和加密 Token；浏览器数据、GitHub 配置、统计和自动轮换任务彼此隔离，原有默认工作区登录态保留。原有 GitHub 监控仓库，默认示例为 `Arlene206/padavan-4.4-2`；保存后立即生效，无需重启。启动前会检查所配置仓库 `main` 的排队/运行中 Actions；每 60 秒复查，超时或查询失败后继续启动，不会无限等待。
 
-**最新正式安装包：** [下载 GPT Session Rotator 0.2.4](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.4/GPT.Session.Rotator-0.2.4-Setup.exe)
+**最新正式安装包：** [下载 GPT Session Rotator 0.3.0](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.3.0/GPT.Session.Rotator-0.3.0-Setup.exe)
 
-**[最新正式 Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.4)**
+**[最新正式 Release 页面](https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.3.0)**
 
 > 安装包由 GitHub Actions 在 Windows Runner 上构建并通过 Release 发布。当前 EXE 未配置 Authenticode 代码签名；请在 Windows 设备上完成安装和启动验证。
 
@@ -21,11 +21,11 @@
 
 ---
 
-# GPT Session Rotator 0.2.4 — User Guide
+# GPT Session Rotator 0.3.0 — User Guide
 
 A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT conversation, optionally selects Think, pastes a fixed prompt, submits it, and starts the next cycle when the configured wait expires or an early-rotation condition is met.
 
-## v0.3.0 多工作区与账号隔离（验证中）
+## v0.3.0 多工作区与账号隔离
 
 - 点击顶部“新建工作区”，为另一个开发项目创建独立运行窗口；也可以从工作区下拉列表重新打开已有工作区。
 - 每个工作区使用独立的数据目录和 Electron 持久化浏览器分区。ChatGPT Cookie / 登录状态不会与其他工作区共用。
