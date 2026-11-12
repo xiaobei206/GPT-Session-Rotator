@@ -2,11 +2,11 @@
 
 更新日期：2026-11-13
 
-> **当前开发项：** v0.3.0 多工作区功能已加入源码，CI 与正式 Release 状态须根据提交后的 Actions 实时核实。目标是让不同 ChatGPT 账号和不同 GitHub 项目并行运行，且会话、设置、Token、统计和调度器彼此隔离。
+> **当前版本：** v0.3.0 多工作区功能已提交到 main；67/67 单元测试、17 个 JS/CJS 语法检查、Windows x64 NSIS 构建及工件上传全部通过（Actions run 43278012957）。
 >
 > **实现策略：** 一个工作区对应一个独立 Electron 进程。默认工作区沿用升级前的 userData 路径和浏览器 partition；新增工作区使用独立 userData/sessionData 和 persist:gpt-session-rotator-<id>。共享注册表仅存 ID/名称，不存 Cookies 或凭据。新增工作区需单独登录 ChatGPT。
 >
-> **待验证：** GitHub Actions 全套测试与 Windows x64 NSIS 构建；真实 Windows 上两个账号/两个仓库同时运行的人工端到端验证。
+> **发布状态：** 当前提交的 Release job 按流程跳过；接下来的带 [release] 标记提交会触发正式 v0.3.0 Release。真实 Windows 双账号/双仓库同时运行的人工端到端验收仍待完成。
 
 ## v0.3.0 多工作区功能范围
 

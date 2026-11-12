@@ -1,12 +1,17 @@
 # Changelog
 
-## [0.3.0] - 2026-11-13 (CI validation pending)
+## [0.3.0] - 2026-11-13 (CI validated; official Release pending)
 
 ### Added
 - Add named workspaces that open as independent application processes.
 - Isolate each workspace's persistent ChatGPT session, user-data directory, GitHub repository, encrypted GitHub token, counters, proxy settings, and automation scheduler.
 - Preserve the original default workspace data directory and browser partition so an upgrade retains the existing ChatGPT sign-in and settings.
 - Add controls to create new project workspaces and reopen existing workspaces.
+
+### Automated validation
+- GitHub Actions run 43278012957 completed successfully on commit 33498d8dd4b9380c2fdc9ce4026dd1009b6dd65e.
+- All 24 source-manifest entries passed; 67/67 unit tests passed; node --check passed for 17 JavaScript/CJS files.
+- Windows x64 NSIS installer and blockmap built successfully and were uploaded as artifact 13971826861 (windows-nsis-installer, 102,145,654 bytes). The workflow's formal Release job was skipped for this feature commit; the next [release] commit triggers official publication.
 
 ### Security and compatibility
 - New workspaces start with clean browser storage and require a separate ChatGPT sign-in.

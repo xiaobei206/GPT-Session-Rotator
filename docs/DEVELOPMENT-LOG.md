@@ -477,3 +477,13 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **新增模块/测试：** src/profile-manager.cjs 管理安全 ID、注册表、data 路径和 session partition；tests/profile-manager.test.cjs 覆盖默认兼容、注册表、路径隔离和 ID 校验；UI 增加工作区控件契约测试。
 - **验证边界：** 当前 GitHub connector 会话没有本地工作树，因此未声称已本地运行 npm test、node --check 或 git diff --check。提交后必须查看 Windows Actions 真实结果；成功仅代表自动化测试与 CI 安装包构建通过。
 - **待人工验证：** Windows 安装新版后创建两个工作区，在两边分别登录不同 ChatGPT 账号、设置不同 GitHub 仓库（及各自 Token），同时启动循环，确认日志/计时/触发器独立；关闭一个工作区后另一边仍继续运行。
+
+
+## 2026-11-13 — v0.3.0 CI validation succeeded; formal Release trigger prepared
+
+- **Validated source commit:** 33498d8dd4b9380c2fdc9ce4026dd1009b6dd65e.
+- **GitHub Actions run:** 43278012957 — completed/success. Version metadata and all 24 source-manifest entries passed.
+- **Automated tests:** 67/67 passed, 0 failures; node --check passed for all 17 JavaScript/CJS files.
+- **Windows packaging:** Windows x64 NSIS installer GPT Session Rotator-0.3.0-Setup.exe and blockmap built successfully. Artifact windows-nsis-installer, ID 13971826861, 102,145,654 bytes; artifact ZIP SHA-256 is c04e510064af6438526cf620a6f8a7764f383f4a0863628c24a00540e15e5df4.
+- **Release status:** The validation run correctly skipped the Release job because the feature commit did not include [release]. The following documentation-only [release] commit will trigger a fresh verification build and official v0.3.0 Release.
+- **Manual verification remains:** CI has not signed in to the user's ChatGPT accounts. Install on Windows, create two workspace profiles, sign in to separate accounts, configure distinct GitHub repos/tokens, run both loops concurrently, and close one process to confirm the other continues.
