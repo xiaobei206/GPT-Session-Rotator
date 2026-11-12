@@ -1,6 +1,6 @@
 # GPT Session Rotator
 
-**最新正式版：v0.2.4，已于 2026-11-09 发布。** 新增可编辑的 GitHub 监控仓库，默认示例为 `Arlene206/padavan-4.4-2`；保存后立即生效，无需重启。启动前会检查所配置仓库 `main` 的排队/运行中 Actions；每 60 秒复查，超时或查询失败后继续启动，不会无限等待。
+**最新正式版：v0.2.4，已于 2026-11-09 发布。** v0.3.0 正在验证多工作区功能：每个工作区独立保存 ChatGPT 登录态、GitHub 仓库、加密 Token 和轮换任务；验证通过后再发布新版安装包。 新增可编辑的 GitHub 监控仓库，默认示例为 `Arlene206/padavan-4.4-2`；保存后立即生效，无需重启。启动前会检查所配置仓库 `main` 的排队/运行中 Actions；每 60 秒复查，超时或查询失败后继续启动，不会无限等待。
 
 **最新正式安装包：** [下载 GPT Session Rotator 0.2.4](https://github.com/xiaobei206/GPT-Session-Rotator/releases/download/v0.2.4/GPT.Session.Rotator-0.2.4-Setup.exe)
 
@@ -24,6 +24,15 @@
 # GPT Session Rotator 0.2.4 — User Guide
 
 A lightweight Windows Electron utility that repeatedly opens a fresh ChatGPT conversation, optionally selects Think, pastes a fixed prompt, submits it, and starts the next cycle when the configured wait expires or an early-rotation condition is met.
+
+## v0.3.0 多工作区与账号隔离（验证中）
+
+- 点击顶部“新建工作区”，为另一个开发项目创建独立运行窗口；也可以从工作区下拉列表重新打开已有工作区。
+- 每个工作区使用独立的数据目录和 Electron 持久化浏览器分区。ChatGPT Cookie / 登录状态不会与其他工作区共用。
+- GitHub 监控仓库、加密保存的 GitHub Token、静默阈值、轮询间隔、累计轮数和自动化循环均按工作区隔离。不同工作区可以同时运行、监控不同仓库。
+- 新工作区首次打开时需要单独登录 ChatGPT，并分别设置对应 GitHub 仓库和 Token；不会复制默认工作区的 Cookie 或 Token。
+- 原有默认工作区继续使用升级前的数据目录和浏览器分区，保留既有登录状态、设置与累计统计。
+- 工作区之间独立运行；关闭一个窗口不会停止其他工作区。
 
 ## v0.2.4 可编辑 GitHub 监控仓库
 

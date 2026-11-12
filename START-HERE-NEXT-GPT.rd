@@ -12,6 +12,12 @@
 
 ## 当前状态
 
+- v0.3.0 多工作区实现已加入：顶部可以新建/重新打开命名工作区；每个工作区运行独立进程并隔离 ChatGPT 持久化 session、userData、GitHub 仓库、加密 Token、统计和轮换调度器。
+- 默认工作区沿用原有 data 路径与 browser partition，以保留旧登录状态；新建工作区需另行登录 ChatGPT。
+- 本版 CI、Windows 安装包和双工作区人工 E2E 必须实时验证，不得根据提交推断成功。
+
+## 当前状态
+
 - v0.2.4 已正式发布。可编辑仓库默认 `Arlene206/padavan-4.4-2`；Enter/失焦即验证、持久化和热切换。CI run `42549434934` 的 Release job 成功；资产摘要见 README、CHANGELOG 和开发日志。
 - 设置面板布局：独立滚动区 + 固定主操作栏；提示词输入框默认 140px 高、可调整，工具栏提供“提示词”快捷按钮。
 - 真实用户桌面分辨率/缩放下的目视验收仍待反馈。
@@ -58,6 +64,7 @@
 - `src/assistant-completion.cjs`：新增助手回复与完成标记判断。
 - `src/conversation-limit.cjs`：主对话区域的长度警告识别及五秒确认。
 - `src/settings.cjs`：设置验证与持久化。
+- `src/profile-manager.cjs`：工作区注册表、安全 ID、隔离数据目录和 session partition。
 - `tests/*.test.cjs`：Node 内置测试运行器测试。
 - `docs/DEVELOPMENT-LOG.md`：按时间顺序记录开发历史。
 - `docs/SESSION-HANDOFF.md`：当前状态、风险和下一步。

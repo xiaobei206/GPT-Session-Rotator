@@ -1,3 +1,18 @@
+# Changelog
+
+## [0.3.0] - 2026-11-13 (CI validation pending)
+
+### Added
+- Add named workspaces that open as independent application processes.
+- Isolate each workspace's persistent ChatGPT session, user-data directory, GitHub repository, encrypted GitHub token, counters, proxy settings, and automation scheduler.
+- Preserve the original default workspace data directory and browser partition so an upgrade retains the existing ChatGPT sign-in and settings.
+- Add controls to create new project workspaces and reopen existing workspaces.
+
+### Security and compatibility
+- New workspaces start with clean browser storage and require a separate ChatGPT sign-in.
+- Workspace IDs are validated before use in filesystem paths.
+- The shared workspace registry stores IDs and display names only; it contains no cookies or credentials.
+
 ## 0.2.4 - 2026-11-09
 
 - Added an editable GitHub monitoring repository setting. It accepts owner/repo or a GitHub repository URL, including a /commits/main/ page; the default target is Arlene206/padavan-4.4-2.

@@ -95,3 +95,15 @@ The completion detector first selects an active app timeline/transcript/conversa
 ## Startup Actions gate (v0.2.3)
 
 Before the first ChatGPT cycle of each Start operation, the main process calls `src/github-actions-gate.cjs` to list queued/active Actions runs on the monitored repository's `main` branch. The gate waits in bounded 60-second polling intervals and is cancellable by Stop. Its timeout equals the configured maximum-wait duration captured at Start; timeout or API failure is fail-open, with a warning, so startup never blocks indefinitely. The monitor's commit baseline is established only after the gate resolves, preventing a commit whose Actions finished during the gate from being mistaken for a newly submitted task.
+
+
+## Multi-workspace isolation — v0.3.0
+
+The app supports one independent Electron process per named workspace. The default workspace intentionally retains the pre-v0.3.0 userData path and persist:gpt-session-rotator partition, so an upgrade preserves the existing ChatGPT sign-in, settings and counters.
+
+Additional workspaces receive:
+- A dedicated data directory under the operating system's appData/GPT Session Rotator Profiles/<workspace-id>.
+- A dedicated Electron sessionData directory and persistent partition persist:gpt-session-rotator-<workspace-id>.
+- Their own settings.json, encrypted GitHub token, GitHub repository target, proxy state, counters and automation scheduler.
+
+The shared profiles.json registry stores workspace IDs and display names only. It never stores credentials, cookies, browser data or prompts. New workspaces start clean and require a separate ChatGPT sign-in. Launching or closing one workspace does not stop another workspace's process or loop.

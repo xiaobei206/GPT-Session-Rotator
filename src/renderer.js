@@ -3,6 +3,29 @@ const promptBox = $('prompt'), logBody = $('logBody');
 let running = false, runCycle = 0, totalCycles = 0, nextAt = null, logs = [];
 let lastAppliedGithubRepository = '';
 let repositoryApplySequence = 0;
+let currentProfileId = 'default';
+async function refreshProfiles() {
+  const snapshot = await window.rotator.listProfiles();
+  if (!snapshot) return;
+  currentProfileId = snapshot.currentProfileId || 'default';
+  $('currentProfileName').textContent = snapshot.currentProfileName || '默认工作区';
+  const selector = $('openProfileSelect');
+  selector.replaceChildren(new Option('打开其他工作区…', ''));
+  for (const profile of snapshot.profiles || []) {
+    if (profile && profile.id !== currentProfileId) selector.add(new Option(profile.name, profile.id));
+  }
+}
+$('openProfileSelect').addEventListener('focus', () => refreshProfiles().catch(error => log('工作区列表读取失败', error.message || String(error), 'event-error')));
+$('openProfileSelect').addEventListener('change', async event => {
+  const profileId = event.currentTarget.value; event.currentTarget.value = ''; if (!profileId) return;
+  try { const result = await window.rotator.openProfile(profileId); if (!result?.ok) throw new Error(result?.reason || '无法打开工作区。'); log('已打开独立工作区', '“' + result.profile.name + '”已在新窗口启动；当前工作区继续独立运行。', 'event-ok'); }
+  catch (error) { log('工作区打开失败', error.message || String(error), 'event-error'); }
+});
+$('newProfileBtn').addEventListener('click', async () => {
+  const requestedName = window.prompt('请输入新工作区名称（例如：项目二）', '新项目'); if (requestedName === null) return;
+  try { const result = await window.rotator.createAndOpenProfile(requestedName); if (!result?.ok) throw new Error(result?.reason || '无法创建工作区。'); await refreshProfiles(); log('已创建独立工作区', '“' + result.profile.name + '”已在新窗口启动。请在新窗口登录对应的 ChatGPT 账号，并设置该项目的 GitHub 仓库和 Token。', 'event-ok'); }
+  catch (error) { log('工作区创建失败', error.message || String(error), 'event-error'); }
+});
 
 function timestamp(d = new Date()) {
   return new Intl.DateTimeFormat('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d);
@@ -234,6 +257,8 @@ $('exportLogs').addEventListener('click', () => {
   a.download=`GPT-Session-Rotator-${new Date().toISOString().replace(/[:.]/g,'-')}.tsv`; a.click(); URL.revokeObjectURL(a.href);
 });
 
+refreshProfiles().catch(() => {});
+
 window.rotator.getStatus().then(status => {
   if (status) {
     if (typeof status.githubRepository === 'string') { $('githubRepository').value = status.githubRepository; lastAppliedGithubRepository = status.githubRepository; $('githubRepositoryStatus').textContent = '已保存并生效'; }
@@ -253,4 +278,4 @@ window.rotator.getStatus().then(status => {
   }
 }).catch(() => {});
 
-log('程序就绪', `0.2.4：轻量模式；GitHub 监控仓库可编辑，Enter/失焦后立即保存并热切换；API 查询间隔可选 ${$('githubPollInterval').value} 秒；配置 Token 可开放 30 秒档，运行中即时生效；GitHub 静默阈值可配置。助手新回复结束标记（默认“结束任务简报”）需生成完成并稳定确认；红字/红框扫描覆盖主内容区全部滚动位置，连续确认5秒。不会保存网页回复正文或采集API正文。`);
+log('程序就绪', `0.3.0：轻量模式；GitHub 监控仓库可编辑，Enter/失焦后立即保存并热切换；API 查询间隔可选 ${$('githubPollInterval').value} 秒；配置 Token 可开放 30 秒档，运行中即时生效；GitHub 静默阈值可配置。助手新回复结束标记（默认“结束任务简报”）需生成完成并稳定确认；红字/红框扫描覆盖主内容区全部滚动位置，连续确认5秒。不会保存网页回复正文或采集API正文。`);

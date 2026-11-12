@@ -29,6 +29,15 @@
 - 启动门禁在 Start 时检查设置字段中当前仓库的 `main` 分支上排队/运行中的 Actions，60 秒复查，停止可取消，超时等于当前设置的最长等待时间；超时或请求失败要继续启动，不得无限等待。当前默认仓库为 `Arlene206/padavan-4.4-2`。
 - v0.2.3 的 Windows Actions、安装包和正式 Release 状态必须实时核验；不得宣称本机 DPAPI、真实 PAT 权限或 ChatGPT 登录态端到端验证已完成。
 
+## v0.3.0 多工作区开发规则
+
+- 一个工作区对应一个独立 Electron 进程，不能只增加 BrowserWindow 却继续共用 Cookie/session/settings/scheduler。
+- 默认工作区必须沿用升级前的 userData 路径和 persist:gpt-session-rotator 分区，升级不能丢失已登录 ChatGPT 账号。
+- 新工作区使用独立 userData、sessionData、持久化 partition、settings.json、GitHub Token 和自动化调度；不同工作区不得共享 Cookie、仓库设置或 PAT。
+- profiles.json 仅保存 ID 与显示名称，不得写入 Cookie、Token、提示词或回复。
+- 用户关闭某一工作区不得影响其他工作区。
+- 新增逻辑应保持原单工作区自动化主流程稳定，不要无必要地重构成多 BrowserView 的共享 scheduler。
+
 ## 不可破坏的功能和隐私边界
 
 - 自动化在嵌入式 ChatGPT 页面中新建对话、可选 Think、粘贴固定提示词并提交；手动等待始终是最长等待的兜底。

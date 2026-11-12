@@ -1,14 +1,28 @@
 const { app, BrowserWindow, BrowserView, ipcMain, session, clipboard, safeStorage } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
+const { spawn } = require('node:child_process');
+const { DEFAULT_PROFILE_ID, DEFAULT_PROFILE_NAME, PROFILE_ENVIRONMENT_VARIABLE, PROFILE_ARGUMENT_PREFIX, parseProfileId, loadProfiles, createProfile, getProfile, resolveProfileUserDataPath, profileSessionPartition } = require('./profile-manager.cjs');
 const { analyzeConversationLimitSnapshot, createConversationLimitConfirmationState, observeConversationLimitEvidence, CONVERSATION_LIMIT_SCAN_SCRIPT } = require('./conversation-limit.cjs');
 const { analyzeAssistantCompletionSnapshot, createAssistantCompletionState, observeAssistantCompletion, ASSISTANT_COMPLETION_SCAN_SCRIPT, normalizeAssistantCompletionMarker } = require('./assistant-completion.cjs');
 const { fetchLatestCommit, createGithubMonitorState, observeGithubCommit, DEFAULT_GITHUB_REPOSITORY, normalizeGithubRepository, GITHUB_POLL_INTERVAL_MS, GITHUB_DEFAULT_QUIET_THRESHOLD_MS, normalizeGithubPollIntervalSeconds, normalizeGithubQuietThresholdMinutes } = require('./github-monitor.cjs');
 const { fetchActiveMainWorkflowRuns, waitForMainActionsToFinish, GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS } = require('./github-actions-gate.cjs');
 const { loadGithubRepository, saveGithubRepository, loadGithubPollIntervalSeconds, saveGithubPollIntervalSeconds, loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker, normalizeGithubToken, loadGithubToken, saveGithubToken, clearGithubToken } = require('./settings.cjs');
 
-const VERSION = '0.2.4';
-const PARTITION = 'persist:gpt-session-rotator';
+const VERSION = '0.3.0';
+const PROFILE_ID = parseProfileId(process.argv, process.env);
+const APP_DATA_PATH = app.getPath('appData');
+const DEFAULT_USER_DATA_PATH = app.getPath('userData');
+const PROFILE_REGISTRY_PATH = path.join(APP_DATA_PATH, 'GPT Session Rotator Profiles', 'profiles.json');
+const PROFILE_REGISTRY_AT_START = loadProfiles(PROFILE_REGISTRY_PATH);
+const CURRENT_PROFILE = getProfile(PROFILE_REGISTRY_AT_START, PROFILE_ID) || { id:PROFILE_ID, name:PROFILE_ID === DEFAULT_PROFILE_ID ? DEFAULT_PROFILE_NAME : '工作区 ' + PROFILE_ID };
+const PROFILE_USER_DATA_PATH = resolveProfileUserDataPath(APP_DATA_PATH, PROFILE_ID, DEFAULT_USER_DATA_PATH);
+if (PROFILE_ID !== DEFAULT_PROFILE_ID) {
+  fs.mkdirSync(PROFILE_USER_DATA_PATH, { recursive:true });
+  app.setPath('userData', PROFILE_USER_DATA_PATH);
+  app.setPath('sessionData', path.join(PROFILE_USER_DATA_PATH, 'sessionData'));
+}
+const PARTITION = profileSessionPartition(PROFILE_ID);
 const CHATGPT_HOME = 'https://chatgpt.com/';
 const HEADER_HEIGHT = 54;
 const DASHBOARD_HEIGHT = 330;
@@ -51,6 +65,15 @@ const scheduler = {
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+function getProfileSnapshot() {
+  return { currentProfileId:PROFILE_ID, currentProfileName:CURRENT_PROFILE.name, profiles:loadProfiles(PROFILE_REGISTRY_PATH) };
+}
+function openProfileProcess(profileId) {
+  const args = process.argv.slice(1).filter(argument => typeof argument === 'string' && !argument.startsWith(PROFILE_ARGUMENT_PREFIX));
+  const child = spawn(process.execPath, args, { detached:true, stdio:'ignore', windowsHide:false, env:{ ...process.env, [PROFILE_ENVIRONMENT_VARIABLE]:profileId } });
+  child.once('error', error => emitProgress('工作区启动失败', '无法打开工作区：' + (error.message || error), 'error', scheduler.cycle));
+  child.unref();
+}
 function loadStats() {
   statsPath = path.join(app.getPath('userData'), 'stats.json');
   try {
@@ -615,7 +638,7 @@ function createWindow() {
     height: 980,
     minWidth: 1180,
     minHeight: 760,
-    title: `GPT Session Rotator ${VERSION}`,
+    title: `GPT Session Rotator ${VERSION} — ${CURRENT_PROFILE.name}`,
     backgroundColor: '#10151d',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -1103,6 +1126,22 @@ function stopScheduler(reason = '用户停止') {
   emitProgress('已停止', `${reason}；后续轮换已停止。`, 'warning', scheduler.cycle);
 }
 
+ipcMain.handle('profiles:list', async () => getProfileSnapshot());
+ipcMain.handle('profiles:open', async (_event, requestedId) => {
+  const profile = getProfile(loadProfiles(PROFILE_REGISTRY_PATH), requestedId);
+  if (!profile) return { ok:false, reason:'找不到这个工作区。' };
+  if (profile.id === PROFILE_ID) return { ok:true, current:true, profile };
+  try { openProfileProcess(profile.id); return { ok:true, current:false, profile }; }
+  catch (error) { return { ok:false, reason:error.message || String(error) }; }
+});
+ipcMain.handle('profiles:create-and-open', async (_event, requestedName) => {
+  try {
+    const profile = createProfile(PROFILE_REGISTRY_PATH, requestedName);
+    openProfileProcess(profile.id);
+    emitProgress('已创建独立工作区', '工作区“' + profile.name + '”已创建并在新窗口启动；ChatGPT 登录态、GitHub 仓库和 Token 均与当前工作区隔离。', 'success', scheduler.cycle);
+    return { ok:true, profile };
+  } catch (error) { return { ok:false, reason:error.message || String(error) }; }
+});
 ipcMain.handle('browser:proxy', async (_event, cfg) => {
   await applyProxy(cfg);
   return { ok:true };
@@ -1130,7 +1169,7 @@ ipcMain.handle('automation:start', async (_event, options) => {
   scheduler.pendingGithubRotation = null;
   scheduler.running = true;
   scheduler.nextRunAt = null;
-  emitProgress('启动运行', `0.2.4 固定流程：先检查 ${githubRepository}/main 是否有排队/运行中的 Actions（每${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)}秒复查，最多等待${Math.round(scheduler.intervalMs / 60000)}分钟，停止按钮可取消，超时后继续）；门禁放行后新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成结束后提前轮换）。`, 'success', 0);
+  emitProgress('启动运行', `0.3.0 固定流程：先检查 ${githubRepository}/main 是否有排队/运行中的 Actions（每${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)}秒复查，最多等待${Math.round(scheduler.intervalMs / 60000)}分钟，停止按钮可取消，超时后继续）；门禁放行后新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成结束后提前轮换）。`, 'success', 0);
   startAutomationAfterActionsGate(scheduler.githubMonitorState, scheduler.intervalMs);
   return { ok:true };
 });
@@ -1148,6 +1187,8 @@ ipcMain.handle('settings:github-token-clear', async () => removeGithubToken());
 ipcMain.handle('settings:assistant-completion-marker', async (_event, marker) => updateAssistantCompletionMarker(marker));
 
 ipcMain.handle('browser:status', async () => ({
+  currentProfileId:PROFILE_ID,
+  currentProfileName:CURRENT_PROFILE.name,
   url: view ? view.webContents.getURL() : '',
   loading: view ? view.webContents.isLoading() : false,
   proxy: proxyConfig,

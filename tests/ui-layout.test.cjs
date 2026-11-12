@@ -54,3 +54,12 @@ test('settings pane scrolls vertically and the prompt editor remains usable', ()
   assert.match(renderer, /\$\('promptJumpBtn'\)\.addEventListener\('click'/);
   assert.match(renderer, /promptBox\.scrollIntoView\(\{ behavior:'smooth', block:'center' \}\)/);
 });
+
+
+test('workspace controls are present in the application header', () => {
+  assert.match(html, /id="currentProfileName"/);
+  assert.match(html, /id="openProfileSelect"/);
+  assert.match(html, /id="newProfileBtn"/);
+  assert.match(preload, /listProfiles/);
+  assert.match(preload, /createAndOpenProfile/);
+});

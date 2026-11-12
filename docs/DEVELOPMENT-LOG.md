@@ -465,3 +465,15 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **Blockmap:** `GPT.Session.Rotator-0.2.4-Setup.exe.blockmap`, 106,025 bytes; GitHub asset SHA-256 `f54ec2a97ead4febe4173b30e994cfff2732b710e5598f9c658e95f4a9b68df4`.
 - **Signature/build boundary:** No Authenticode signing certificate was configured. CI verifies the package build, not the user's actual installed app or logged-in ChatGPT session.
 - **Feature summary:** configurable GitHub repository setting defaults to `Arlene206/padavan-4.4-2`; Enter/focus loss validates, persists and applies without restart; startup Actions gate and normal commit poller use the same selected repository; live switching resets the SHA baseline and ignores in-flight results from the previous target.
+
+
+## 2026-11-13 — v0.3.0 多工作区隔离功能（首次实现，CI 待验证）
+
+- **用户目标：** 在同一台 Windows 电脑上同时运行多个 GPT Session Rotator 工作区，每个工作区登录不同 ChatGPT 账号，并分别开发/监控不同 GitHub 仓库。
+- **实现方式：** 采用一个工作区一个独立 Electron 进程，不在现有主自动化流程中叠加多套 BrowserView/scheduler。这样保留现有单工作区自动化生命周期，并在进程边界隔离计时器、BrowserView、GitHub 轮询和 Actions 启动门禁。
+- **会话隔离：** 默认工作区继续使用旧版 userData 路径和 persist:gpt-session-rotator，避免升级后丢失既有 ChatGPT 登录状态。新工作区使用独立 data/sessionData 目录及唯一持久化 partition。
+- **配置隔离：** 每个工作区各自拥有 settings.json、DPAPI 加密 GitHub Token、GitHub 仓库目标、轮询间隔、静默阈值、累计统计、代理状态与调度器；共享注册表只存 ID 和显示名。
+- **界面：** 顶部新增当前工作区名称、打开已有工作区下拉框和“新建工作区”按钮；新建工作区需要单独登录 ChatGPT，再配置该项目仓库和 Token。
+- **新增模块/测试：** src/profile-manager.cjs 管理安全 ID、注册表、data 路径和 session partition；tests/profile-manager.test.cjs 覆盖默认兼容、注册表、路径隔离和 ID 校验；UI 增加工作区控件契约测试。
+- **验证边界：** 当前 GitHub connector 会话没有本地工作树，因此未声称已本地运行 npm test、node --check 或 git diff --check。提交后必须查看 Windows Actions 真实结果；成功仅代表自动化测试与 CI 安装包构建通过。
+- **待人工验证：** Windows 安装新版后创建两个工作区，在两边分别登录不同 ChatGPT 账号、设置不同 GitHub 仓库（及各自 Token），同时启动循环，确认日志/计时/触发器独立；关闭一个工作区后另一边仍继续运行。

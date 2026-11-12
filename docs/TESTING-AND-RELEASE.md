@@ -87,3 +87,13 @@ Perform a clean install/launch test and, for an upgrade test, verify that applic
 - Final Actions run `42549434934`: success for both Windows build and Release jobs; 60/60 tests; 22 manifest entries; JavaScript syntax checks; x64 NSIS installer and artifact upload.
 - Installer SHA-256: `f1b1367ddd2e707590f5694995a064ba26f8913bc0beae4534e4fc06adc5967f`; blockmap SHA-256: `f54ec2a97ead4febe4173b30e994cfff2732b710e5598f9c658e95f4a9b68df4`.
 - Remaining manual gate: install/upgrade on the user's Windows device, preserve existing `settings.json` and embedded ChatGPT session, verify DPAPI Token persistence, then test repository hot switching during polling and during the startup Actions gate.
+
+
+## Multi-workspace regression checks — v0.3.0
+
+- The default workspace resolves to the exact pre-upgrade Electron userData path and persist:gpt-session-rotator partition.
+- Additional workspace IDs are validated against path traversal and resolve to distinct data directories and persistent session partitions.
+- Workspace registry loading always includes the stable default workspace; new profiles persist with a unique ID and normalized display name.
+- Environment/argument profile selection falls back to the default workspace when invalid.
+- The UI can list/open existing workspaces and create a new independent workspace.
+- Manual Windows acceptance: open two workspaces, sign in to different ChatGPT accounts, set different GitHub repository targets and optional tokens, start both loops, verify their logs/timers continue independently, close one window and confirm the other keeps running.
