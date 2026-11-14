@@ -1,12 +1,12 @@
-> **当前开发状态（2026-11-09）：** v0.2.4 已正式发布：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.2.4。最终 Actions run `42549434934` 两个 job 均成功，60/60 测试通过、22 项源码清单、JS 语法、Windows x64 NSIS 构建、工件上传与 Release 均完成。安装包 SHA-256：`f1b1367ddd2e707590f5694995a064ba26f8913bc0beae4534e4fc06adc5967f`.
+> **当前开发状态（2026-11-15）：** v0.3.1 的测试、语法检查和 Windows 安装包构建已通过 Actions run `43627584789`。本次 `[release]` 提交将触发正式 Release；需继续核实最终 tag 和安装包资产。
 
-# GPT Session Rotator v0.2.4 — 下一轮 GPT 必读交接指令
+# GPT Session Rotator v0.3.1 — 下一轮 GPT 必读交接指令
 
 > 更新日期：2026-11-09
 > 仓库：https://github.com/xiaobei206/GPT-Session-Rotator
 > 默认分支：`main`
-> 源码版本：`0.2.4`
-> 最新已确认正式安装包：`0.2.4`（Release `438674136` 已正式发布）
+> 源码版本：`0.3.1`
+> 最新已确认正式安装包：请以最新 Releases 和 Actions 的实际状态为准。
 
 > **接手规则：** 先检查远程 `main`、最新 Actions 与 Releases，再读本文件后续历史背景。不要把旧版本交接信息当作实时状态。
 
@@ -14,7 +14,7 @@
 
 - v0.3.0 多工作区实现已正式发布：顶部可以新建/重新打开命名工作区；每个工作区运行独立进程并隔离 ChatGPT 持久化 session、userData、GitHub 仓库、加密 Token、统计和轮换调度器。
 - 默认工作区沿用原有 data 路径与 browser partition，以保留旧登录状态；新建工作区需另行登录 ChatGPT。
-- v0.3.0 已正式发布；Actions run 43278607026 成功，67/67 测试通过，17 个 JS/CJS 文件语法检查通过，NSIS 安装包已挂载 Release。双账号/双仓库人工 E2E 仍需在 Windows 实机确认。
+- v0.3.1 的代码验证 Actions run 43627584789 成功。双账号/双仓库人工 E2E 仍需在 Windows 实机确认。
 
 ## 当前状态
 
