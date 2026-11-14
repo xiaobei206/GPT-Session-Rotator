@@ -9,7 +9,7 @@ const { fetchLatestCommit, createGithubMonitorState, observeGithubCommit, DEFAUL
 const { fetchActiveMainWorkflowRuns, waitForMainActionsToFinish, GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS } = require('./github-actions-gate.cjs');
 const { loadGithubRepository, saveGithubRepository, loadGithubPollIntervalSeconds, saveGithubPollIntervalSeconds, loadGithubQuietThresholdMinutes, saveGithubQuietThresholdMinutes, loadAssistantCompletionMarker, saveAssistantCompletionMarker, normalizeGithubToken, loadGithubToken, saveGithubToken, clearGithubToken } = require('./settings.cjs');
 
-const VERSION = '0.3.0';
+const VERSION = '0.3.1';
 const PROFILE_ID = parseProfileId(process.argv, process.env);
 const APP_DATA_PATH = app.getPath('appData');
 const DEFAULT_USER_DATA_PATH = app.getPath('userData');
@@ -480,14 +480,17 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
         if (observation.status === 'unchanged') {
           const candidateIsCurrent = scheduler.githubMonitorState?.candidateSha === commit.sha;
           const baselineIsCurrent = scheduler.githubMonitorState?.baselineSha === commit.sha;
-          const stateDetail = candidateIsCurrent
-            ? `候选提交 ${commit.sha.slice(0, 7)} 仍在监测中`
-            : baselineIsCurrent
-              ? '当前 SHA 仍是启动基线（不会触发轮换）'
-              : '当前 SHA 未变化';
+          const wasTriggered = scheduler.githubMonitorState?.triggeredShas?.has(commit.sha) === true;
+          const stateDetail = wasTriggered
+            ? `SHA ${commit.sha.slice(0, 7)} 已触发过一次提前轮换；同一提交不会重复触发`
+            : candidateIsCurrent
+              ? `候选提交 ${commit.sha.slice(0, 7)} 仍在监测中`
+              : baselineIsCurrent
+                ? '当前 SHA 仍是启动基线（不会触发轮换）'
+                : '当前 SHA 未变化';
           emitProgress(
             'GitHub轮询检查',
-            `${githubRepository}/main 查询成功；最新 SHA ${commit.sha.slice(0, 7)}；提交年龄约 ${Math.floor(commit.ageMs / 60_000)} 分钟；${stateDetail}；请求认证=${hasAuthenticatedGithubToken() ? 'Token' : '匿名'}；静默阈值 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟。`,
+            `${githubRepository}/main 查询成功；最新 SHA ${commit.sha.slice(0, 7)}；提交自身年龄约 ${Math.floor(commit.ageMs / 60_000)} 分钟；${stateDetail}；请求认证=${hasAuthenticatedGithubToken() ? 'Token' : '匿名'}；静默阈值 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟。`,
             'info',
             run.cycle
           );
@@ -498,6 +501,8 @@ async function waitForNextCycleWindow(run, wc, durationMs, { checkConversationLi
           emitProgress('GitHub检测到新提交', `${githubRepository}/main 出现本次运行启动后的新提交 ${commit.sha.slice(0, 7)}；提交年龄约 ${Math.floor(commit.ageMs / 60_000)} 分钟；请求认证=${hasAuthenticatedGithubToken() ? 'Token' : '匿名'}；静默阈值 ${Math.round(githubQuietThresholdMs / 60_000)} 分钟。`, 'info', run.cycle);
         } else if (observation.status === 'baseline-restored') {
           emitProgress('GitHub提交回退', `main 分支回到启动基线 ${commit.sha.slice(0, 7)}；清除未触发的候选提交，不提前轮换。`, 'info', run.cycle);
+        } else if (observation.status === 'already-triggered') {
+          emitProgress('GitHub重复提交忽略', `main 当前 SHA ${commit.sha.slice(0, 7)} 以前已经触发过一次静默轮换；为避免同一提交导致反复开新对话，本次不重复触发。`, 'info', run.cycle);
         }
 
         if (observation.shouldRotate) {
@@ -1169,7 +1174,7 @@ ipcMain.handle('automation:start', async (_event, options) => {
   scheduler.pendingGithubRotation = null;
   scheduler.running = true;
   scheduler.nextRunAt = null;
-  emitProgress('启动运行', `0.3.0 固定流程：先检查 ${githubRepository}/main 是否有排队/运行中的 Actions（每${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)}秒复查，最多等待${Math.round(scheduler.intervalMs / 60000)}分钟，停止按钮可取消，超时后继续）；门禁放行后新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成结束后提前轮换）。`, 'success', 0);
+  emitProgress('启动运行', `0.3.1 固定流程：先检查 ${githubRepository}/main 是否有排队/运行中的 Actions（每${Math.round(GITHUB_ACTIONS_STARTUP_POLL_INTERVAL_MS / 1000)}秒复查，最多等待${Math.round(scheduler.intervalMs / 60000)}分钟，停止按钮可取消，超时后继续）；门禁放行后新建对话→等待30秒→展开侧边栏→Think最多3次（第一次失败刷新当前对话，等待30秒；第二次失败等待30秒；仍失败继续）→等待20秒→粘贴→等待20秒→提交→最长人工等待${Math.round(scheduler.intervalMs / 60000)}分钟（GitHub main 每${Math.round(githubPollIntervalMs / 1000)}秒检查，新提交静默满${Math.round(githubQuietThresholdMs / 60_000)}分钟可提前轮换；主内容区域红字/红框提示（包括滚动区）连续5秒确认后提前轮换；助手新回复回显“${assistantCompletionMarker || '（已关闭）'}”且生成结束后提前轮换）。`, 'success', 0);
   startAutomationAfterActionsGate(scheduler.githubMonitorState, scheduler.intervalMs);
   return { ok:true };
 });

@@ -2,13 +2,13 @@
 
 更新日期：2026-11-13
 
-> **当前正式版本：** v0.3.0 已于 2026-11-13 正式发布，Release ID 443346731：https://github.com/xiaobei206/GPT-Session-Rotator/releases/tag/v0.3.0。
+> **当前正式版本：** v0.3.0；正在开发 v0.3.1，修正 GitHub 静默触发后的候选状态与日志描述。v0.3.1 的 CI / Release 状态须以本次提交后的 Actions 为准。
 >
 > **自动化验证：** 最终 Actions run 43278607026 的 Test/build 和 Publish Release 两个 Job 均成功；24/24 源码清单、67/67 单元测试、17 个 JS/CJS 语法检查、Windows x64 NSIS 构建、上传和正式发布全部通过。
 >
 > **实现策略：** 一个工作区对应一个独立 Electron 进程。默认工作区沿用升级前的 userData 路径和浏览器 partition；新增工作区使用独立 userData/sessionData 和 persist:gpt-session-rotator-<id>。共享注册表仅存 ID/名称，不存 Cookies 或凭据。新增工作区需单独登录 ChatGPT。
 >
-> **仍待人工验收：** 在真实 Windows 设备上创建两个工作区，分别登录不同 ChatGPT 账号、配置不同 GitHub 仓库和 Token，同时运行轮换任务；关闭其中一个工作区，确认另一个继续运行。
+> **本轮日志诊断：** 同一个 SHA 只应触发一次早期轮换；“提交年龄 18 分钟”是 GitHub commit 的年龄，不等于程序等待了 18 分钟。v0.3.1 将明确记录已触发 SHA，避免把它显示成仍在监测的候选。真实 Windows 双账号并行测试仍待人工执行。
 
 ## v0.3.0 多工作区功能范围
 

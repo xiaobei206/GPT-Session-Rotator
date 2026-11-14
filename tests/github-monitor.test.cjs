@@ -163,7 +163,11 @@ test('only a commit that appears after startup baseline can trigger after the co
   const reached = observeGithubCommit(state, commit('new-sha', GITHUB_DEFAULT_QUIET_THRESHOLD_MS));
   assert.equal(reached.status, 'quiet-threshold-reached');
   assert.equal(reached.shouldRotate, true);
-  assert.equal(observeGithubCommit(state, commit('new-sha', 20 * 60_000)).shouldRotate, false);
+  assert.equal(state.candidateSha, null, 'a triggered SHA must no longer remain a candidate');
+  assert.equal(state.triggeredShas.has('new-sha'), true);
+  const sameShaAgain = observeGithubCommit(state, commit('new-sha', 20 * 60_000));
+  assert.equal(sameShaAgain.status, 'unchanged');
+  assert.equal(sameShaAgain.shouldRotate, false);
 });
 
 test('newer commit resets the candidate; returning to baseline clears candidate', () => {
@@ -191,4 +195,18 @@ test('changing the quiet threshold re-evaluates the current candidate immediatel
   const updated = observeGithubCommit(state, commit('new-sha', 8 * 60_000), 7 * 60_000);
   assert.equal(updated.status, 'quiet-threshold-reached');
   assert.equal(updated.shouldRotate, true);
+});
+
+
+test('a previously triggered SHA is reported as consumed if it becomes HEAD again', () => {
+  const state = createGithubMonitorState();
+  observeGithubCommit(state, commit('baseline', 60 * 60_000));
+  assert.equal(observeGithubCommit(state, commit('triggered-sha', GITHUB_DEFAULT_QUIET_THRESHOLD_MS)).shouldRotate, true);
+  assert.equal(state.candidateSha, null);
+
+  assert.equal(observeGithubCommit(state, commit('newer-sha', 60_000)).status, 'new-commit');
+  const restored = observeGithubCommit(state, commit('triggered-sha', 30 * 60_000));
+  assert.equal(restored.status, 'already-triggered');
+  assert.equal(restored.shouldRotate, false);
+  assert.equal(state.candidateSha, null);
 });

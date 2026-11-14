@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.1] - 2026-11-15 (CI validation pending)
+
+### Fixed
+- Clear a GitHub commit from the active candidate state once it has already triggered an early rotation.
+- Explicitly report when the current SHA has already been consumed, instead of misleadingly logging it as a candidate that is still being monitored.
+- If a previously consumed SHA becomes the repository head again, ignore it without re-arming the same rotation.
+
+### Automated regression coverage
+- Verify the candidate clears after a quiet-threshold rotation.
+- Verify the same SHA does not trigger a second rotation and a previously consumed SHA is recognized if it returns as HEAD.
+
 ## [0.3.0] - 2026-11-13 (official Release published)
 
 ### Added

@@ -497,3 +497,13 @@ pm.cmd run dist:win on Windows, and manually test the documented triggers.
 - **Installer:** GPT.Session.Rotator-0.3.0-Setup.exe, 102,037,969 bytes; SHA-256 636ae58257d5ca0df8b0c757333ac2332a5c7b56908f681b06bd1fce09fe6971.
 - **Blockmap:** GPT.Session.Rotator-0.3.0-Setup.exe.blockmap, 106,133 bytes; SHA-256 c7eaf3c2036d03cd3e98b2a0afe35ea7b506d2ec546876183fcedbf7edbfca84.
 - **Manual acceptance remains:** real Windows dual-ChatGPT-account and dual-GitHub-workspace simultaneous execution has not been performed by CI and must still be verified on the user's Windows machine.
+
+
+## 2026-11-15 — v0.3.1 GitHub quiet-trigger diagnostics and candidate-state fix (CI pending)
+
+- **Observed logs:** commit f5cc0ba triggered the #2 → #3 transition at 10:25:56. The #3 conversation was opened and the fixed prompt was submitted at 10:27:06. Later logs continued to report the same commit's own age (~18 minutes), which is not elapsed time since the last new conversation.
+- **Root cause of confusing status:** observeGithubCommit retained candidateSha after the threshold had fired and the polling log preferred “候选提交仍在监测中” without checking triggeredShas. The state prevented duplicate rotations, but the message looked like a stuck trigger.
+- **Fix:** clear candidateSha when a SHA is consumed; log that a previously triggered SHA will not trigger repeatedly; handle a consumed SHA returning as HEAD after a newer SHA.
+- **Safety invariant:** do not change the intended once-per-SHA early-rotation policy, which prevents endless new conversations from one unchanged commit.
+- **Regression tests:** assert the candidate clears after triggering and a consumed SHA remains non-triggering, including after reappearing as HEAD.
+- **Validation boundary:** run GitHub Actions for the exact code commit; do not claim local Windows runtime validation.

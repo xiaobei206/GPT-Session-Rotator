@@ -144,19 +144,30 @@ function observeGithubCommit(state, commit, thresholdMs = GITHUB_DEFAULT_QUIET_T
   let status = 'unchanged';
   if (state.lastSeenSha !== commit.sha) {
     state.lastSeenSha = commit.sha;
-    state.candidateSha = commit.sha === state.baselineSha ? null : commit.sha;
-    status = state.candidateSha ? 'new-commit' : 'baseline-restored';
+    if (commit.sha === state.baselineSha) {
+      state.candidateSha = null;
+      status = 'baseline-restored';
+    } else if (state.triggeredShas.has(commit.sha)) {
+      // A previously consumed SHA may become HEAD again (for example after a
+      // force-push). Do not create a new candidate or rotate for it again.
+      state.candidateSha = null;
+      status = 'already-triggered';
+    } else {
+      state.candidateSha = commit.sha;
+      status = 'new-commit';
+    }
   }
 
   if (!state.candidateSha || state.candidateSha !== commit.sha) {
     return { status, shouldRotate:false, sha:commit.sha };
   }
 
-  if (commit.ageMs < thresholdMs || state.triggeredShas.has(commit.sha)) {
+  if (commit.ageMs < thresholdMs) {
     return { status, shouldRotate:false, sha:commit.sha };
   }
 
   state.triggeredShas.add(commit.sha);
+  state.candidateSha = null;
   return { status:'quiet-threshold-reached', shouldRotate:true, sha:commit.sha };
 }
 
